@@ -15,7 +15,7 @@ export function ReactionPanel() {
   const [exportProgress, setExportProgress] = useState(0);
   const vrmInputRef = useRef<HTMLInputElement>(null);
   const poseInputRef = useRef<HTMLInputElement>(null);
-  const { setFileSource, sourceLabel, reset } = useAvatarSource();
+  const { currentUrl: sourceUrl, setFileSource, sourceLabel, reset } = useAvatarSource();
   const [customPose, setCustomPose] = useState<any>(null);
   const [customPoseName, setCustomPoseName] = useState<string | null>(null);
   const [isDraggingPose, setIsDraggingPose] = useState(false);
@@ -297,128 +297,129 @@ export function ReactionPanel() {
             />
           </div>
 
-      <label className="field">
-        <span>Avatar name</span>
-        <input
-          type="text"
-          value={nameInput}
-          onChange={(event) => setNameInput(event.target.value)}
-          placeholder="e.g. Harmon Vox"
-        />
-      </label>
-      <label className="field">
-        <span>Reaction preset</span>
-        <select
-          value={activePreset.id}
-          onChange={(event) => {
-            const preset = setPresetById(event.target.value);
-            if (preset) setStatusMessage(`Selected ${preset.label}`);
-          }}
-        >
-          {reactionPresets.map((preset) => (
-            <option key={preset.id} value={preset.id}>
-              {preset.label}
-            </option>
-          ))}
-        </select>
-      </label>
+          <label className="field">
+            <span>Avatar name</span>
+            <input
+              type="text"
+              value={nameInput}
+              onChange={(event) => setNameInput(event.target.value)}
+              placeholder="e.g. Harmon Vox"
+            />
+          </label>
 
-      {/* Custom Pose Drop Zone */}
-      <div className="field">
-        <span>Custom Pose (Optional)</span>
-        <div
-          className={`drop-zone-small ${isDraggingPose ? 'drop-zone-small--active' : ''} ${customPose ? 'drop-zone-small--loaded' : ''}`}
-          onDrop={handlePoseDrop}
-          onDragOver={handlePoseDragOver}
-          onDragLeave={handlePoseDragLeave}
-          onClick={() => poseInputRef.current?.click()}
-        >
-          {customPose ? (
-            <>
-              <span className="drop-zone-small__icon">✅</span>
-              <span className="drop-zone-small__text">
-                <strong>{customPoseName}</strong>
-                <small>Click to replace or drag another</small>
-              </span>
-            </>
-          ) : (
-            <>
-              <span className="drop-zone-small__icon">📄</span>
-              <span className="drop-zone-small__text">
-                <strong>Drop JSON here</strong>
-                <small>Or click to browse</small>
-              </span>
-            </>
-          )}
-        </div>
-        {customPose && (
-          <div className="actions" style={{ marginTop: '0.5rem' }}>
-            <button 
-              type="button" 
-              className="secondary"
-              onClick={() => applyCustomPose(customPose)}
-              disabled={!isAvatarReady}
+          <label className="field">
+            <span>Reaction preset</span>
+            <select
+              value={activePreset.id}
+              onChange={(event) => {
+                const preset = setPresetById(event.target.value);
+                if (preset) setStatusMessage(`Selected ${preset.label}`);
+              }}
             >
-              🎭 Apply Pose
+              {reactionPresets.map((preset) => (
+                <option key={preset.id} value={preset.id}>
+                  {preset.label}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          {/* Custom Pose Drop Zone */}
+          <div className="field">
+            <span>Custom Pose (Optional)</span>
+            <div
+              className={`drop-zone-small ${isDraggingPose ? 'drop-zone-small--active' : ''} ${customPose ? 'drop-zone-small--loaded' : ''}`}
+              onDrop={handlePoseDrop}
+              onDragOver={handlePoseDragOver}
+              onDragLeave={handlePoseDragLeave}
+              onClick={() => poseInputRef.current?.click()}
+            >
+              {customPose ? (
+                <>
+                  <span className="drop-zone-small__icon">✅</span>
+                  <span className="drop-zone-small__text">
+                    <strong>{customPoseName}</strong>
+                    <small>Click to replace or drag another</small>
+                  </span>
+                </>
+              ) : (
+                <>
+                  <span className="drop-zone-small__icon">📄</span>
+                  <span className="drop-zone-small__text">
+                    <strong>Drop JSON here</strong>
+                    <small>Or click to browse</small>
+                  </span>
+                </>
+              )}
+            </div>
+            {customPose && (
+              <div className="actions" style={{ marginTop: '0.5rem' }}>
+                <button 
+                  type="button" 
+                  className="secondary"
+                  onClick={() => applyCustomPose(customPose)}
+                  disabled={!isAvatarReady}
+                >
+                  🎭 Apply Pose
+                </button>
+                <button 
+                  type="button" 
+                  className="secondary"
+                  onClick={handleClearCustomPose}
+                >
+                  🗑️ Clear
+                </button>
+              </div>
+            )}
+            <input
+              ref={poseInputRef}
+              type="file"
+              accept=".json"
+              onChange={handlePoseUpload}
+              style={{ display: 'none' }}
+            />
+          </div>
+
+          <label className="field">
+            <span>Animation mode</span>
+            <select
+              value={animationMode}
+              onChange={(event) => setAnimationMode(event.target.value as AnimationMode)}
+            >
+              <option value="static">Static Pose</option>
+              <option value="once">Play Once</option>
+              <option value="loop">Loop Animation</option>
+            </select>
+          </label>
+          <div className="actions">
+            <button type="button" disabled={!isAvatarReady} onClick={handleApply}>
+              Generate reaction
             </button>
-            <button 
-              type="button" 
-              className="secondary"
-              onClick={handleClearCustomPose}
-            >
-              🗑️ Clear
+            <button type="button" className="secondary" onClick={handleRandomize}>
+              Randomize
             </button>
           </div>
-        )}
-        <input
-          ref={poseInputRef}
-          type="file"
-          accept=".json"
-          onChange={handlePoseUpload}
-          style={{ display: 'none' }}
-        />
-      </div>
-
-      <label className="field">
-        <span>Animation mode</span>
-        <select
-          value={animationMode}
-          onChange={(event) => setAnimationMode(event.target.value as AnimationMode)}
-        >
-          <option value="static">Static Pose</option>
-          <option value="once">Play Once</option>
-          <option value="loop">Loop Animation</option>
-        </select>
-      </label>
-      <div className="actions">
-        <button type="button" disabled={!isAvatarReady} onClick={handleApply}>
-          Generate reaction
-        </button>
-        <button type="button" className="secondary" onClick={handleRandomize}>
-          Randomize
-        </button>
-      </div>
-      {animationMode !== 'static' && (
-        <div className="actions">
-          <button type="button" className="secondary" onClick={handleStopAnimation}>
-            Stop Animation
-          </button>
-        </div>
-      )}
-      <div className="status-card">
-        <span className="status-label">Active reaction</span>
-        <h2>{activePreset.label}</h2>
-        <p className="muted">{activePreset.description}</p>
-        <p className="status-message">{statusMessage}</p>
-      </div>
-      <div className="actions">
-        <button type="button" onClick={handleSave} disabled={isExporting}>
-          Save PNG
-        </button>
-        <button type="button" className="secondary" onClick={handleShare} disabled={isExporting}>
-          Share
-        </button>
-      </div>
+          {animationMode !== 'static' && (
+            <div className="actions">
+              <button type="button" className="secondary" onClick={handleStopAnimation}>
+                Stop Animation
+              </button>
+            </div>
+          )}
+          <div className="status-card">
+            <span className="status-label">Active reaction</span>
+            <h2>{activePreset.label}</h2>
+            <p className="muted">{activePreset.description}</p>
+            <p className="status-message">{statusMessage}</p>
+          </div>
+          <div className="actions">
+            <button type="button" onClick={handleSave} disabled={isExporting}>
+              Save PNG
+            </button>
+            <button type="button" className="secondary" onClick={handleShare} disabled={isExporting}>
+              Share
+            </button>
+          </div>
           {animationMode !== 'static' && (
             <div className="actions">
               <button type="button" onClick={handleExportWebM} disabled={isExporting || !isAvatarReady || !canExportVideo()}>
