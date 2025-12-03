@@ -1,0 +1,169 @@
+{
+  "vrmPose": {
+    "hips": {
+      "position": [
+        0,
+        0.55,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0,
+        1
+      ]
+    },
+    "spine": {
+      "rotation": [
+        -0.1,
+        0,
+        0,
+        0.99
+      ]
+    },
+    "chest": {
+      "rotation": [
+        -0.05,
+        0,
+        0,
+        0.99
+      ]
+    },
+    "neck": {
+      "rotation": [
+        0.1,
+        0,
+        0,
+        0.99
+      ]
+    },
+    "head": {
+      "rotation": [
+        0.1,
+        -0.15,
+        0,
+        0.98
+      ]
+    },
+    "leftUpperLeg": {
+      "rotation": [
+        -0.65,
+        0,
+        0,
+        0.76
+      ]
+    },
+    "rightUpperLeg": {
+      "rotation": [
+        -0.55,
+        0.15,
+        0,
+        0.82
+      ]
+    },
+    "leftLowerLeg": {
+      "rotation": [
+        0.6,
+        0,
+        0,
+        0.8
+      ]
+    },
+    "rightLowerLeg": {
+      "rotation": [
+        0.75,
+        0,
+        0,
+        0.66
+      ]
+    },
+    "leftUpperArm": {
+      "rotation": [
+        0,
+        0,
+        -0.4,
+        0.91
+      ]
+    },
+    "leftLowerArm": {
+      "rotation": [
+        0,
+        -0.5,
+        0,
+        0.86
+      ]
+    },
+    "leftHand": {
+      "rotation": [
+        0,
+        0,
+        -0.1,
+        0.99
+      ]
+    },
+    "rightUpperArm": {
+      "rotation": [
+        0.2,
+        -0.3,
+        0.5,
+        0.78
+      ]
+    },
+    "rightLowerArm": {
+      "rotation": [
+        0,
+        0.92,
+        0,
+        0.39
+      ]
+    },
+    "rightHand": {
+      "rotation": [
+        -0.1,
+        -0.1,
+        -0.2,
+        0.96
+      ]
+    },
+    "rightIndexProximal": {
+      "rotation": [
+        0,
+        0,
+        0.1,
+        0.99
+      ]
+    },
+    "rightIndexIntermediate": {
+      "rotation": [
+        0,
+        0,
+        0.1,
+        0.99
+      ]
+    },
+    "rightMiddleProximal": {
+      "rotation": [
+        0,
+        0,
+        0.6,
+        0.8
+      ]
+    },
+    "rightRingProximal": {
+      "rotation": [
+        0,
+        0,
+        0.7,
+        0.71
+      ]
+    },
+    "rightLittleProximal": {
+      "rotation": [
+        0,
+        0,
+        0.8,
+        0.6
+      ]
+    }
+  }
+}

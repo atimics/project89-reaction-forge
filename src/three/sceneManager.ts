@@ -5,6 +5,16 @@ import type { BackgroundId } from '../types/reactions';
 
 type TickHandler = (delta: number) => void;
 
+// Logo overlay configuration
+const LOGO_CONFIG = {
+  path: '/logo/89-logo.svg', // Project 89 logo
+  position: 'bottom-right' as 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right',
+  size: 0.08, // 8% of canvas width
+  opacity: 0.85,
+};
+
+type AspectRatio = '16:9' | '1:1' | '9:16';
+
 class SceneManager {
   private renderer?: THREE.WebGLRenderer;
   private camera?: THREE.PerspectiveCamera;
@@ -17,12 +27,13 @@ class SceneManager {
   private readonly box = new THREE.Box3();
   private readonly size = new THREE.Vector3();
   private readonly center = new THREE.Vector3();
+  private currentAspectRatio: AspectRatio = '16:9';
 
   init(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
     this.scene = new THREE.Scene();
     this.camera = new THREE.PerspectiveCamera(35, canvas.clientWidth / canvas.clientHeight, 0.1, 100);
-    this.camera.position.set(0, 1.4, 2.3);
+    this.camera.position.set(0, 1.4, 1.6); // Closer default distance
 
     this.renderer = new THREE.WebGLRenderer({
       canvas,
@@ -42,9 +53,9 @@ class SceneManager {
 
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
     this.controls.target.set(0, 1.4, 0);
-    this.controls.enablePan = false;
+    this.controls.enablePan = true;
     this.controls.enableDamping = true;
-    this.controls.minDistance = 1.2;
+    this.controls.minDistance = 0.8; // Allow getting closer
     this.controls.maxDistance = 3;
 
     this.handleResize = this.handleResize.bind(this);
@@ -52,6 +63,11 @@ class SceneManager {
     this.startLoop();
 
     applyBackground(this.scene, 'midnight');
+    
+    // Apply initial aspect ratio after a short delay to ensure canvas is in DOM
+    setTimeout(() => {
+      this.handleResize();
+    }, 100);
   }
 
   private startLoop() {
@@ -67,10 +83,52 @@ class SceneManager {
 
   private handleResize() {
     if (!this.renderer || !this.camera || !this.canvas) return;
-    const { clientWidth, clientHeight } = this.canvas;
-    this.camera.aspect = clientWidth / clientHeight;
+    
+    // Get the container (viewport) dimensions
+    const container = this.canvas.parentElement;
+    if (!container) return;
+    
+    const containerWidth = container.clientWidth;
+    const containerHeight = container.clientHeight;
+    
+    // Calculate target aspect ratio
+    const targetRatio = this.getAspectRatioValue(this.currentAspectRatio);
+    
+    // Calculate canvas size to fit container while maintaining aspect ratio
+    let canvasWidth = containerWidth;
+    let canvasHeight = containerHeight;
+    
+    const containerRatio = containerWidth / containerHeight;
+    
+    if (containerRatio > targetRatio) {
+      // Container is wider than target, constrain by height
+      canvasWidth = containerHeight * targetRatio;
+      canvasHeight = containerHeight;
+    } else {
+      // Container is taller than target, constrain by width
+      canvasWidth = containerWidth;
+      canvasHeight = containerWidth / targetRatio;
+    }
+    
+    // Update canvas CSS size (visual size)
+    this.canvas.style.width = `${canvasWidth}px`;
+    this.canvas.style.height = `${canvasHeight}px`;
+    
+    // Update renderer and camera to match
+    this.renderer.setSize(canvasWidth, canvasHeight, false);
+    this.camera.aspect = targetRatio;
     this.camera.updateProjectionMatrix();
-    this.renderer.setSize(clientWidth, clientHeight);
+    
+    console.log('[SceneManager] Canvas resized to:', canvasWidth, 'x', canvasHeight, 'Aspect:', targetRatio);
+  }
+  
+  private getAspectRatioValue(ratio: AspectRatio): number {
+    switch (ratio) {
+      case '16:9': return 16 / 9;
+      case '1:1': return 1;
+      case '9:16': return 9 / 16;
+      default: return 16 / 9;
+    }
   }
 
   registerTick(handler: TickHandler) {
@@ -80,6 +138,18 @@ class SceneManager {
 
   getScene() {
     return this.scene;
+  }
+
+  getCanvas() {
+    return this.canvas;
+  }
+
+  getRenderer() {
+    return this.renderer;
+  }
+
+  getCamera() {
+    return this.camera;
   }
 
   frameObject(object: THREE.Object3D, padding = 1.2) {
@@ -105,15 +175,253 @@ class SceneManager {
     this.controls.update();
   }
 
-  setBackground(id: BackgroundId) {
+  async setBackground(id: BackgroundId) {
     if (!this.scene) return;
-    applyBackground(this.scene, id);
+    await applyBackground(this.scene, id);
   }
 
-  captureSnapshot(): string | null {
-    if (!this.renderer) return null;
-    this.renderer.render(this.scene!, this.camera!);
-    return this.renderer.domElement.toDataURL('image/png');
+  /**
+   * Set the aspect ratio for the scene
+   * This will adjust the camera and visually resize the canvas to match the desired aspect ratio
+   */
+  setAspectRatio(ratio: AspectRatio) {
+    this.currentAspectRatio = ratio;
+    console.log('[SceneManager] Aspect ratio set to:', ratio);
+    
+    // Trigger resize to apply the new aspect ratio visually
+    this.handleResize();
+  }
+
+  /**
+   * Get the current aspect ratio
+   */
+  getAspectRatio(): AspectRatio {
+    return this.currentAspectRatio;
+  }
+
+  async captureSnapshot(options?: {
+    width?: number;
+    height?: number;
+    includeLogo?: boolean;
+    transparentBackground?: boolean;
+  }): Promise<string | null> {
+    if (!this.renderer || !this.canvas || !this.scene || !this.camera) return null;
+    
+    const includeLogo = options?.includeLogo ?? true;
+    const transparentBackground = options?.transparentBackground ?? false;
+    const targetWidth = options?.width || this.canvas.width;
+    const targetHeight = options?.height || this.canvas.height;
+    
+    console.log('[SceneManager] Capturing snapshot:', { 
+      targetWidth, 
+      targetHeight, 
+      includeLogo, 
+      transparentBackground 
+    });
+    
+    // Save current background and clear color state
+    const originalBackground = this.scene.background;
+    const originalClearColor = new THREE.Color();
+    const originalClearAlpha = this.renderer.getClearAlpha();
+    this.renderer.getClearColor(originalClearColor);
+    
+    // If transparent background requested, temporarily remove background and set transparent clear
+    if (transparentBackground) {
+      this.scene.background = null;
+      this.renderer.setClearColor(0x000000, 0); // Fully transparent
+      console.log('[SceneManager] Background removed and clear color set to transparent');
+    }
+    
+    try {
+      // If custom resolution requested, render to an off-screen canvas
+      if (options?.width || options?.height) {
+        // Save current renderer size
+        const originalSize = new THREE.Vector2();
+        this.renderer.getSize(originalSize);
+        
+        // Temporarily resize renderer for high-res capture
+        this.renderer.setSize(targetWidth, targetHeight, false);
+        this.camera.aspect = targetWidth / targetHeight;
+        this.camera.updateProjectionMatrix();
+        
+        // Render at target resolution
+        this.renderer.render(this.scene, this.camera);
+        
+        // Capture the render
+        const dataUrl = await this.compositeWithLogo(
+          this.renderer.domElement, 
+          targetWidth, 
+          targetHeight, 
+          includeLogo,
+          transparentBackground
+        );
+        
+        // Restore original size
+        this.renderer.setSize(originalSize.x, originalSize.y, false);
+        this.camera.aspect = originalSize.x / originalSize.y;
+        this.camera.updateProjectionMatrix();
+        
+        // Restore background and clear color
+        this.scene.background = originalBackground;
+        this.renderer.setClearColor(originalClearColor, originalClearAlpha);
+        
+        return dataUrl;
+      }
+      
+      // Normal resolution capture
+      this.renderer.render(this.scene, this.camera);
+      
+      const dataUrl = await this.compositeWithLogo(
+        this.renderer.domElement, 
+        this.canvas.width, 
+        this.canvas.height, 
+        includeLogo,
+        transparentBackground
+      );
+      
+      // Restore background and clear color
+      this.scene.background = originalBackground;
+      this.renderer.setClearColor(originalClearColor, originalClearAlpha);
+      
+      return dataUrl;
+    } catch (error) {
+      // Ensure background and clear color are restored even on error
+      this.scene.background = originalBackground;
+      this.renderer.setClearColor(originalClearColor, originalClearAlpha);
+      throw error;
+    }
+  }
+  
+  private async compositeWithLogo(
+    sourceCanvas: HTMLCanvasElement,
+    width: number,
+    height: number,
+    includeLogo: boolean,
+    transparentBackground: boolean = false
+  ): Promise<string> {
+    // Create a temporary canvas to composite logo
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = width;
+    tempCanvas.height = height;
+    const ctx = tempCanvas.getContext('2d', { alpha: true });
+    if (!ctx) return sourceCanvas.toDataURL('image/png');
+    
+    // Clear canvas - if transparent, don't fill with color
+    if (!transparentBackground) {
+      ctx.fillStyle = '#000000';
+      ctx.fillRect(0, 0, width, height);
+    } else {
+      // Clear to transparent
+      ctx.clearRect(0, 0, width, height);
+    }
+    
+    // Draw the WebGL canvas
+    ctx.drawImage(sourceCanvas, 0, 0, width, height);
+    
+    // Load and draw the logo if requested
+    if (includeLogo) {
+      try {
+        const logo = await this.loadLogo();
+        if (logo) {
+          // Calculate logo size and position
+          const logoWidth = width * LOGO_CONFIG.size;
+          const logoHeight = (logo.height / logo.width) * logoWidth;
+          
+          // Position based on config
+          let x = 0;
+          let y = 0;
+          const padding = 20;
+          
+          switch (LOGO_CONFIG.position) {
+            case 'bottom-right':
+              x = width - logoWidth - padding;
+              y = height - logoHeight - padding;
+              break;
+            case 'bottom-left':
+              x = padding;
+              y = height - logoHeight - padding;
+              break;
+            case 'top-right':
+              x = width - logoWidth - padding;
+              y = padding;
+              break;
+            case 'top-left':
+              x = padding;
+              y = padding;
+              break;
+          }
+          
+          // Draw logo with opacity
+          ctx.globalAlpha = LOGO_CONFIG.opacity;
+          ctx.drawImage(logo, x, y, logoWidth, logoHeight);
+          ctx.globalAlpha = 1.0;
+        }
+      } catch (error) {
+        console.warn('[SceneManager] Failed to add logo to snapshot:', error);
+      }
+    }
+    
+    return tempCanvas.toDataURL('image/png');
+  }
+  
+  private logoImage?: HTMLImageElement;
+  
+  private async loadLogo(): Promise<HTMLImageElement | null> {
+    // Return cached logo if available
+    if (this.logoImage) return this.logoImage;
+    
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => {
+        this.logoImage = img;
+        resolve(img);
+      };
+      img.onerror = () => {
+        console.warn('[SceneManager] Failed to load logo');
+        resolve(null);
+      };
+      img.src = LOGO_CONFIG.path;
+    });
+  }
+
+  /**
+   * Reset camera to default position
+   */
+  resetCamera() {
+    if (!this.controls || !this.camera) return;
+    
+    // Reset to default position (closer)
+    this.camera.position.set(0, 1.4, 1.6);
+    this.controls.target.set(0, 1.4, 0);
+    this.controls.update();
+    
+    console.log('[SceneManager] Camera reset to default position');
+  }
+
+  /**
+   * Set camera to a preset view
+   */
+  setCameraPreset(preset: 'front' | 'quarter' | 'side') {
+    if (!this.controls || !this.camera) return;
+    
+    switch (preset) {
+      case 'front':
+        this.camera.position.set(0, 1.4, 1.6); // Closer front view
+        this.controls.target.set(0, 1.4, 0);
+        break;
+      case 'quarter':
+        this.camera.position.set(1.2, 1.5, 1.4); // Closer quarter view
+        this.controls.target.set(0, 1.4, 0);
+        break;
+      case 'side':
+        this.camera.position.set(1.6, 1.4, 0); // Closer side view
+        this.controls.target.set(0, 1.4, 0);
+        break;
+    }
+    
+    this.controls.update();
+    console.log('[SceneManager] Camera set to', preset, 'view');
   }
 
   dispose() {

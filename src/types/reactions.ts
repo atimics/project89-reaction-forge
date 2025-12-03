@@ -1,16 +1,32 @@
 export type PoseId =
   | 'dawn-runner'
-  | 'green-loom'
   | 'sunset-call'
   | 'cipher-whisper'
   | 'nebula-drift'
-  | 'loom-vanguard'
   | 'signal-reverie'
-  | 'protocol-enforcer';
+  | 'typing'
+  | 'agent-taunt'
+  | 'agent-dance'
+  | 'agent-clapping'
+  | 'silly-agent'
+  | 'victory-celebration'
+  | 'simple-wave'
+  | 'point';
 
 export type ExpressionId = 'calm' | 'joy' | 'surprise';
 
-export type BackgroundId = 'midnight' | 'sunset' | 'matrix';
+export type BackgroundId = 
+  | 'midnight-circuit'
+  | 'protocol-sunset'
+  | 'green-loom-matrix'
+  | 'neural-grid'
+  | 'cyber-waves'
+  | 'signal-breach'
+  | 'quantum-field'
+  | 'protocol-dawn';
+
+// Animation playback mode
+export type AnimationMode = 'static' | 'loop' | 'once';
 
 export type ReactionPreset = {
   id: string;
@@ -19,5 +35,9 @@ export type ReactionPreset = {
   pose: PoseId;
   expression: ExpressionId;
   background: BackgroundId;
+  // Optional: if true, play as animation instead of static pose
+  animated?: boolean;
+  // Optional: animation playback mode
+  animationMode?: AnimationMode;
 };
 
