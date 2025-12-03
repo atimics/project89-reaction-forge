@@ -65,6 +65,10 @@ class AvatarManager {
     this.vrm = vrm;
     this.currentUrl = url;
 
+    // Log VRM Version for compatibility tracking
+    const meta = vrm.meta;
+    console.log('[AvatarManager] VRM Version:', meta?.metaVersion || 'Unknown (Likely 0.0)');
+
     vrm.scene.position.set(0, 0, 0);
     scene.add(vrm.scene);
     console.log('[AvatarManager] VRM added to scene');
@@ -123,14 +127,92 @@ class AvatarManager {
       animationManager.playAnimation(animationClip, loop);
     } else if (poseData.vrmPose) {
       // This is a static pose JSON
-      console.log('[AvatarManager] Applying static VRM pose');
+      console.log('[AvatarManager] Applying static VRM pose. Bone count:', Object.keys(poseData.vrmPose).length);
       
       // Stop any running animations
       this.isAnimated = false;
       animationManager.stopAnimation(true);
       
+      // Check if humanoid exists
+      if (!this.vrm.humanoid) {
+        console.error('[AvatarManager] VRM Humanoid not found');
+        return;
+      }
+
+      // Reset to T-pose first to ensure clean application
+      if (this.vrm.humanoid.resetNormalizedPose) {
+        this.vrm.humanoid.resetNormalizedPose();
+      } else {
+        this.vrm.humanoid.resetPose();
+      }
+      
       // Apply the VRM pose
-      this.vrm.humanoid?.setPose(poseData.vrmPose);
+      try {
+        this.vrm.humanoid.setPose(poseData.vrmPose);
+        console.log('[AvatarManager] VRM Pose applied via setPose');
+        
+        // Manual fallback/enforcement: Apply directly to bone nodes
+        // This ensures that even if setPose decides to ignore something, we force it
+        if (this.vrm.humanoid.getNormalizedBoneNode) {
+          Object.entries(poseData.vrmPose).forEach(([boneName, data]: [string, any]) => {
+            const node = this.vrm!.humanoid!.getNormalizedBoneNode(boneName as VRMHumanBoneName);
+            if (node && data.rotation) {
+              node.quaternion.set(data.rotation[0], data.rotation[1], data.rotation[2], data.rotation[3]);
+            }
+            if (node && data.position && boneName === 'hips') {
+              // Only hips usually support position in normalized pose
+              node.position.set(data.position[0], data.position[1], data.position[2]);
+            }
+          });
+          console.log('[AvatarManager] VRM Pose forced on bone nodes');
+        }
+      } catch (e) {
+        console.error('[AvatarManager] Failed to set VRM pose:', e);
+      }
+
+      // Apply expressions/blendshapes if provided
+      if (poseData.expressions && this.vrm.expressionManager) {
+        console.log('[AvatarManager] Applying expressions:', poseData.expressions);
+        
+        // Reset expression manager to neutral
+        if (this.vrm.expressionManager.setValue) {
+           // We can't iterate all possible keys easily in VRM 0.0 without accessing the full preset map,
+           // but we can try to reset common ones.
+           // Better approach: just overwrite.
+        }
+
+        Object.entries(poseData.expressions).forEach(([name, value]) => {
+          const val = value as number;
+          
+          // 1. Try Standard VRM Expressions (case-insensitive match)
+          // The library usually expects capitalized preset names like 'Joy', 'Angry', 'Blink'
+          // Or the specific VRM 1.0 ExpressionMap keys.
+          
+          // Map common lowercase prompt outputs to VRM Standard presets
+          const standardMap: Record<string, string> = {
+            'joy': 'Joy', 'happy': 'Joy',
+            'angry': 'Angry',
+            'sad': 'Sorrow', 'sorrow': 'Sorrow',
+            'fun': 'Fun', 'relaxed': 'Fun',
+            'surprised': 'Surprised', 'surprise': 'Surprised',
+            'blink': 'Blink',
+            'neutral': 'Neutral'
+          };
+          
+          const vrmName = standardMap[name.toLowerCase()] || name;
+          
+          try {
+             this.vrm!.expressionManager!.setValue(vrmName, val);
+          } catch (e) {
+             console.warn(`[AvatarManager] Failed to set expression "${vrmName}":`, e);
+          }
+        });
+      }
+      
+      // Force immediate updates to propagate bone transforms
+      this.vrm.humanoid.update();
+      this.vrm.update(0);
+      this.vrm.scene.updateMatrixWorld(true);
     } else {
       console.error('[AvatarManager] Invalid pose data - missing vrmPose or tracks');
     }
