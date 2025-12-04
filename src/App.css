@@ -2,7 +2,8 @@
    Root & Shell
    ===================== */
 .app-shell {
-  min-height: 100vh;
+  min-height: 100vh; /* Fallback */
+  min-height: 100dvh; /* Dynamic viewport height for mobile */
   background: radial-gradient(circle at 10% 20%, rgba(30, 62, 99, 0.45), transparent),
     radial-gradient(circle at 90% 0%, rgba(156, 34, 83, 0.35), transparent),
     #04050a;
@@ -186,6 +187,7 @@
   height: 100%;
   max-width: 100%;
   max-height: 100%;
+  touch-action: none; /* Prevent browser scrolling while interacting with 3D scene */
 }
 
 .canvas-stage {
@@ -896,6 +898,7 @@ button {
     transition: transform 0.3s ease;
     z-index: 999;
     overflow-y: auto;
+    padding-bottom: 5rem; /* Ensure content isn't hidden behind the floating toggle button */
   }
 
   .control-drawer.open {
