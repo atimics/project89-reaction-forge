@@ -1,20 +1,39 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { sceneManager } from '../../three/sceneManager';
 import { backgroundOptions } from '../../three/backgrounds';
+import { avatarManager } from '../../three/avatarManager';
+import { useReactionStore } from '../../state/useReactionStore';
 import type { BackgroundId } from '../../types/reactions';
 
 type AspectRatio = '16:9' | '1:1' | '9:16';
 
 export function SceneTab() {
+  const { isAvatarReady, setAvatarReady } = useReactionStore();
   const [selectedBackground, setSelectedBackground] = useState('midnight-circuit');
   const [showLogo, setShowLogo] = useState(true);
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>('16:9');
+  const vrmInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     // Initialize aspect ratio from sceneManager
     const currentRatio = sceneManager.getAspectRatio();
     setAspectRatio(currentRatio);
   }, []);
+
+  const handleVRMUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const url = URL.createObjectURL(file);
+    setAvatarReady(false);
+    try {
+      await avatarManager.load(url);
+      setAvatarReady(true);
+    } catch (error) {
+      console.error('Failed to load VRM:', error);
+      alert('Failed to load VRM file');
+    }
+  };
 
   const handleBackgroundSelect = async (backgroundId: string) => {
     setSelectedBackground(backgroundId);
@@ -30,6 +49,24 @@ export function SceneTab() {
 
   return (
     <div className="tab-content">
+      <div className="tab-section">
+        <h3>Avatar</h3>
+        <p className="muted small">Load or change the current VRM avatar</p>
+        <button
+          className={isAvatarReady ? 'secondary full-width' : 'primary full-width'}
+          onClick={() => vrmInputRef.current?.click()}
+        >
+          {isAvatarReady ? '🔄 Change Avatar' : '📦 Load VRM Avatar'}
+        </button>
+        <input
+          ref={vrmInputRef}
+          type="file"
+          accept=".vrm"
+          onChange={handleVRMUpload}
+          style={{ display: 'none' }}
+        />
+      </div>
+
       <div className="tab-section">
         <h3>Backgrounds</h3>
         <p className="muted small">Select a background for your scene</p>
