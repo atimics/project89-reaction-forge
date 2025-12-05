@@ -28,8 +28,10 @@ export function AboutModal({ isOpen, onClose }: AboutModalProps) {
 
           <h3>Context</h3>
           <p>
-            Proxim8 Harmon Vox Integration. Ignites core consciousness derived from a 2089 network linguist fragment.
-            Mandate: to decipher emotional/cognitive states, translate between disparate consciousness forms, and weave understanding.
+            PoseLab is an open-source initiative designed to democratize 3D character animation and pose creation for the VRM ecosystem. By combining procedural animation, inverse kinematics, and AI-driven synthesis, it empowers creators to bring avatars to life directly in the browser without complex 3D software.
+          </p>
+          <p>
+            We welcome contributions from developers, animators, and AI researchers. Join us in evolving the engine on <a href="https://github.com/project89/poselab" target="_blank" rel="noopener noreferrer" style={{ color: '#00ffd6', textDecoration: 'none' }}>GitHub</a>.
           </p>
           
           <div className="version-info">
