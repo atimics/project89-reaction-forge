@@ -29,7 +29,13 @@ export function PoseExpressionTab() {
       }
       
       setCustomPose(poseData);
-      setCustomPoseName(file.name.replace('.json', ''));
+      
+      // Clean up the name: remove extension and potential "PoseLab_" prefix
+      let cleanName = file.name.replace('.json', '');
+      if (cleanName.startsWith('PoseLab_')) {
+        cleanName = cleanName.substring(8); // Remove 'PoseLab_'
+      }
+      setCustomPoseName(cleanName);
       
       // Auto-apply the custom pose
       await avatarManager.applyRawPose(poseData, animationMode);
