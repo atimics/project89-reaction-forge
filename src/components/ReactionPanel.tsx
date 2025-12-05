@@ -238,7 +238,7 @@ export function ReactionPanel() {
   return (
     <section className="panel">
       <header>
-        <h1>Reaction Forge</h1>
+        <h1>PoseLab</h1>
         <p className="muted">Load a VRM avatar to create custom reactions</p>
       </header>
       
