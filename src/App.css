@@ -2,14 +2,36 @@
    Root & Shell
    ===================== */
 .app-shell {
-  min-height: 100vh; /* Fallback */
-  min-height: 100dvh; /* Dynamic viewport height for mobile */
+  height: 100vh; /* Fixed height to prevent page scrolling */
+  height: 100dvh; /* Dynamic viewport height for mobile */
+  overflow: hidden; /* Ensure content doesn't break out */
   background: radial-gradient(circle at 10% 20%, rgba(30, 62, 99, 0.45), transparent),
     radial-gradient(circle at 90% 0%, rgba(156, 34, 83, 0.35), transparent),
     #04050a;
   color: #e6f3ff;
   display: flex;
   flex-direction: column;
+}
+
+/* =====================
+   Scrollbars
+   ===================== */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(17, 21, 32, 0.4);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
 }
 
 /* =====================
