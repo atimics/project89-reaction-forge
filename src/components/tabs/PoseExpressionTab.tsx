@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useReactionStore } from '../../state/useReactionStore';
 import { avatarManager } from '../../three/avatarManager';
 import type { AnimationMode } from '../../types/reactions';
@@ -9,6 +9,39 @@ export function PoseExpressionTab() {
   const [customPoseName, setCustomPoseName] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const poseInputRef = useRef<HTMLInputElement>(null);
+
+  // Expression State
+  const [availableExpressions, setAvailableExpressions] = useState<string[]>([]);
+  const [expressionWeights, setExpressionWeights] = useState<Record<string, number>>({});
+  const [showExpressions, setShowExpressions] = useState(false);
+
+  useEffect(() => {
+    if (isAvatarReady) {
+      // Small delay to ensure VRM is fully initialized
+      setTimeout(() => {
+        const exprs = avatarManager.getAvailableExpressions();
+        setAvailableExpressions(exprs);
+        // Initialize weights to 0
+        const weights: Record<string, number> = {};
+        exprs.forEach(name => weights[name] = 0);
+        setExpressionWeights(weights);
+      }, 500);
+    }
+  }, [isAvatarReady]);
+
+  const handleExpressionChange = (name: string, value: number) => {
+    setExpressionWeights(prev => ({ ...prev, [name]: value }));
+    avatarManager.setExpressionWeight(name, value);
+  };
+
+  const handleResetExpressions = () => {
+    const newWeights: Record<string, number> = {};
+    availableExpressions.forEach(name => {
+      newWeights[name] = 0;
+      avatarManager.setExpressionWeight(name, 0);
+    });
+    setExpressionWeights(newWeights);
+  };
 
   const handlePoseUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -127,6 +160,57 @@ export function PoseExpressionTab() {
           >
             Clear Custom Pose
           </button>
+        )}
+      </div>
+
+      <div className="tab-section">
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+          <h3>Expressions</h3>
+          <button 
+            className="secondary small" 
+            onClick={() => setShowExpressions(!showExpressions)}
+            disabled={!isAvatarReady || availableExpressions.length === 0}
+          >
+            {showExpressions ? 'Hide' : 'Show'} ({availableExpressions.length})
+          </button>
+        </div>
+
+        {showExpressions && (
+          <div className="expressions-panel" style={{ maxHeight: '300px', overflowY: 'auto', paddingRight: '0.5rem' }}>
+             <button 
+              className="secondary full-width" 
+              onClick={handleResetExpressions}
+              style={{ marginBottom: '1rem' }}
+            >
+              Reset All Expressions
+            </button>
+
+            {availableExpressions.length > 0 ? (
+              <div className="expression-grid" style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '0.5rem' }}>
+                {availableExpressions.map((name) => (
+                  <div key={name} className="expression-control" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <label style={{ flex: '1', fontSize: '0.85rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={name}>
+                      {name}
+                    </label>
+                    <input
+                      type="range"
+                      min="0"
+                      max="1"
+                      step="0.01"
+                      value={expressionWeights[name] || 0}
+                      onChange={(e) => handleExpressionChange(name, parseFloat(e.target.value))}
+                      style={{ flex: '2' }}
+                    />
+                    <span style={{ fontSize: '0.75rem', width: '30px', textAlign: 'right' }}>
+                      {(expressionWeights[name] || 0).toFixed(2)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="muted small">No expressions found on this avatar.</p>
+            )}
+          </div>
         )}
       </div>
 
