@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import type { BackgroundId } from '../types/reactions';
+import { GifTexture } from './GifTexture';
 
 type BackgroundDefinition = {
   id: BackgroundId;
@@ -67,6 +68,12 @@ const backgroundDefinitions: BackgroundDefinition[] = [
 const textureCache = new Map<string, THREE.Texture>();
 const textureLoader = new THREE.TextureLoader();
 
+export interface AnimatedBackground {
+  texture: THREE.Texture;
+  update: (delta: number) => void;
+  dispose: () => void;
+}
+
 export function getBackgroundDefinition(id: BackgroundId | string): BackgroundDefinition {
   if (id.startsWith('blob:')) {
     return {
@@ -79,12 +86,56 @@ export function getBackgroundDefinition(id: BackgroundId | string): BackgroundDe
   return backgroundDefinitions.find((entry) => entry.id === id) ?? backgroundDefinitions[0];
 }
 
-export async function applyBackground(scene: THREE.Scene, id: BackgroundId | string) {
+export async function applyBackground(scene: THREE.Scene, id: BackgroundId | string): Promise<AnimatedBackground | null> {
   const definition = getBackgroundDefinition(id);
   
   // Try to load image if specified
   if (definition.image) {
     try {
+      // Check for Custom Blob URL with Type Hint
+      if (definition.image.startsWith('blob:') && definition.image.includes('#type=')) {
+        const [url, typeParam] = definition.image.split('#type=');
+        
+        // Handle GIF
+        if (typeParam.includes('gif')) {
+           console.log('[Background] Detected GIF:', url);
+           const gifTexture = new GifTexture();
+           await gifTexture.load(url);
+           scene.background = gifTexture.texture;
+           
+           return {
+             texture: gifTexture.texture,
+             update: (delta) => gifTexture.update(delta),
+             dispose: () => gifTexture.dispose()
+           };
+        }
+        
+        // Handle Video
+        if (typeParam.includes('video') || typeParam.includes('mp4') || typeParam.includes('webm')) {
+           console.log('[Background] Detected Video:', url);
+           const video = document.createElement('video');
+           video.src = url;
+           video.loop = true;
+           video.muted = true;
+           video.play();
+           
+           const videoTexture = new THREE.VideoTexture(video);
+           videoTexture.colorSpace = THREE.SRGBColorSpace;
+           scene.background = videoTexture;
+           
+           return {
+             texture: videoTexture,
+             update: () => {}, // VideoTexture updates automatically
+             dispose: () => {
+               video.pause();
+               video.src = '';
+               videoTexture.dispose();
+             }
+           };
+        }
+      }
+
+      // Standard Image Loading
       let texture = textureCache.get(definition.image);
       
       if (!texture) {
@@ -108,7 +159,7 @@ export async function applyBackground(scene: THREE.Scene, id: BackgroundId | str
       
       scene.background = texture;
       console.log('[Background] Applied image:', definition.image);
-      return;
+      return null;
     } catch (error) {
       console.warn('[Background] Image load failed, using color fallback');
     }
@@ -117,7 +168,7 @@ export async function applyBackground(scene: THREE.Scene, id: BackgroundId | str
   // Fallback to solid color
   scene.background = new THREE.Color(definition.color);
   console.log('[Background] Applied color:', definition.color);
+  return null;
 }
 
 export const backgroundOptions = backgroundDefinitions;
-

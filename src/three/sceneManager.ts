@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three-stdlib';
-import { applyBackground } from './backgrounds';
+import { applyBackground, type AnimatedBackground } from './backgrounds';
 import type { BackgroundId } from '../types/reactions';
 
 type TickHandler = (delta: number) => void;
@@ -28,6 +28,7 @@ class SceneManager {
   private readonly size = new THREE.Vector3();
   private readonly center = new THREE.Vector3();
   private currentAspectRatio: AspectRatio = '16:9';
+  private animatedBackground?: AnimatedBackground;
 
   init(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
@@ -75,6 +76,11 @@ class SceneManager {
       const delta = this.clock.getDelta();
       this.controls?.update();
       this.tickHandlers.forEach((handler) => handler(delta));
+
+      if (this.animatedBackground) {
+        this.animatedBackground.update(delta);
+      }
+
       this.renderer?.render(this.scene!, this.camera!);
       this.animationFrameId = window.requestAnimationFrame(loop);
     };
@@ -177,7 +183,19 @@ class SceneManager {
 
   async setBackground(id: BackgroundId | string) {
     if (!this.scene) return;
-    await applyBackground(this.scene, id);
+    
+    // Dispose previous animated background
+    if (this.animatedBackground) {
+      this.animatedBackground.dispose();
+      this.animatedBackground = undefined;
+    }
+
+    const result = await applyBackground(this.scene, id);
+    
+    if (result) {
+      this.animatedBackground = result;
+      console.log('[SceneManager] Animated background active');
+    }
   }
 
   /**
@@ -425,6 +443,10 @@ class SceneManager {
   }
 
   dispose() {
+    if (this.animatedBackground) {
+      this.animatedBackground.dispose();
+      this.animatedBackground = undefined;
+    }
     if (this.animationFrameId) window.cancelAnimationFrame(this.animationFrameId);
     window.removeEventListener('resize', this.handleResize);
     this.tickHandlers.clear();

@@ -4,6 +4,7 @@ import { avatarManager } from '../three/avatarManager';
 import { useReactionStore } from '../state/useReactionStore';
 import type { ReactionPreset } from '../types/reactions';
 import { useAvatarSource } from '../state/useAvatarSource';
+import { OnboardingOverlay } from './OnboardingOverlay';
 
 export function CanvasStage() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -62,6 +63,7 @@ export function CanvasStage() {
 
   return (
     <div className="canvas-container">
+      <OnboardingOverlay />
       <canvas ref={canvasRef} className="canvas-stage" />
     </div>
   );

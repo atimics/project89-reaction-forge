@@ -37,22 +37,26 @@ export function SceneTab() {
     }
   };
 
-  const handleBackgroundUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+          const handleBackgroundUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+            const file = event.target.files?.[0];
+            if (!file) return;
 
-    if (!file.type.startsWith('image/')) {
-      alert('Please select an image file (PNG, JPG, SVG)');
-      return;
-    }
+            // Allow Images and Videos (and GIFs)
+            if (!file.type.startsWith('image/') && !file.type.startsWith('video/')) {
+              alert('Please select an image (PNG, JPG, GIF) or video (MP4, WebM) file');
+              return;
+            }
 
-    const url = URL.createObjectURL(file);
-    setCustomBackground(url);
-    setSelectedBackground('custom');
-    await sceneManager.setBackground(url);
-  };
+            const url = URL.createObjectURL(file);
+            // Append type info to hash for the background manager to detect
+            const typeUrl = `${url}#type=${file.type}`;
+            
+            setCustomBackground(typeUrl);
+            setSelectedBackground('custom');
+            await sceneManager.setBackground(typeUrl);
+          };
 
-  const handleBackgroundSelect = async (backgroundId: string) => {
+          const handleBackgroundSelect = async (backgroundId: string) => {
     setSelectedBackground(backgroundId);
     if (backgroundId === 'custom' && customBackground) {
       await sceneManager.setBackground(customBackground);
@@ -130,24 +134,24 @@ export function SceneTab() {
           ))}
         </div>
 
-        <div style={{ marginTop: '1rem' }}>
-          <button 
-            className="secondary full-width"
-            onClick={() => bgInputRef.current?.click()}
-          >
-            📤 Upload Background Image
-          </button>
-          <p className="muted small" style={{ marginTop: '0.5rem', textAlign: 'center' }}>
-            Recommended: PNG/JPG, at least 1920x1080px
-          </p>
-          <input
-            ref={bgInputRef}
-            type="file"
-            accept="image/*"
-            onChange={handleBackgroundUpload}
-            style={{ display: 'none' }}
-          />
-        </div>
+                <div style={{ marginTop: '1rem' }}>
+                  <button 
+                    className="secondary full-width"
+                    onClick={() => bgInputRef.current?.click()}
+                  >
+                    📤 Upload Background
+                  </button>
+                  <p className="muted small" style={{ marginTop: '0.5rem', textAlign: 'center' }}>
+                    Supports: PNG, JPG, GIF, MP4, WebM
+                  </p>
+                  <input
+                    ref={bgInputRef}
+                    type="file"
+                    accept="image/*,video/*"
+                    onChange={handleBackgroundUpload}
+                    style={{ display: 'none' }}
+                  />
+                </div>
       </div>
 
       <div className="tab-section">
