@@ -90,6 +90,10 @@ export function CanvasStage() {
 
   useEffect(() => {
     if (!avatarReady) return;
+    // Don't re-apply preset if we are in manual posing mode
+    // This prevents the avatar from snapping back to default pose when switching animation modes for gizmos
+    if (avatarManager.isManualPosingEnabled()) return;
+
     console.log('[CanvasStage] Preset or animation mode changed, applying:', preset.id, animationMode);
     applyPreset(preset);
   }, [preset, avatarReady, animationMode]);

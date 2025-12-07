@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import { VRM, VRMLoaderPlugin, VRMUtils } from '@pixiv/three-vrm';
-import type { VRMHumanBoneName, VRMPose } from '@pixiv/three-vrm';
+import { VRM, VRMLoaderPlugin, VRMUtils, VRMHumanBoneName } from '@pixiv/three-vrm';
+import type { VRMPose } from '@pixiv/three-vrm';
 import type { ExpressionId, PoseId, AnimationMode } from '../types/reactions';
 import { sceneManager } from './sceneManager';
 import { animationManager } from './animationManager';
@@ -36,8 +36,18 @@ class AvatarManager {
   private tickDispose?: () => void;
   private isAnimated = false;
 
+  private isManualPosing = false;
+
   constructor() {
     this.loader.register((parser) => new VRMLoaderPlugin(parser));
+  }
+
+  isManualPosingEnabled(): boolean {
+    return this.isManualPosing;
+  }
+
+  setManualPosing(enabled: boolean) {
+    this.isManualPosing = enabled;
   }
 
   async load(url: string) {
@@ -87,8 +97,14 @@ class AvatarManager {
     animationManager.initialize(vrm);
 
     this.tickDispose = sceneManager.registerTick((delta) => {
+      // Keep vrm.update running to ensure skeletal matrices and spring bones are calculated
+      // The "reset" issue was primarily caused by CanvasStage reloading presets, which is now guarded.
+      // We do need to handle LookAt potentially fighting head rotation, but for now let's restore core updates.
+      
       vrm.update(delta);
+      
       // CRITICAL: Only update animation mixer when explicitly in animated mode
+      // This prevents animations from interfering with static poses
       // This prevents animations from interfering with static poses
       if (this.isAnimated && animationManager.isPlaying()) {
         animationManager.update(delta);
@@ -103,7 +119,7 @@ class AvatarManager {
       console.warn('[AvatarManager] Cannot apply raw pose - VRM not loaded');
       return;
     }
-    console.log('[AvatarManager] Applying raw pose data:', poseData);
+    // console.log('[AvatarManager] Applying raw pose data:', poseData);
 
     const shouldAnimate = animationMode !== 'static';
 
@@ -421,6 +437,47 @@ class AvatarManager {
   }
 
   /**
+   * Captures the current pose and stops animation, keeping the avatar in its current state.
+   * Useful when switching to manual editing from an animation.
+   */
+  freezeCurrentPose() {
+    if (!this.vrm || !this.vrm.humanoid) return;
+    console.log('[AvatarManager] Freezing current pose');
+
+    // 1. Capture current bone transforms
+    const poseData: Record<string, { rotation: THREE.Quaternion, position: THREE.Vector3 }> = {};
+    
+    // Iterate all possible humanoid bones
+    // We cast to any because Object.values on enum can return strings that TS might strictly type
+    const boneNames = Object.values(VRMHumanBoneName) as VRMHumanBoneName[];
+    
+    boneNames.forEach((boneName) => {
+      const node = this.vrm!.humanoid!.getNormalizedBoneNode(boneName);
+      if (node) {
+        poseData[boneName] = {
+          rotation: node.quaternion.clone(),
+          position: node.position.clone()
+        };
+      }
+    });
+
+    // 2. Stop Animation (which resets bones to rest pose)
+    this.stopAnimation();
+
+    // 3. Re-apply captured transforms
+    boneNames.forEach((boneName) => {
+      const node = this.vrm!.humanoid!.getNormalizedBoneNode(boneName);
+      if (node && poseData[boneName]) {
+        node.quaternion.copy(poseData[boneName].rotation);
+        node.position.copy(poseData[boneName].position); // Restore position for ALL bones
+      }
+    });
+    
+    // Force update
+    this.vrm.humanoid.update();
+  }
+
+  /**
    * Get the VRM instance
    */
   getVRM(): VRM | undefined {
@@ -437,6 +494,7 @@ class AvatarManager {
     this.vrm.expressionManager?.setValue('Surprised', 0);
     this.vrm.expressionManager?.setValue('Angry', 0);
     expressionMutators[expression]?.(this.vrm);
+    this.vrm.expressionManager?.update(); // Ensure updates if loop is paused
   }
 
   /**

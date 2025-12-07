@@ -25,16 +25,23 @@ export function PoseExpressionTab() {
     return () => {
       // Cleanup gizmos on unmount
       interactionManager.toggle(false);
+      avatarManager.setManualPosing(false);
     };
   }, []);
 
   const handleGizmoToggle = (enabled: boolean) => {
     setIsGizmoEnabled(enabled);
     interactionManager.toggle(enabled);
+    avatarManager.setManualPosing(enabled);
     if (enabled) {
       // Force static mode to prevent fighting with animation mixer
       setAnimationMode('static');
-      avatarManager.stopAnimation();
+      // Freeze the current pose instead of resetting it
+      avatarManager.freezeCurrentPose();
+    } else {
+        // When disabling gizmos, re-enable standard updates
+        // Optionally restart standard idle animation if desired, 
+        // but for now we leave it static to preserve the manual edits visually
     }
   };
 
