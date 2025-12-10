@@ -4,23 +4,6 @@ import { VRM, VRMHumanBoneName } from '@pixiv/three-vrm';
 import * as Kalidokit from 'kalidokit';
 import * as THREE from 'three';
 
-interface FaceRig {
-    head?: { x: number, y: number, z: number, w: number };
-    eye?: { l: number, r: number };
-    brow?: number;
-    mouth?: {
-        shape: { A: number, E: number, I: number, O: number, U: number };
-        open: number;
-    };
-}
-
-interface PoseRig {
-    [key: string]: { 
-        rotation?: { x: number, y: number, z: number, w?: number }; 
-        position?: { x: number, y: number, z: number }; 
-    } | undefined;
-}
-
 interface RecordedFrame {
     time: number;
     bones: Record<string, { rotation: THREE.Quaternion, position?: THREE.Vector3 }>;
@@ -162,10 +145,6 @@ export class MotionCaptureManager {
     // 2. Check for Landmarks
     if (!results.poseLandmarks && !results.faceLandmarks) return;
     
-    if (this.onLandmarks) {
-        this.onLandmarks(results.poseLandmarks);
-    }
-
     // 3. Solve Pose using Kalidokit
     // NOTE: Kalidokit expects poseWorldLandmarks but MediaPipe Holistic output calls it ea (in minified form) 
     // or sometimes it's missing. We can try using poseLandmarks for both if world is missing, 

@@ -3,7 +3,6 @@ import { useTimelineStore } from '../state/useTimelineStore';
 import { sceneManager } from '../three/sceneManager';
 import { avatarManager } from '../three/avatarManager';
 import { PROJECT_VERSION, type ProjectState } from '../types/project';
-import { defaultPreset } from '../data/reactions';
 
 export class ProjectManager {
   /**
@@ -20,8 +19,8 @@ export class ProjectManager {
     // We can assume it's tracked or just use a default for now if not exposed
     // Ideally SceneManager should expose getCurrentBackgroundId()
     // For now, let's assume 'midnight' if we can't find it, or check reaction store if it tracks it?
-    // ReactionStore tracks activePreset which has backgroundId.
-    const backgroundId = reactionState.activePreset.backgroundId || 'midnight';
+    // ReactionStore tracks activePreset which has background.
+    const backgroundId = reactionState.activePreset.background || 'midnight';
 
     // Get Avatar Metadata
     // Note: We cannot save the BLOB itself efficiently in JSON. 

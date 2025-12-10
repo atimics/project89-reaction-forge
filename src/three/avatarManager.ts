@@ -34,6 +34,8 @@ interface RawPoseData {
   tracks?: any[]; // Animation clip data
   sceneRotation?: { x: number; y: number; z: number };
   expressions?: Record<string, number>;
+  name?: string;
+  duration?: number;
 }
 
 class AvatarManager {
@@ -162,6 +164,7 @@ class AvatarManager {
       console.log('[AvatarManager] Loading animation clip from JSON');
       
       const { deserializeAnimationClip } = await import('../poses/animationClipSerializer');
+      // @ts-ignore - Dynamic import type matching is tricky, trust the data shape at runtime
       const animationClip = deserializeAnimationClip(poseData);
       
       // Reset humanoid pose system before starting animation
