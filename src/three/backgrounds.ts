@@ -62,6 +62,11 @@ const backgroundDefinitions: BackgroundDefinition[] = [
     color: '#1a2332',
     image: '/backgrounds/protocol-dawn.svg',
   },
+  {
+    id: 'green-screen',
+    label: 'Green Screen',
+    color: '#00ff00',
+  },
 ];
 
 // Cache loaded textures

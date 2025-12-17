@@ -5,6 +5,8 @@ import { useAnimationStore } from '../../state/useAnimationStore';
 import { useToastStore } from '../../state/useToastStore';
 import { convertAnimationToScenePaths } from '../../pose-lab/convertAnimationToScenePaths';
 
+import { sceneManager } from '../../three/sceneManager';
+
 export function MocapTab() {
   const { addToast } = useToastStore();
   const { addAnimation } = useAnimationStore();
@@ -16,6 +18,8 @@ export function MocapTab() {
   const [error, setError] = useState<string | null>(null);
   const managerRef = useRef<MotionCaptureManager | null>(null);
   const timerRef = useRef<number | null>(null);
+  
+  const [isGreenScreen, setIsGreenScreen] = useState(false);
 
   useEffect(() => {
     if (videoRef.current && !managerRef.current) {
@@ -29,6 +33,18 @@ export function MocapTab() {
         if (timerRef.current) clearInterval(timerRef.current);
     };
   }, []);
+
+  const toggleGreenScreen = () => {
+      if (isGreenScreen) {
+          // Revert to default background (midnight-circuit)
+          sceneManager.setBackground('midnight-circuit');
+          setIsGreenScreen(false);
+      } else {
+          // Set to Green Screen
+          sceneManager.setBackground('green-screen');
+          setIsGreenScreen(true);
+      }
+  };
 
   const toggleRecording = () => {
       if (!managerRef.current || !isActive) return;
@@ -194,6 +210,13 @@ export function MocapTab() {
                 </button>
                 </>
             )}
+            <button
+                className={`secondary full-width ${isGreenScreen ? 'active' : ''}`}
+                onClick={toggleGreenScreen}
+                title="Toggle Green Screen Background"
+            >
+                🟩 Green Screen
+            </button>
         </div>
       </div>
       

@@ -173,7 +173,9 @@ export class MotionCaptureManager {
         try {
             const faceRig = Kalidokit.Face.solve(results.faceLandmarks, {
                 runtime: 'mediapipe',
-                video: this.videoElement
+                video: this.videoElement,
+                smoothBlink: true, // Enable blink smoothing
+                blinkSettings: [0.25, 0.75], // Adjust thresholds for responsiveness
             });
             if (faceRig) {
                 this.applyFaceRig(faceRig);
@@ -191,11 +193,7 @@ export class MotionCaptureManager {
     // Clear previous offsets
     this.calibrationOffsets = {};
     
-    // We capture the current rotation of bones AS APPLIED by the rig currently
-    // Actually, we need to capture the *incoming* rig data, not the bone's current rotation (which might be mixed/slerped).
-    // But since we don't store the raw rig data persistently, we can't easily snap it here unless we are in the loop.
-    
-    // Alternative: We set a flag to calibrate on next frame
+    // Set flag to capture offsets on next frame
     this.shouldCalibrateNextFrame = true;
   }
   
@@ -293,53 +291,107 @@ export class MotionCaptureManager {
   private applyFaceRig(rig: any) {
       if (!this.vrm?.expressionManager) return;
 
+      const em = this.vrm.expressionManager;
+
       // 1. Head Rotation
       if (rig.head) {
           const headBone = this.vrm.humanoid?.getNormalizedBoneNode('head');
           if (headBone) {
               const q = rig.head;
-              // Mix head rotation from pose and face for stability?
-              // Face mesh is usually more accurate for head orientation
-              headBone.quaternion.slerp(new THREE.Quaternion(q.x, q.y, q.z, q.w), 0.5);
+              // Mix head rotation from pose and face for stability (face tracking is usually smoother for rotation)
+              const targetQ = new THREE.Quaternion(q.x, q.y, q.z, q.w);
+              headBone.quaternion.slerp(targetQ, 0.5); 
           }
       }
 
-      // 2. Expressions / Blendshapes
-      // Kalidokit Face outputs: eye: {l, r}, mouth: {shape: {A, E, I, O, U}, open}
-      
-      const em = this.vrm.expressionManager;
-
-      // Blinking
+      // 2. Eyes (Blink)
       if (rig.eye) {
           const blinkL = 1 - rig.eye.l;
           const blinkR = 1 - rig.eye.r;
+          
+          // Apply to individual eyes
           em.setValue('BlinkLeft', blinkL);
           em.setValue('BlinkRight', blinkR);
-          // Fallback for simple Blink
-          if (blinkL > 0.5 && blinkR > 0.5) {
-              em.setValue('Blink', (blinkL + blinkR) / 2);
+          
+          // Fallback/Sync for generic Blink
+          // Use maximum closedness to ensure blink registers visually
+          const blinkMax = Math.max(blinkL, blinkR);
+          em.setValue('Blink', blinkMax);
+      }
+
+      // 3. Pupils (LookAt)
+      if (rig.pupil) {
+          // rig.pupil.x is -1 (left) to 1 (right)
+          // rig.pupil.y is -1 (up) to 1 (down)
+          const x = rig.pupil.x;
+          const y = rig.pupil.y;
+          
+          // Reset opposites to prevent conflict
+          if (x > 0) {
+              em.setValue('LookLeft', 0);
+              em.setValue('LookRight', x);
           } else {
-              em.setValue('Blink', 0);
+              em.setValue('LookRight', 0);
+              em.setValue('LookLeft', -x);
+          }
+          
+          if (y > 0) {
+              em.setValue('LookUp', 0);
+              em.setValue('LookDown', y);
+          } else {
+              em.setValue('LookDown', 0);
+              em.setValue('LookUp', -y);
           }
       }
 
-      // Mouth
+      // 4. Mouth
       if (rig.mouth) {
           const shape = rig.mouth.shape; // { A: 0-1, E: 0-1 ... }
+          
           em.setValue('Aa', shape.A);
           em.setValue('Ee', shape.E);
           em.setValue('Ih', shape.I);
           em.setValue('Oh', shape.O);
           em.setValue('Ou', shape.U);
+          
+          // Drive ARKit jawOpen if available
+          // We use rig.mouth.open which Kalidokit calculates
+          if (rig.mouth.open !== undefined) {
+              const jawOpen = rig.mouth.open;
+              em.setValue('jawOpen', jawOpen);
+          }
       }
       
-      // Simple Emotion Mapping
-      // Brow raise -> Surprise? 
+      // 5. Brows (Experimental)
       if (rig.brow) {
-          // If brows are high, maybe surprise
-          // Not strictly standard in Kalidokit Face rig output structure directly like this?
-          // Kalidokit Face solver output structure:
-          // { eye: {l, r}, mouth: {shape, open}, head: {x,y,z,w}, brow: 0-1, pupil: {x,y} }
+          // Map "brow" to ARKit browInnerUp if it exists
+          // This gives a "surprised" or "attentive" look when brows are raised
+          // We check if the expression manager supports custom keys
+          const browValue = rig.brow;
+          
+          // Try typical ARKit keys
+          // Note: Some VRMs map this to "Surprised"
+          
+          // 1. Try "browInnerUp" (ARKit standard)
+          // We don't have a direct way to check existence without iterating map, 
+          // but setValue is usually safe to call (it might just do nothing).
+          // However, to be safe and avoid console noise, we can just try setting it.
+          
+          try {
+             // Map to "Surprised" for standard VRM 0.0 avatars as a fallback
+             // But usually "Surprised" includes mouth opening, which might conflict with mouth tracking.
+             // Ideally we want *only* brows.
+             
+             // If model has ARKit support, it should have "browInnerUp"
+             em.setValue('browInnerUp', browValue);
+             
+             // Also try "browOuterUpLeft" / "Right" if we want full raise
+             em.setValue('browOuterUpLeft', browValue);
+             em.setValue('browOuterUpRight', browValue);
+             
+          } catch (e) {
+             // ignore
+          }
       }
 
       em.update();
