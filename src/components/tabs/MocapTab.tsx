@@ -54,10 +54,14 @@ export function MocapTab() {
       }
       
       if (mode === 'face') {
-          // Reset body to neutral when switching to face only
-          // This prevents weird frozen IK poses
-          avatarManager.resetPose();
-          addToast("Switched to Face Only mode", "info");
+          // Instead of resetting to T-pose, play a default animation (loop)
+          // Ideally "Sunset Call" as requested, or keep current if playing.
+          if (!avatarManager.isAnimationPlaying()) {
+             avatarManager.applyPose('sunset-call', true, 'loop');
+             addToast("Switched to Face Only (Default: Sunset Call)", "info");
+          } else {
+             addToast("Switched to Face Only (Keeping Animation)", "info");
+          }
       } else {
           addToast("Switched to Full Body mode", "info");
       }

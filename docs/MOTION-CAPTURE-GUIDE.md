@@ -36,7 +36,9 @@ A dedicated toggle for easy compositing.
 
 ### 6. Tracking Modes
 - **Full Body**: Tracks both body and face. Requires full view of the user.
-- **Face Only**: Tracks only facial expressions and head rotation. The body remains in a neutral/idle pose. Ideal for VTubing or when space is limited.
+- **Face Only**: Tracks only facial expressions and head rotation. 
+  - **Body Behavior**: Automatically loops the "Sunset Call" idle animation (or your currently playing animation) so the body stays alive while you talk.
+  - **Ideal For**: VTubing, streaming, or when space is limited.
 
 ---
 
