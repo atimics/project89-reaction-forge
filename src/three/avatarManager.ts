@@ -44,6 +44,7 @@ class AvatarManager {
   private currentUrl?: string;
   private tickDispose?: () => void;
   private isAnimated = false;
+  private isInteracting = false; // New flag to track user interaction (gizmo dragging)
 
   private isManualPosing = false;
 
@@ -61,6 +62,16 @@ class AvatarManager {
 
   setManualPosing(enabled: boolean) {
     this.isManualPosing = enabled;
+  }
+
+  setInteraction(interacting: boolean) {
+    this.isInteracting = interacting;
+    // If interacting, we pause the animation mixer logic to allow manual overrides
+    if (interacting) {
+        console.log('[AvatarManager] Interaction started - Pausing mixer updates');
+    } else {
+        console.log('[AvatarManager] Interaction ended - Resuming mixer updates');
+    }
   }
 
   /**
@@ -133,8 +144,8 @@ class AvatarManager {
       vrm.update(delta);
       
       // CRITICAL: Only update animation mixer when explicitly in animated mode
-      // This prevents animations from interfering with static poses
-      if (this.isAnimated) {
+      // AND not currently being manipulated by the user (gizmos)
+      if (this.isAnimated && !this.isInteracting) {
         animationManager.update(delta);
       }
     });

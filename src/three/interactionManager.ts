@@ -40,15 +40,13 @@ class InteractionManager {
       const controls = sceneManager.getControls();
       if (controls) controls.enabled = !event.value;
       
-      // Auto-pause animation while dragging to prevent fighting
+      // Notify AvatarManager of interaction state
+      // This prevents the animation mixer from fighting with the gizmo
+      avatarManager.setInteraction(event.value);
+      
+      // Auto-pause animation while dragging (optional, but good practice)
       if (event.value) {
          avatarManager.pauseAnimation();
-      } else {
-         // Optional: resume or stay paused? 
-         // For precise posing, we probably want to stay paused so the user sees their change.
-         // If we resume, the animation frame will instantly overwrite the user's pose.
-         // So we do NOT resume automatically.
-         // avatarManager.resumeAnimation();
       }
     });
     
