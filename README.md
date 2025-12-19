@@ -6,7 +6,7 @@
 
 **PoseLab** (formerly Reaction Forge) is the ultimate browser-based toolkit for VRM avatar animation, posing, and reaction generation. It is designed as a strategic stronghold for digital autonomy, allowing creators to manifest their optimal timeline through seamless expression.
 
-[![Live Demo](https://img.shields.io/badge/Live-Demo-00ffd6?style=for-the-badge)](https://poselab.project89.org)
+[![Live Demo](https://img.shields.io/badge/Live-Demo-00ffd6?style=for-the-badge)](https://poselab.studio)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)](LICENSE)
 [![Privacy](https://img.shields.io/badge/Privacy-Local--First-green.svg?style=for-the-badge)](PRIVACY.md)
 
@@ -28,15 +28,17 @@ In the age of algorithmic fragmentation, owning your digital presence is an act 
 *Create instant content with one click.*
 - **Smart Presets**: 13+ pre-made reactions like "Dawn Runner", "Victory", and "Silly Dance".
 - **Expression Control**: Fine-tune emotions with "Joy", "Surprise", and "Calm" sliders.
-- **Dynamic Backgrounds**: 8 themes + **GIF/Video Uploads** for animated scenes.
+- **Dynamic Backgrounds**: 8 themes + **Green Screen** + **GIF/Video Uploads** for animated scenes.
 - **Auto-Looping**: Perfectly seamless animation loops for streaming overlays.
 
 ### 🛠️ **Pose Lab**
 *Deep dive into character posing and animation.*
 - **Timeline Editor**: Create sequences by capturing keyframes and interpolating between them.
 - **AI Pose Gen**: Describe a pose ("ninja landing", "thinking hard") and let Gemini AI create it.
-- **Motion Capture (v1.2)**: Control your avatar in real-time using your webcam (Body + Face tracking).
-  - **Recording**: Capture motion to animation clips.
+- **Motion Capture (v2.0)**: Control your avatar in real-time using your webcam (Body + Face tracking).
+  - **Smoothing & Constraints**: Jitter-free tracking with natural bone limits.
+  - **Enhanced Face Tracking**: Improved smile detection and blink responsiveness.
+  - **Green Screen Mode**: Toggle background for easy compositing in OBS/Editors.
   - **Calibration**: T-Pose calibration for accurate retargeting.
 - **Manual Posing**: Fine-tune joints with context-aware **Gizmos** (Rotate/Translate).
 - **Full Expression Control**: Access every blendshape your avatar supports (A, I, U, E, O, Blink, etc.).
@@ -46,6 +48,7 @@ In the age of algorithmic fragmentation, owning your digital presence is an act 
 ### 🚀 **Production Ready (v1.2)**
 - **Smart Exports**: One-click presets for YouTube Thumbnails (720p), TikToks (9:16), and Square (1:1).
 - **Video Hardening**: Intelligent codec detection (VP9/VP8) ensures your exports play everywhere.
+- **Interactive Tutorial**: Step-by-step onboarding guide for new users.
 - **Command Palette**: Press `Cmd/Ctrl+K` to access every tool instantly.
 - **Design System**: Unified UI with consistent Design Tokens and Dark Mode aesthetics.
 - **Performance Mode**: Auto-detects device capabilities to ensure smooth framerates on laptops.
