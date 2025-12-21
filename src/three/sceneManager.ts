@@ -198,16 +198,31 @@ class SceneManager {
       transparent: true,
       opacity: opacity,
       depthTest: false, // Always on top
-      depthWrite: false
+      depthWrite: false,
+      side: THREE.DoubleSide
     });
 
     this.overlayMesh = new THREE.Mesh(geometry, material);
+    // Move it significantly further out to avoid near clipping, but scale it to fill view
+    // At z=-1, height is 2 * tan(fov/2). 
+    // Let's use distance = 0.5 (closer to camera) or stay at 1.
+    // The issue might be near plane clipping (0.1) or render order.
+    
+    // Ensure renderOrder puts it on top of everything
     this.overlayMesh.position.set(0, 0, -dist);
-    // Ensure it renders on top of scene but behind gizmos? 
-    // Actually HUD usually is on top.
-    this.overlayMesh.renderOrder = 999; 
+    this.overlayMesh.renderOrder = 9999; 
+    this.overlayMesh.onBeforeRender = function(renderer) { renderer.clearDepth(); };
     
     this.camera.add(this.overlayMesh);
+    
+    // Force overlay to be visible (ensure camera is in scene)
+    // The camera is already in scene, but sometimes updates are needed.
+    // If we want it to act as a HUD, it must be a child of camera.
+    // However, near plane clipping is a common issue.
+    // distance=1, height=2*tan(fov/2). 
+    // This is mathematically correct to fill the frustum at distance 1.
+    // Let's verify frustumNear. Default is 0.1. Distance 1 is safe.
+    
     console.log('[SceneManager] Overlay applied:', url);
   }
 

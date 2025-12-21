@@ -15,6 +15,7 @@ export function SceneTab() {
   const [customBackground, setCustomBackground] = useState<string | null>(null);
   const [customOverlay, setCustomOverlay] = useState<string | null>(null);
   const [showOverlay, setShowOverlay] = useState(false);
+  const [cssOverlay, setCssOverlay] = useState<string | null>(null);
   const [showLogo, setShowLogo] = useState(true);
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>('16:9');
   const vrmInputRef = useRef<HTMLInputElement>(null);
@@ -83,7 +84,38 @@ export function SceneTab() {
     await sceneManager.setOverlay(show ? customOverlay : null);
   };
 
-          const handleBackgroundSelect = async (backgroundId: string) => {
+  const handleCssOverlayChange = (overlay: string) => {
+      setCssOverlay(overlay === cssOverlay ? null : overlay);
+      // We need to inject this into the viewport. 
+      // The easiest way is to use a global store or a portal, but since ViewportOverlay is in App,
+      // we can use the sceneManager to store state or just use a DOM manipulation for now (or better, a store).
+      // Let's use the SceneManager to store this state or dispatch an event.
+      // Actually, standardizing via SceneManager (even for CSS) keeps logic central.
+      // But SceneManager is WebGL.
+      
+      // Let's toggle a class on the viewport container or dispatch a custom event.
+      document.documentElement.style.setProperty('--active-overlay', overlay || 'none');
+      
+      const viewport = document.querySelector('.viewport');
+      if (viewport) {
+          // Remove old overlay classes
+          viewport.classList.remove('overlay-glitch', 'overlay-scanlines', 'overlay-vignette', 'overlay-crt');
+          if (overlay) {
+              const div = document.createElement('div');
+              div.className = overlay;
+              div.id = 'active-css-overlay';
+              // Clear previous
+              const old = document.getElementById('active-css-overlay');
+              if (old) old.remove();
+              viewport.appendChild(div);
+          } else {
+              const old = document.getElementById('active-css-overlay');
+              if (old) old.remove();
+          }
+      }
+  };
+
+  const handleBackgroundSelect = async (backgroundId: string) => {
     setSelectedBackground(backgroundId);
     if (backgroundId === 'custom' && customBackground) {
       await sceneManager.setBackground(customBackground);
@@ -228,7 +260,29 @@ export function SceneTab() {
             </label>
         )}
 
-        <label className="checkbox-option">
+        <div style={{ marginTop: '1rem' }}>
+            <label style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'rgba(255,255,255,0.5)', display: 'block', marginBottom: '0.5rem' }}>FX Overlays</label>
+            <div className="button-group small">
+                <button 
+                    className={cssOverlay === 'overlay-scanlines' ? 'secondary active' : 'secondary'}
+                    onClick={() => handleCssOverlayChange('overlay-scanlines')}
+                >Scanlines</button>
+                <button 
+                    className={cssOverlay === 'overlay-vignette' ? 'secondary active' : 'secondary'}
+                    onClick={() => handleCssOverlayChange('overlay-vignette')}
+                >Vignette</button>
+                <button 
+                    className={cssOverlay === 'overlay-glitch' ? 'secondary active' : 'secondary'}
+                    onClick={() => handleCssOverlayChange('overlay-glitch')}
+                >Glitch</button>
+                <button 
+                    className={cssOverlay === 'overlay-crt' ? 'secondary active' : 'secondary'}
+                    onClick={() => handleCssOverlayChange('overlay-crt')}
+                >CRT</button>
+            </div>
+        </div>
+
+        <label className="checkbox-option" style={{ marginTop: '1rem' }}>
           <input
             type="checkbox"
             checked={showLogo}

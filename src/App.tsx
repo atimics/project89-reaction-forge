@@ -1,4 +1,5 @@
 import './App.css';
+import './components/overlays.css';
 import { AppHeader } from './components/AppHeader';
 import { CanvasStage } from './components/CanvasStage';
 import { ViewportOverlay } from './components/ViewportOverlay';
