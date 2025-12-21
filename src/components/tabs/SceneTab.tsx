@@ -4,6 +4,7 @@ import { backgroundOptions } from '../../three/backgrounds';
 import { avatarManager } from '../../three/avatarManager';
 import { useReactionStore } from '../../state/useReactionStore';
 import { useToastStore } from '../../state/useToastStore';
+import { useUIStore } from '../../state/useUIStore';
 import type { BackgroundId } from '../../types/reactions';
 
 type AspectRatio = '16:9' | '1:1' | '9:16';
