@@ -40,6 +40,7 @@ export class MotionCaptureManager {
 
   // Calibration State
   private calibrationOffsets: Record<string, THREE.Quaternion> = {};
+  private eyeCalibrationOffset = { x: 0, y: 0 };
 
   constructor(videoElement: HTMLVideoElement) {
     this.videoElement = videoElement;
@@ -391,6 +392,7 @@ export class MotionCaptureManager {
     
     // Clear previous offsets
     this.calibrationOffsets = {};
+    this.eyeCalibrationOffset = { x: 0, y: 0 };
     
     // Set flag to capture offsets on next frame
     this.shouldCalibrateNextFrame = true;
@@ -409,6 +411,7 @@ export class MotionCaptureManager {
 
     // Calibration Step: Capture offsets if requested
     if (this.shouldCalibrateNextFrame) {
+        // Body/Face Bone Offsets
         const rigKeys = Object.keys(rig);
         rigKeys.forEach(key => {
             const boneData = rig[key];
@@ -417,6 +420,16 @@ export class MotionCaptureManager {
                 this.calibrationOffsets[key] = q.clone();
             }
         });
+        
+        // Eye Gaze Offset
+        if (rig.pupil) {
+            this.eyeCalibrationOffset = { 
+                x: rig.pupil.x,
+                y: rig.pupil.y 
+            };
+            console.log('[MotionCaptureManager] Eye calibration captured:', this.eyeCalibrationOffset);
+        }
+        
         console.log('[MotionCaptureManager] Calibration complete. Offsets:', Object.keys(this.calibrationOffsets).length);
         this.shouldCalibrateNextFrame = false;
     }
@@ -574,42 +587,23 @@ export class MotionCaptureManager {
           setExpressionTarget(['Blink', 'blink', 'eyeBlink'], blinkMax);
       }
 
-      // 3. Pupils (LookAt)
+          // 3. Pupils (LookAt)
       if (rig.pupil) {
-          const x = rig.pupil.x;
+          // Sensitivity multiplier to make eyes more expressive/responsive
+          // Raw webcam tracking often results in small values.
+          const GAZE_SENSITIVITY = 2.0;
+
+          // Apply Calibration Offset
+          // We subtract the calibrated offset from the raw input to zero it out
+          const rawX = rig.pupil.x - this.eyeCalibrationOffset.x;
+          const rawY = rig.pupil.y - this.eyeCalibrationOffset.y;
+
+          const x = THREE.MathUtils.clamp(rawX * GAZE_SENSITIVITY, -1, 1);
+          
           // IMPORTANT: Mirror Correction for Eyes
-          // When looking at the screen (camera), if you look DOWN, the camera sees your pupils lower.
-          // MediaPipe gives +y for down (screen coordinates).
-          // Standard ARKit/VRM expects +y for LOOK DOWN.
-          // However, depending on the mirror effect of the video feed, the X axis might need inversion.
-          // Also, sometimes the "LookUp/LookDown" mapping feels inverted to the user.
-          // If the user says "when I look down, the avatar looks down" (which is correct), 
-          // but if they meant "the avatar looks UP", then we invert.
-          // User said: "the eyes are still not reflecting the users eyes, as so when the user looks down so does the avatar"
-          // This implies the user expected INVERTED behavior? Or maybe they meant "the avatar looks UP when I look DOWN"?
-          // Wait, "when the user looks down so does the avatar" is the CORRECT behavior for a mirror.
-          // If they are complaining about it, maybe they want the avatar to maintain eye contact or something else?
-          // OR, maybe they meant "when the user looks down, the avatar looks UP" (which is wrong) and they want it fixed?
-          // "eyes are still not reflecting the users eyes" -> imply current behavior is WRONG.
-          // "when user looks down so does avatar" -> This is the behavior they are seeing.
-          // If they cite this as the problem, then they want the avatar to look UP when they look DOWN? That makes no sense for mocap.
-          
-          // Let's re-read: "eyes are still not reflecting the users eyes"
-          // Usually means: I look left, avatar looks right (mirroring issue).
-          // Or: I look down, avatar looks down (correct).
-          
-          // HYPOTHESIS: The user perceives the avatar's eye movement as "wrong" because the webcam is mounted ON TOP of the screen.
-          // When you look at the center of the screen (at the avatar), your eyes are physically looking DOWN relative to the webcam.
-          // So the avatar sees you looking down and looks down.
-          // But you are looking AT the avatar. So the avatar should be looking AT you (Straight).
-          // This is the classic "Webcam Eye Contact" problem.
-          
-          // SOLUTION: Apply an offset to the Y-axis to compensate for the webcam angle.
-          // We assume the user is looking at the screen center when their eyes are slightly down relative to camera.
-          // We shift the "neutral" point up.
-          
-          // Reverted offset: User requested strict 1:1 mapping with camera axis.
-          const y = rig.pupil.y;
+          // ... (comments retained/abbreviated)
+          // FIX: Invert Y axis to match user expectation (Look Up = Look Up)
+          const y = THREE.MathUtils.clamp(-rawY * GAZE_SENSITIVITY, -1, 1);
           
           // Helper for ARKit asymmetric mapping
           const setARKitGaze = (xVal: number, yVal: number) => {

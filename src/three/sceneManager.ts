@@ -31,7 +31,7 @@ class SceneManager {
   private readonly center = new THREE.Vector3();
   private currentAspectRatio: AspectRatio = '16:9';
   private overlayMesh?: THREE.Mesh;
-  private currentOverlayUrl?: string;
+  private animatedBackground?: AnimatedBackground;
 
   init(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
@@ -155,11 +155,8 @@ class SceneManager {
     }
 
     if (!url) {
-      this.currentOverlayUrl = undefined;
       return;
     }
-
-    this.currentOverlayUrl = url;
 
     // Load Texture
     const isVideo = url.toLowerCase().endsWith('.webm') || url.toLowerCase().endsWith('.mp4');
