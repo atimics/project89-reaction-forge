@@ -37,17 +37,9 @@ const TUTORIAL_STEPS = [
   {
     id: 'tabs',
     title: '4. The Toolset',
-    description: 'Here you can access Animations, Poses, AI tools, and Mocap.',
+    description: 'Here you can access Poses and Mocap tools.',
     targetId: 'poselab-tabs',
     highlight: true
-  },
-  {
-    id: 'timeline',
-    title: '5. The Sequencer',
-    description: 'Create complex animations using the Timeline Sequencer. This is the heart of PoseLab.',
-    targetId: 'tab-seq',
-    highlight: true,
-    action: (store: any) => store.setPoseLabTab('timeline')
   },
   {
     id: 'finish',

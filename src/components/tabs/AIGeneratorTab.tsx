@@ -306,43 +306,42 @@ export function AIGeneratorTab() {
           </button>
         </div>
         
-        <div style={{ marginTop: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <input
-            type="checkbox"
-            id="useLimits"
-            checked={useLimits}
-            onChange={(e) => setUseLimits(e.target.checked)}
-          />
-          <label htmlFor="useLimits" style={{ fontSize: '0.9em', cursor: 'pointer' }}>Enforce Bio-Limits</label>
+        <div style={{ marginTop: '12px', display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px' }}>
+          <label style={{ fontSize: '0.9em', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <input
+              type="checkbox"
+              checked={useLimits}
+              onChange={(e) => setUseLimits(e.target.checked)}
+            />
+            Bio-Limits
+          </label>
           
-          <input
-            type="checkbox"
-            id="isAnimating"
-            checked={isAnimating}
-            onChange={(e) => setIsAnimating(e.target.checked)}
-            style={{ marginLeft: '12px' }}
-          />
-          <label htmlFor="isAnimating" style={{ fontSize: '0.9em', cursor: 'pointer' }}>Generate Animation</label>
+          <label style={{ fontSize: '0.9em', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <input
+              type="checkbox"
+              checked={isAnimating}
+              onChange={(e) => setIsAnimating(e.target.checked)}
+            />
+            Animate
+          </label>
 
           {isAnimating && (
-            <>
+            <label style={{ fontSize: '0.9em', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
               <input
                 type="checkbox"
-                id="isLoop"
                 checked={isLoop}
                 onChange={(e) => setIsLoop(e.target.checked)}
-                style={{ marginLeft: '12px' }}
               />
-              <label htmlFor="isLoop" style={{ fontSize: '0.9em', cursor: 'pointer' }}>Loop</label>
-            </>
+              Loop
+            </label>
           )}
           
-          <div style={{ flex: 1 }} />
+          <div style={{ flex: '1 0 100%', height: '4px' }} className="mobile-only-spacer" />
           
           <button 
             className="secondary small" 
             onClick={() => setShowDebug(!showDebug)}
-            style={{ fontSize: '0.8em', opacity: 0.7 }}
+            style={{ fontSize: '0.8em', opacity: 0.7, marginLeft: 'auto' }}
           >
             {showDebug ? 'Hide Debug' : 'Show Debug'}
           </button>

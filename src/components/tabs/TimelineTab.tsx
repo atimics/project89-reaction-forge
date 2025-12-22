@@ -26,10 +26,15 @@ export function TimelineTab() {
 
   // Reset animation speed on unmount to prevent "stuck" playback speed
   useEffect(() => {
-    // Freeze current pose when component unmounts (navigating away)
+    // When navigating away from Timeline
     return () => {
+      // 1. Restore global animation speed
+      avatarManager.setAnimationSpeed(1); 
+      
+      // 2. Keep the current scrubber pose
       avatarManager.freezeCurrentPose();
-      avatarManager.setAnimationSpeed(1); // Restore speed
+      
+      console.log('[TimelineTab] Unmounting - State reset');
     };
   }, []);
 
@@ -142,11 +147,11 @@ export function TimelineTab() {
            <div className="badge">Beta</div>
         </div>
 
-        <div className="timeline-controls" style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
+        <div className="timeline-controls" style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.5rem' }}>
           <button 
             className={`secondary ${isPlaying ? 'active' : ''}`}
             onClick={() => setIsPlaying(!isPlaying)}
-            style={{ flex: 1 }}
+            style={{ flex: '1 1 120px' }}
           >
             {isPlaying ? '⏸️ Pause' : '▶️ Play'}
           </button>
@@ -157,20 +162,20 @@ export function TimelineTab() {
               setIsPlaying(false);
               setCurrentTime(0);
             }}
-            style={{ width: '40px' }}
+            style={{ width: '40px', flexShrink: 0 }}
             title="Stop & Rewind"
           >
             ⏹️
           </button>
           
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(0,0,0,0.2)', padding: '0 0.5rem', borderRadius: '8px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(0,0,0,0.2)', padding: '0 0.5rem', borderRadius: '8px', flex: '1 1 auto' }}>
              <span className="small muted" style={{ fontSize: '0.75rem' }}>DUR:</span>
              <input 
                type="number" 
                value={sequence.duration} 
                onChange={(e) => setDuration(parseFloat(e.target.value))}
                step="0.1"
-               style={{ width: '50px', padding: '4px', background: 'transparent', border: 'none', color: '#fff', textAlign: 'right' }}
+               style={{ width: '45px', padding: '4px', background: 'transparent', border: 'none', color: '#fff', textAlign: 'right' }}
              />
              <span className="small muted">s</span>
           </div>

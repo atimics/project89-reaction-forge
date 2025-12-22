@@ -33,17 +33,21 @@ export function PoseExpressionTab() {
 
   const handleGizmoToggle = (enabled: boolean) => {
     setIsGizmoEnabled(enabled);
-    interactionManager.toggle(enabled);
-    avatarManager.setManualPosing(enabled);
+    
     if (enabled) {
-      // Force static mode to prevent fighting with animation mixer
-      setAnimationMode('static');
-      // Freeze the current pose instead of resetting it
+      // 1. Freeze the pose first so it's already static when helpers appear
       avatarManager.freezeCurrentPose();
+      // 2. Enable interaction tools
+      interactionManager.toggle(true);
+      avatarManager.setManualPosing(true);
+      addToast("Manual Posing Enabled", "info");
     } else {
-        // When disabling gizmos, re-enable standard updates
-        // Optionally restart standard idle animation if desired, 
-        // but for now we leave it static to preserve the manual edits visually
+      // 1. Disable interaction tools
+      interactionManager.toggle(false);
+      // 2. Capture final state
+      avatarManager.freezeCurrentPose();
+      avatarManager.setManualPosing(false);
+      addToast("Manual Posing Disabled", "success");
     }
   };
 
@@ -249,32 +253,32 @@ export function PoseExpressionTab() {
           }}>
             <div style={{ marginBottom: '0.75rem' }}>
               <label style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'rgba(255,255,255,0.5)', display: 'block', marginBottom: '0.5rem' }}>Gizmo Mode</label>
-              <div className="button-group small">
+              <div className="button-group small" style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
                 <button 
                   className={gizmoMode === 'rotate' ? 'secondary active' : 'secondary'}
                   onClick={() => handleGizmoModeChange('rotate')}
-                  style={{ fontSize: '0.8rem' }}
+                  style={{ fontSize: '0.8rem', flex: '1 1 80px' }}
                 >Rotate</button>
                 <button 
                   className={gizmoMode === 'translate' ? 'secondary active' : 'secondary'}
                   onClick={() => handleGizmoModeChange('translate')}
-                  style={{ fontSize: '0.8rem' }}
+                  style={{ fontSize: '0.8rem', flex: '1 1 80px' }}
                 >Translate</button>
               </div>
             </div>
             
             <div>
               <label style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'rgba(255,255,255,0.5)', display: 'block', marginBottom: '0.5rem' }}>Axis Space</label>
-              <div className="button-group small">
+              <div className="button-group small" style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
                 <button 
                   className={gizmoSpace === 'local' ? 'secondary active' : 'secondary'}
                   onClick={() => handleGizmoSpaceChange('local')}
-                  style={{ fontSize: '0.8rem' }}
+                  style={{ fontSize: '0.8rem', flex: '1 1 80px' }}
                 >Local</button>
                 <button 
                   className={gizmoSpace === 'world' ? 'secondary active' : 'secondary'}
                   onClick={() => handleGizmoSpaceChange('world')}
-                  style={{ fontSize: '0.8rem' }}
+                  style={{ fontSize: '0.8rem', flex: '1 1 80px' }}
                 >World</button>
               </div>
             </div>

@@ -280,11 +280,12 @@ export function ExportTab({ mode = 'reactions' }: ExportTabProps) {
         ) : (
           <>
             <p className="muted small">Quickly set resolution for common platforms</p>
-            <div className="actions" style={{ marginBottom: '1rem' }}>
+            <div className="actions" style={{ marginBottom: '1rem', display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
               <button
                 className={resolution === '720p' ? 'secondary active' : 'secondary'}
                 onClick={() => setResolution('720p')}
                 title="1280x720 (YouTube Thumbnail)"
+                style={{ flex: '1 1 100px' }}
               >
                 Thumbnail (HD)
               </button>
@@ -292,6 +293,7 @@ export function ExportTab({ mode = 'reactions' }: ExportTabProps) {
                 className={resolution === 'square' ? 'secondary active' : 'secondary'}
                 onClick={() => setResolution('square')}
                 title="1080x1080 (Instagram/Twitter)"
+                style={{ flex: '1 1 100px' }}
               >
                 Square (1:1)
               </button>
@@ -299,6 +301,7 @@ export function ExportTab({ mode = 'reactions' }: ExportTabProps) {
                 className={resolution === '1080p' ? 'secondary active' : 'secondary'}
                 onClick={() => setResolution('1080p')}
                 title="1080x1920 (TikTok/Shorts/Reels)"
+                style={{ flex: '1 1 100px' }}
               >
                 Vertical (9:16)
               </button>

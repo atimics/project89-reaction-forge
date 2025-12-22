@@ -387,15 +387,21 @@ export class MotionCaptureManager {
   };
 
   calibrate() {
+    this.calibrateBody();
+    this.calibrateFace();
+  }
+
+  calibrateBody() {
     if (!this.vrm?.humanoid) return;
-    console.log('[MotionCaptureManager] Calibrating T-Pose...');
-    
-    // Clear previous offsets
+    console.log('[MotionCaptureManager] Calibrating Body Offsets...');
     this.calibrationOffsets = {};
-    this.eyeCalibrationOffset = { x: 0, y: 0 };
-    
-    // Set flag to capture offsets on next frame
     this.shouldCalibrateBody = true;
+  }
+
+  calibrateFace() {
+    if (!this.vrm?.humanoid) return;
+    console.log('[MotionCaptureManager] Calibrating Face/Eye Gaze Offsets...');
+    this.eyeCalibrationOffset = { x: 0, y: 0 };
     this.shouldCalibrateFace = true;
   }
   

@@ -14,6 +14,10 @@ interface UIState {
   isTutorialActive: boolean;
   currentTutorialStep: number;
 
+  // Calibration Wizard State
+  isCalibrationActive: boolean;
+  calibrationStep: number;
+
   // Global UI State
   activeCssOverlay: string | null;
   
@@ -26,6 +30,10 @@ interface UIState {
   endTutorial: () => void;
   nextTutorialStep: () => void;
   setTutorialStep: (step: number) => void;
+
+  startCalibration: () => void;
+  endCalibration: () => void;
+  setCalibrationStep: (step: number) => void;
   
   setActiveCssOverlay: (overlay: string | null) => void;
 }
@@ -38,6 +46,9 @@ export const useUIStore = create<UIState>((set) => ({
   
   isTutorialActive: false,
   currentTutorialStep: 0,
+
+  isCalibrationActive: false,
+  calibrationStep: 0,
   
   activeCssOverlay: null,
 
@@ -50,6 +61,10 @@ export const useUIStore = create<UIState>((set) => ({
   endTutorial: () => set({ isTutorialActive: false, currentTutorialStep: 0 }),
   nextTutorialStep: () => set((state) => ({ currentTutorialStep: state.currentTutorialStep + 1 })),
   setTutorialStep: (step) => set({ currentTutorialStep: step }),
+
+  startCalibration: () => set({ isCalibrationActive: true, calibrationStep: 0 }),
+  endCalibration: () => set({ isCalibrationActive: false, calibrationStep: 0 }),
+  setCalibrationStep: (step) => set({ calibrationStep: step }),
   
   setActiveCssOverlay: (overlay) => set({ activeCssOverlay: overlay }),
 }));

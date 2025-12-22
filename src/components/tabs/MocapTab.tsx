@@ -3,13 +3,16 @@ import { MotionCaptureManager } from '../../utils/motionCapture';
 import { avatarManager } from '../../three/avatarManager';
 import { useAnimationStore } from '../../state/useAnimationStore';
 import { useToastStore } from '../../state/useToastStore';
+import { useUIStore } from '../../state/useUIStore';
 import { convertAnimationToScenePaths } from '../../pose-lab/convertAnimationToScenePaths';
+import { CalibrationWizard } from '../CalibrationWizard';
 
 import { sceneManager } from '../../three/sceneManager';
 
 export function MocapTab() {
   const { addToast } = useToastStore();
   const { addAnimation } = useAnimationStore();
+  const { startCalibration } = useUIStore();
   
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isActive, setIsActive] = useState(false);
@@ -254,42 +257,62 @@ export function MocapTab() {
             </button>
         </div>
 
-        <div style={{ display: 'flex', gap: '10px' }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
             <button 
                 className={`primary full-width ${isActive ? 'secondary' : ''}`}
                 onClick={toggleMocap}
+                style={{ flex: isActive ? '1 1 45%' : '1 1 100%' }}
             >
                 {isActive ? '🛑 Stop Camera' : '🎥 Start Camera'}
             </button>
 
             {isActive && (
-                <>
                 <button 
                     className={`primary full-width ${isRecording ? 'danger' : ''}`}
                     onClick={toggleRecording}
+                    style={{ flex: '1 1 45%' }}
                 >
                     {isRecording ? `⏹️ Stop (${recordingTime}s)` : '🔴 Record'}
                 </button>
-                <button
-                    className="secondary full-width"
-                    onClick={() => {
-                        managerRef.current?.calibrate();
-                        addToast("Calibrating T-Pose... Stand straight!", "info");
-                    }}
-                    title="Stand in T-Pose and click to calibrate offsets"
-                >
-                    📏 Calibrate
-                </button>
-                </>
             )}
-            <button
-                className={`secondary full-width ${isGreenScreen ? 'active' : ''}`}
-                onClick={toggleGreenScreen}
-                title="Toggle Green Screen Background"
-            >
-                🟩 Green Screen
-            </button>
+
+            {isActive && (
+                <div style={{ display: 'flex', width: '100%', gap: '10px' }}>
+                    <button
+                        className="secondary full-width"
+                        onClick={() => {
+                            startCalibration();
+                        }}
+                        style={{ flex: '1' }}
+                        title="Launch the calibration wizard for body and face"
+                    >
+                        📏 Wizard
+                    </button>
+                    <button
+                        className={`secondary full-width ${isGreenScreen ? 'active' : ''}`}
+                        onClick={toggleGreenScreen}
+                        style={{ flex: '1' }}
+                        title="Toggle Green Screen Background"
+                    >
+                        🟩 Green Screen
+                    </button>
+                </div>
+            )}
+
+            {!isActive && (
+                <button
+                    className={`secondary full-width ${isGreenScreen ? 'active' : ''}`}
+                    onClick={toggleGreenScreen}
+                    style={{ flex: '1 1 100%' }}
+                    title="Toggle Green Screen Background"
+                >
+                    🟩 Green Screen
+                </button>
+            )}
         </div>
+
+        {/* Calibration Wizard Overlay */}
+        <CalibrationWizard manager={managerRef.current} />
       </div>
       
       <div className="tab-section">
@@ -297,7 +320,7 @@ export function MocapTab() {
           <ul className="small muted" style={{ paddingLeft: '1.2rem' }}>
               <li><strong>Face Only:</strong> Good for streaming/talking. Body stays still.</li>
               <li><strong>Full Body:</strong> Stand back to show your full body.</li>
-              <li><strong>Calibration:</strong> Stand in a T-Pose and click "Calibrate" to align your body.</li>
+              <li><strong>Calibration:</strong> Use the <strong>Wizard</strong> button to align your body and gaze.</li>
               <li>Ensure good lighting on your face.</li>
           </ul>
       </div>
