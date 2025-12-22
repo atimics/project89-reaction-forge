@@ -261,22 +261,26 @@ export function SceneTab() {
 
         <div style={{ marginTop: '1rem' }}>
             <label style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'rgba(255,255,255,0.5)', display: 'block', marginBottom: '0.5rem' }}>FX Overlays</label>
-            <div className="button-group small">
+            <div className="button-group small" style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
                 <button 
                     className={activeCssOverlay === 'overlay-scanlines' ? 'secondary active' : 'secondary'}
                     onClick={() => handleCssOverlayChange('overlay-scanlines')}
+                    style={{ flex: '1 1 80px', fontSize: '0.75rem' }}
                 >Scanlines</button>
                 <button 
                     className={activeCssOverlay === 'overlay-vignette' ? 'secondary active' : 'secondary'}
                     onClick={() => handleCssOverlayChange('overlay-vignette')}
+                    style={{ flex: '1 1 80px', fontSize: '0.75rem' }}
                 >Vignette</button>
                 <button 
                     className={activeCssOverlay === 'overlay-glitch' ? 'secondary active' : 'secondary'}
                     onClick={() => handleCssOverlayChange('overlay-glitch')}
+                    style={{ flex: '1 1 80px', fontSize: '0.75rem' }}
                 >Glitch</button>
                 <button 
                     className={activeCssOverlay === 'overlay-crt' ? 'secondary active' : 'secondary'}
                     onClick={() => handleCssOverlayChange('overlay-crt')}
+                    style={{ flex: '1 1 80px', fontSize: '0.75rem' }}
                 >CRT</button>
             </div>
         </div>
@@ -294,22 +298,25 @@ export function SceneTab() {
       <div className="tab-section">
         <h3>Aspect Ratio</h3>
         <p className="muted small">Choose aspect ratio for export (applies to canvas framing)</p>
-        <div className="button-group">
+        <div className="button-group" style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
           <button 
             className={aspectRatio === '16:9' ? 'secondary active' : 'secondary'}
             onClick={() => handleAspectRatioChange('16:9')}
+            style={{ flex: '1 1 80px' }}
           >
             16:9
           </button>
           <button 
             className={aspectRatio === '1:1' ? 'secondary active' : 'secondary'}
             onClick={() => handleAspectRatioChange('1:1')}
+            style={{ flex: '1 1 80px' }}
           >
             1:1
           </button>
           <button 
             className={aspectRatio === '9:16' ? 'secondary active' : 'secondary'}
             onClick={() => handleAspectRatioChange('9:16')}
+            style={{ flex: '1 1 80px' }}
           >
             9:16
           </button>
