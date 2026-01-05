@@ -6,6 +6,7 @@ import { avatarManager } from '../../three/avatarManager';
 import { exportAsWebM, canExportVideo } from '../../export/exportVideo';
 import { exportAsGLB } from '../../export/exportGLB';
 import { useToastStore } from '../../state/useToastStore';
+import { postProcessingManager } from '../../three/postProcessingManager';
 
 interface ExportTabProps {
   mode?: 'reactions' | 'poselab';
@@ -163,6 +164,11 @@ export function ExportTab({ mode = 'reactions' }: ExportTabProps) {
         // the canvas element's width/height attributes to match the renderer size
         renderer.setSize(dimensions.width, dimensions.height, false);
         
+        // Resize post-processing composer if enabled
+        if (postProcessingManager.isEnabled()) {
+          postProcessingManager.resize(dimensions.width, dimensions.height);
+        }
+        
         // Update camera aspect ratio to match target resolution
         if (camera) {
           camera.aspect = dimensions.width / dimensions.height;
@@ -176,7 +182,12 @@ export function ExportTab({ mode = 'reactions' }: ExportTabProps) {
         // Force renderer to render at new size
         const scene = sceneManager.getScene();
         if (scene && camera) {
-          renderer.render(scene, camera);
+          const composer = postProcessingManager.getComposer();
+          if (postProcessingManager.isEnabled() && composer) {
+            composer.render();
+          } else {
+            renderer.render(scene, camera);
+          }
         }
         
         // Wait a few frames to ensure renderer has fully rendered at new size
@@ -209,6 +220,12 @@ export function ExportTab({ mode = 'reactions' }: ExportTabProps) {
         // Always restore original renderer size and camera aspect
         // The renderer.setSize() will automatically restore canvas element dimensions
         renderer.setSize(originalSize.x, originalSize.y, false);
+        
+        // Restore post-processing size
+        if (postProcessingManager.isEnabled()) {
+          postProcessingManager.resize(originalSize.x, originalSize.y);
+        }
+
         if (camera && originalAspect !== undefined) {
           camera.aspect = originalAspect;
           camera.updateProjectionMatrix();

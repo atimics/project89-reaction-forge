@@ -174,7 +174,7 @@ export function CanvasStage() {
     // Only change background if not locked
     const { backgroundLocked } = useSceneSettingsStore.getState();
     if (!backgroundLocked) {
-      sceneManager.setBackground(currentPreset.background);
+    sceneManager.setBackground(currentPreset.background);
     }
   };
 

@@ -478,9 +478,19 @@ class SceneManager {
         this.renderer.setSize(targetWidth, targetHeight, false);
         this.camera.aspect = targetWidth / targetHeight;
         this.camera.updateProjectionMatrix();
+
+        // Resize post-processing composer if enabled
+        if (postProcessingManager.isEnabled()) {
+          postProcessingManager.resize(targetWidth, targetHeight);
+        }
         
         // Render at target resolution
-        this.renderer.render(this.scene, this.camera);
+        const composer = postProcessingManager.getComposer();
+        if (postProcessingManager.isEnabled() && composer) {
+          composer.render();
+        } else {
+          this.renderer.render(this.scene, this.camera);
+        }
         
         // Capture the render
         const dataUrl = await this.compositeWithLogo(
@@ -496,6 +506,11 @@ class SceneManager {
         this.renderer.setSize(originalSize.x, originalSize.y, false);
         this.camera.aspect = originalSize.x / originalSize.y;
         this.camera.updateProjectionMatrix();
+
+        // Restore post-processing size
+        if (postProcessingManager.isEnabled()) {
+          postProcessingManager.resize(originalSize.x, originalSize.y);
+        }
         
         // Restore background and clear color
         this.scene.background = originalBackground;
@@ -505,7 +520,12 @@ class SceneManager {
       }
       
       // Normal resolution capture
-      this.renderer.render(this.scene, this.camera);
+      const composer = postProcessingManager.getComposer();
+      if (postProcessingManager.isEnabled() && composer) {
+        composer.render();
+      } else {
+        this.renderer.render(this.scene, this.camera);
+      }
       
       const dataUrl = await this.compositeWithLogo(
         this.renderer.domElement, 
