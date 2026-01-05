@@ -42,6 +42,15 @@ interface SceneSettingsState {
   material: MaterialSettings;
   materialPreset: string;
   
+  // Background
+  backgroundLocked: boolean;
+  currentBackground: string;  // Preset ID or 'custom'
+  customBackgroundData: string | null;  // Base64 data for syncing custom backgrounds
+  customBackgroundType: string | null;  // MIME type of custom background
+  
+  // Avatar rotation lock (preserve rotation when animations play)
+  rotationLocked: boolean;
+  
   // Actions
   setLighting: (settings: Partial<LightSettings>) => void;
   setLightingPreset: (preset: string) => void;
@@ -54,6 +63,17 @@ interface SceneSettingsState {
   
   setMaterial: (settings: Partial<MaterialSettings>) => void;
   setMaterialPreset: (preset: string) => void;
+  
+  // Background actions
+  setBackgroundLocked: (locked: boolean) => void;
+  setCurrentBackground: (id: string) => void;
+  setCustomBackground: (data: string, mimeType: string) => void;
+  clearCustomBackground: () => void;
+  isBackgroundLocked: () => boolean;
+  
+  // Rotation lock actions
+  setRotationLocked: (locked: boolean) => void;
+  isRotationLocked: () => boolean;
   
   // Apply all settings to managers
   applyAll: () => void;
@@ -101,6 +121,15 @@ export const useSceneSettingsStore = create<SceneSettingsState>()(
       
       material: DEFAULT_MATERIAL_SETTINGS,
       materialPreset: 'default',
+      
+      // Background state
+      backgroundLocked: false,
+      currentBackground: 'midnight-circuit',
+      customBackgroundData: null,
+      customBackgroundType: null,
+      
+      // Rotation lock (auto-enabled when user rotates via gizmo)
+      rotationLocked: false,
       
       // Lighting Actions
       setLighting: (settings) => {
@@ -167,6 +196,48 @@ export const useSceneSettingsStore = create<SceneSettingsState>()(
         set({ material: materialManager.getSettings() });
       },
       
+      // Background Actions
+      setBackgroundLocked: (locked) => {
+        set({ backgroundLocked: locked });
+      },
+      
+      setCurrentBackground: (id) => {
+        set({ currentBackground: id });
+        // If switching away from custom, clear the custom data
+        if (id !== 'custom') {
+          set({ customBackgroundData: null, customBackgroundType: null });
+        }
+      },
+      
+      setCustomBackground: (data, mimeType) => {
+        set({
+          currentBackground: 'custom',
+          customBackgroundData: data,
+          customBackgroundType: mimeType,
+          backgroundLocked: true, // Auto-lock when custom background is set
+        });
+      },
+      
+      clearCustomBackground: () => {
+        set({
+          customBackgroundData: null,
+          customBackgroundType: null,
+        });
+      },
+      
+      isBackgroundLocked: () => {
+        return get().backgroundLocked;
+      },
+      
+      // Rotation Lock Actions
+      setRotationLocked: (locked) => {
+        set({ rotationLocked: locked });
+      },
+      
+      isRotationLocked: () => {
+        return get().rotationLocked;
+      },
+      
       // Apply All
       applyAll: () => {
         const state = get();
@@ -187,6 +258,11 @@ export const useSceneSettingsStore = create<SceneSettingsState>()(
           environmentPreset: 'none',
           material: DEFAULT_MATERIAL_SETTINGS,
           materialPreset: 'default',
+          backgroundLocked: false,
+          currentBackground: 'midnight-circuit',
+          customBackgroundData: null,
+          customBackgroundType: null,
+          rotationLocked: false,
         });
         lightingManager.applySettings(DEFAULT_LIGHT_SETTINGS);
         postProcessingManager.applySettings(DEFAULT_POST_SETTINGS);
@@ -205,6 +281,13 @@ export const useSceneSettingsStore = create<SceneSettingsState>()(
         environmentPreset: state.environmentPreset,
         material: state.material,
         materialPreset: state.materialPreset,
+        // Background persistence
+        backgroundLocked: state.backgroundLocked,
+        currentBackground: state.currentBackground,
+        // Note: customBackgroundData is NOT persisted to localStorage 
+        // because base64 images can be large. Only preset IDs are persisted.
+        // Note: rotationLocked is NOT persisted - it resets on app reload
+        // to ensure avatars load facing the correct direction
       }),
     }
   )

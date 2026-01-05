@@ -1,7 +1,12 @@
+import { useState, useEffect } from 'react';
 import { sceneManager } from '../three/sceneManager';
 
 import { usePopOutViewport } from '../hooks/usePopOutViewport';
 import { useUIStore } from '../state/useUIStore';
+import { MultiplayerPanel } from './MultiplayerPanel';
+import { notifySceneChange } from '../multiplayer/avatarBridge';
+
+type AspectRatio = '16:9' | '1:1' | '9:16';
 
 interface ViewportOverlayProps {
   mode: 'reactions' | 'poselab';
@@ -13,6 +18,18 @@ interface ViewportOverlayProps {
 export function ViewportOverlay({ mode, isPlaying, onPlayPause, onStop }: ViewportOverlayProps) {
   const { activeCssOverlay } = useUIStore();
   const { isPoppedOut, togglePopOut } = usePopOutViewport(activeCssOverlay);
+  const [aspectRatio, setAspectRatio] = useState<AspectRatio>('16:9');
+
+  // Sync with sceneManager on mount
+  useEffect(() => {
+    setAspectRatio(sceneManager.getAspectRatio());
+  }, []);
+
+  const handleAspectRatioChange = (ratio: AspectRatio) => {
+    setAspectRatio(ratio);
+    sceneManager.setAspectRatio(ratio);
+    notifySceneChange({ aspectRatio: ratio });
+  };
 
   const handleResetCamera = () => {
     sceneManager.resetCamera();
@@ -78,6 +95,43 @@ export function ViewportOverlay({ mode, isPlaying, onPlayPause, onStop }: Viewpo
           >
             {isPoppedOut ? '🔙' : '↗️'}
           </button>
+          
+          {/* Aspect Ratio Toggle */}
+          <div style={{ 
+            marginLeft: '0.5rem', 
+            borderLeft: '1px solid rgba(255,255,255,0.1)', 
+            paddingLeft: '0.5rem',
+            display: 'flex',
+            gap: '2px'
+          }}>
+            <button
+              className={`icon-button ${aspectRatio === '16:9' ? 'active' : ''}`}
+              onClick={() => handleAspectRatioChange('16:9')}
+              title="16:9 Landscape"
+              aria-label="16:9 aspect ratio"
+              style={{ fontSize: '0.65rem', padding: '0.25rem 0.4rem' }}
+            >
+              16:9
+            </button>
+            <button
+              className={`icon-button ${aspectRatio === '1:1' ? 'active' : ''}`}
+              onClick={() => handleAspectRatioChange('1:1')}
+              title="1:1 Square"
+              aria-label="1:1 aspect ratio"
+              style={{ fontSize: '0.65rem', padding: '0.25rem 0.4rem' }}
+            >
+              1:1
+            </button>
+            <button
+              className={`icon-button ${aspectRatio === '9:16' ? 'active' : ''}`}
+              onClick={() => handleAspectRatioChange('9:16')}
+              title="9:16 Portrait"
+              aria-label="9:16 aspect ratio"
+              style={{ fontSize: '0.65rem', padding: '0.25rem 0.4rem' }}
+            >
+              9:16
+            </button>
+          </div>
         </div>
       </div>
 
@@ -104,6 +158,11 @@ export function ViewportOverlay({ mode, isPlaying, onPlayPause, onStop }: Viewpo
           </div>
         </div>
       )}
+
+      {/* Multiplayer widget - top right */}
+      <div className="viewport-overlay top-right">
+        <MultiplayerPanel compact />
+      </div>
 
       {/* Logo overlay - hidden but preserved for potential future use or reference */}
       {/* 

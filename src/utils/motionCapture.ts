@@ -29,6 +29,8 @@ const HEAD_DAMPENING = 0.4;
 const CAMERA_CONFIG = {
   WIDTH: 640,
   HEIGHT: 480,
+  /** Use front-facing camera on mobile devices */
+  FACING_MODE: 'user' as const,
 };
 
 /** MediaPipe Holistic configuration */
@@ -134,7 +136,8 @@ export class MotionCaptureManager {
                 await this.holistic.send({ image: this.videoElement });
             },
             width: CAMERA_CONFIG.WIDTH,
-            height: CAMERA_CONFIG.HEIGHT
+            height: CAMERA_CONFIG.HEIGHT,
+            facingMode: CAMERA_CONFIG.FACING_MODE, // Ensures front camera on mobile
         });
 
         await this.camera.start();

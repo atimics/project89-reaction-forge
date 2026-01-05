@@ -1,0 +1,536 @@
+/* ===================
+   Multiplayer Panel Styles
+   Soft, rounded design matching app aesthetic
+   =================== */
+
+.multiplayer-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: linear-gradient(135deg, rgba(30, 32, 45, 0.95), rgba(20, 22, 35, 0.95));
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+}
+
+.mp-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.mp-header h3 {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #f0f4ff;
+  letter-spacing: -0.01em;
+}
+
+.mp-status {
+  font-size: 0.7rem;
+  font-weight: 500;
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
+.mp-status.connected {
+  color: #00ffd6;
+  background: rgba(0, 255, 214, 0.12);
+  border: 1px solid rgba(0, 255, 214, 0.2);
+}
+
+.mp-status.disconnected {
+  color: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.mp-error {
+  padding: 0.75rem;
+  background: rgba(255, 68, 68, 0.08);
+  border: 1px solid rgba(255, 68, 68, 0.2);
+  border-radius: 12px;
+  color: #ff7b7b;
+  font-size: 0.8rem;
+}
+
+.mp-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.mp-label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.4);
+  font-weight: 600;
+  margin-left: 2px;
+}
+
+/* Name editing */
+.mp-name-display {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.6rem 0.85rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.mp-name-display:hover {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.mp-name-display span:first-child {
+  font-weight: 500;
+  color: #f0f4ff;
+  font-size: 0.9rem;
+}
+
+.mp-edit-hint {
+  opacity: 0.4;
+  font-size: 0.75rem;
+  transition: opacity 0.2s;
+}
+
+.mp-name-display:hover .mp-edit-hint {
+  opacity: 0.7;
+}
+
+.mp-name-edit {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.mp-name-edit input {
+  flex: 1;
+  padding: 0.6rem 0.85rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(0, 255, 214, 0.4);
+  border-radius: 12px;
+  color: #f0f4ff;
+  font-size: 0.9rem;
+  font-family: inherit;
+  outline: none;
+}
+
+.mp-name-edit input:focus {
+  border-color: rgba(0, 255, 214, 0.6);
+  box-shadow: 0 0 0 3px rgba(0, 255, 214, 0.1);
+}
+
+.mp-name-edit button {
+  padding: 0.6rem 0.85rem;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  color: #f0f4ff;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.85rem;
+}
+
+.mp-name-edit button:hover {
+  background: rgba(0, 255, 214, 0.15);
+  border-color: rgba(0, 255, 214, 0.3);
+}
+
+/* Actions */
+.mp-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.mp-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border: none;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.mp-btn.primary {
+  background: linear-gradient(135deg, #1c6cff, #6c2bff);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 2px 12px rgba(108, 43, 255, 0.25);
+}
+
+.mp-btn.primary:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(108, 43, 255, 0.35);
+}
+
+.mp-btn.secondary {
+  background: rgba(255, 255, 255, 0.06);
+  color: #e6f3ff;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.mp-btn.secondary:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(0, 255, 214, 0.3);
+}
+
+.mp-btn.danger {
+  background: rgba(255, 68, 68, 0.1);
+  color: #ff7b7b;
+  border: 1px solid rgba(255, 68, 68, 0.2);
+}
+
+.mp-btn.danger:hover:not(:disabled) {
+  background: rgba(255, 68, 68, 0.18);
+  border-color: rgba(255, 68, 68, 0.35);
+}
+
+.mp-btn.small {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.75rem;
+  border-radius: 10px;
+}
+
+.mp-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Join form */
+.mp-join-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.85rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.mp-join-form input {
+  padding: 0.65rem 0.85rem;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  color: #f0f4ff;
+  font-size: 0.85rem;
+  font-family: 'JetBrains Mono', monospace;
+  outline: none;
+  transition: all 0.2s;
+}
+
+.mp-join-form input::placeholder {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.mp-join-form input:focus {
+  border-color: rgba(0, 255, 214, 0.4);
+  box-shadow: 0 0 0 3px rgba(0, 255, 214, 0.08);
+}
+
+.mp-join-buttons {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.mp-join-buttons .mp-btn {
+  flex: 1;
+  padding: 0.6rem;
+}
+
+/* Room info */
+.mp-room-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.6rem 0.85rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+}
+
+.mp-room-id {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8rem;
+  color: #00ffd6;
+  letter-spacing: -0.02em;
+}
+
+.mp-role {
+  font-size: 0.7rem;
+  padding: 3px 8px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* Peers list */
+.mp-peers-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  max-height: 140px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.mp-peers-list::-webkit-scrollbar {
+  width: 4px;
+}
+
+.mp-peers-list::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 2px;
+}
+
+.mp-peers-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+}
+
+.mp-peer {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.65rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: 10px;
+  font-size: 0.8rem;
+  transition: all 0.15s ease;
+}
+
+.mp-peer:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.mp-peer.local {
+  border-color: rgba(0, 255, 214, 0.25);
+  background: rgba(0, 255, 214, 0.05);
+}
+
+.mp-peer-avatar {
+  font-size: 1rem;
+  opacity: 0.9;
+}
+
+.mp-peer-name {
+  flex: 1;
+  color: #e6f3ff;
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+  font-weight: 500;
+}
+
+.mp-you {
+  font-size: 0.65rem;
+  color: #00ffd6;
+  font-weight: 600;
+  background: rgba(0, 255, 214, 0.1);
+  padding: 1px 6px;
+  border-radius: 6px;
+}
+
+.mp-peer-latency {
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.4);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.mp-peer-status {
+  font-size: 0.5rem;
+}
+
+.mp-peer-status.connected {
+  color: #00ffd6;
+}
+
+.mp-peer-status.disconnected,
+.mp-peer-status.error {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.mp-footer {
+  text-align: center;
+  color: rgba(255, 255, 255, 0.3);
+  font-size: 0.65rem;
+  padding-top: 0.65rem;
+  margin-top: 0.25rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+/* ===================
+   Compact Mode (Viewport Overlay)
+   =================== */
+
+.multiplayer-compact {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.mp-status-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.65rem;
+  background: rgba(15, 18, 28, 0.85);
+  backdrop-filter: blur(12px);
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+}
+
+.mp-status-badge.connected {
+  border-color: rgba(0, 255, 214, 0.25);
+}
+
+.mp-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #00ffd6;
+  animation: mp-pulse 2s ease-in-out infinite;
+  box-shadow: 0 0 8px rgba(0, 255, 214, 0.5);
+}
+
+@keyframes mp-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(0.9); }
+}
+
+.mp-count {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #f0f4ff;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.mp-leave-btn {
+  width: 18px;
+  height: 18px;
+  border: none;
+  background: rgba(255, 68, 68, 0.15);
+  color: #ff7b7b;
+  border-radius: 50%;
+  font-size: 0.65rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  margin-left: 2px;
+}
+
+.mp-leave-btn:hover {
+  background: rgba(255, 68, 68, 0.3);
+  transform: scale(1.1);
+}
+
+.mp-quick-join {
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: rgba(15, 18, 28, 0.85);
+  backdrop-filter: blur(12px);
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.25);
+  /* Center the emoji */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Mobile touch target */
+  min-width: 44px;
+  min-height: 44px;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.mp-quick-join:hover:not(:disabled) {
+  background: linear-gradient(135deg, #1c6cff, #6c2bff);
+  border-color: rgba(108, 43, 255, 0.4);
+  transform: scale(1.08);
+  box-shadow: 0 4px 16px rgba(108, 43, 255, 0.3);
+}
+
+.mp-quick-join:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ===================
+   Mobile Responsive
+   =================== */
+
+@media (max-width: 640px) {
+  .multiplayer-panel {
+    padding: 0.85rem;
+    gap: 0.6rem;
+  }
+
+  .mp-header h3 {
+    font-size: 0.9rem;
+  }
+
+  .mp-btn {
+    padding: 0.85rem 1rem;
+    font-size: 0.9rem;
+    /* Larger touch targets on mobile */
+    min-height: 48px;
+  }
+
+  .mp-name-display,
+  .mp-room-info {
+    padding: 0.7rem 0.85rem;
+  }
+
+  .mp-join-form input {
+    padding: 0.75rem 0.85rem;
+    font-size: 1rem; /* Prevent iOS zoom on focus */
+  }
+
+  .mp-peers-list {
+    max-height: 120px;
+  }
+
+  .mp-peer {
+    padding: 0.6rem;
+  }
+
+  /* Compact mode adjustments */
+  .mp-status-badge {
+    padding: 0.4rem 0.7rem;
+  }
+
+  .mp-quick-join {
+    width: 44px;
+    height: 44px;
+  }
+}
+
+/* Prevent text selection on touch */
+.multiplayer-panel,
+.multiplayer-compact {
+  -webkit-user-select: none;
+  user-select: none;
+}

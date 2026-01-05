@@ -8,6 +8,11 @@ import { ControlPanel } from './components/ControlPanel';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { ToastHost } from './ui/Toast';
 import { useUIStore } from './state/useUIStore';
+import { initAvatarBridge } from './multiplayer/avatarBridge';
+import { ConnectionProgressPanel } from './components/ConnectionProgressPanel';
+
+// Initialize multiplayer avatar bridge on app startup
+initAvatarBridge();
 
 function App() {
   const { mode, setMode, mobileDrawerOpen, setMobileDrawerOpen } = useUIStore();
@@ -62,6 +67,7 @@ function App() {
       )}
 
       <ToastHost />
+      <ConnectionProgressPanel />
     </div>
   );
 }

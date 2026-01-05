@@ -1,9 +1,13 @@
 import { useState, useRef, useEffect } from 'react';
 import { useReactionStore } from '../../state/useReactionStore';
+import { useSceneSettingsStore } from '../../state/useSceneSettingsStore';
+import { useMultiplayerStore } from '../../state/useMultiplayerStore';
 import { avatarManager } from '../../three/avatarManager';
+import { multiAvatarManager } from '../../three/multiAvatarManager';
 import { interactionManager } from '../../three/interactionManager';
 import type { AnimationMode } from '../../types/reactions';
 import { useToastStore } from '../../state/useToastStore';
+import { notifyExpressionChange } from '../../multiplayer';
 
 export function PoseExpressionTab() {
   const { isAvatarReady, animationMode, setAnimationMode } = useReactionStore();
@@ -34,19 +38,41 @@ export function PoseExpressionTab() {
   const handleGizmoToggle = (enabled: boolean) => {
     setIsGizmoEnabled(enabled);
     
+    // Check if we're in multiplayer mode
+    const mpState = useMultiplayerStore.getState();
+    const isInMultiplayer = mpState.isConnected && mpState.localPeerId;
+    
     if (enabled) {
       // 1. Freeze the pose first so it's already static when helpers appear
       avatarManager.freezeCurrentPose();
-      // 2. Enable interaction tools
+      
+      // 2. Also freeze in multiAvatarManager if in multiplayer
+      if (isInMultiplayer && mpState.localPeerId) {
+        multiAvatarManager.setInteraction(true);
+        multiAvatarManager.freezeCurrentPose(mpState.localPeerId);
+      }
+      
+      // 3. Enable interaction tools
       interactionManager.toggle(true);
       avatarManager.setManualPosing(true);
-      addToast("Manual Posing Enabled", "info");
+      
+      // 4. Auto-lock rotation so manual adjustments persist through animation changes
+      useSceneSettingsStore.getState().setRotationLocked(true);
+      addToast("Manual Posing Enabled (rotation locked)", "info");
     } else {
       // 1. Disable interaction tools
       interactionManager.toggle(false);
+      
       // 2. Capture final state
       avatarManager.freezeCurrentPose();
       avatarManager.setManualPosing(false);
+      
+      // 3. Also update multiAvatarManager if in multiplayer
+      if (isInMultiplayer && mpState.localPeerId) {
+        multiAvatarManager.setInteraction(false);
+        multiAvatarManager.freezeCurrentPose(mpState.localPeerId);
+      }
+      
       addToast("Manual Posing Disabled", "success");
     }
   };
@@ -77,12 +103,15 @@ export function PoseExpressionTab() {
 
   const handleExpressionChange = (name: string, value: number) => {
     // 1. Update React state immediately for UI responsiveness
-    setExpressionWeights(prev => ({ ...prev, [name]: value }));
+    const newWeights = { ...expressionWeights, [name]: value };
+    setExpressionWeights(newWeights);
     
     // 2. Throttle the expensive Three.js update using requestAnimationFrame
     if (!activeUpdateRef.current) {
       activeUpdateRef.current = requestAnimationFrame(() => {
         avatarManager.setExpressionWeight(name, value);
+        // Notify multiplayer system of expression change
+        notifyExpressionChange(newWeights);
         activeUpdateRef.current = null;
       });
     }
@@ -106,6 +135,8 @@ export function PoseExpressionTab() {
       avatarManager.setExpressionWeight(name, 0);
     });
     setExpressionWeights(newWeights);
+    // Notify multiplayer system
+    notifyExpressionChange(newWeights);
   };
 
   const handlePoseUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {

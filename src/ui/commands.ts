@@ -48,15 +48,26 @@ export const commands: Action[] = [
   },
   { 
       id: "export-png", 
-      name: "Export PNG", 
+      name: "Export PNG (with Effects)", 
       shortcut: ["p"], 
-      keywords: "save image screenshot",
-      perform: () => {
+      keywords: "save image screenshot effects fx",
+      perform: async () => {
+          // Use captureSnapshot to include CSS overlays (scanlines, glitch, etc.) and logo
+          const dataUrl = await sceneManager.captureSnapshot({
+              includeLogo: true,
+              transparentBackground: false,
+          });
+          
+          if (!dataUrl) {
+              getToast().addToast('Failed to capture screenshot', 'error');
+              return;
+          }
+          
           const link = document.createElement('a');
-          link.href = sceneManager.getCanvas()?.toDataURL('image/png') || '';
+          link.href = dataUrl;
           link.download = `PoseLab_Capture_${Date.now()}.png`;
           link.click();
-          getToast().addToast('📸 PNG Saved', 'success');
+          getToast().addToast('📸 PNG Saved (with Effects)', 'success');
       } 
   },
   { 

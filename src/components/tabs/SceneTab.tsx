@@ -11,6 +11,11 @@ import { POST_PRESETS } from '../../three/postProcessingManager';
 import { HDRI_PRESETS, environmentManager } from '../../three/environmentManager';
 import { MATERIAL_PRESETS, materialManager } from '../../three/materialManager';
 import type { BackgroundId } from '../../types/reactions';
+import { MultiplayerPanel } from '../MultiplayerPanel';
+import { useMultiplayerStore } from '../../state/useMultiplayerStore';
+import { multiAvatarManager } from '../../three/multiAvatarManager';
+import { syncManager } from '../../multiplayer/syncManager';
+import { notifySceneChange } from '../../multiplayer/avatarBridge';
 
 type AspectRatio = '16:9' | '1:1' | '9:16';
 
@@ -183,8 +188,18 @@ export function SceneTab() {
   const { addToast } = useToastStore();
   const { activeCssOverlay, setActiveCssOverlay } = useUIStore();
   const sceneSettings = useSceneSettingsStore();
+  const { 
+    backgroundLocked, 
+    setBackgroundLocked,
+    setCurrentBackground,
+    setCustomBackground: setCustomBackgroundStore,
+    currentBackground: storeBackground,
+    customBackgroundData,
+    rotationLocked,
+    setRotationLocked,
+  } = useSceneSettingsStore();
   
-  const [selectedBackground, setSelectedBackground] = useState('midnight-circuit');
+  const [selectedBackground, setSelectedBackground] = useState(storeBackground || 'midnight-circuit');
   const [customBackground, setCustomBackground] = useState<string | null>(null);
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>('16:9');
   const [isLoadingHdri, setIsLoadingHdri] = useState(false);
@@ -192,6 +207,17 @@ export function SceneTab() {
   const vrmInputRef = useRef<HTMLInputElement>(null);
   const bgInputRef = useRef<HTMLInputElement>(null);
   const hdriInputRef = useRef<HTMLInputElement>(null);
+
+  // Restore custom background from store on mount
+  useEffect(() => {
+    if (customBackgroundData) {
+      const url = `data:${useSceneSettingsStore.getState().customBackgroundType || 'image/png'};base64,${customBackgroundData}`;
+      setCustomBackground(url);
+      if (storeBackground === 'custom') {
+        sceneManager.setBackground(url);
+      }
+    }
+  }, []);
 
   useEffect(() => {
     const currentRatio = sceneManager.getAspectRatio();
@@ -206,6 +232,32 @@ export function SceneTab() {
     setAvatarReady(false);
     try {
       await avatarManager.load(url);
+      
+      // If in multiplayer, register with multiplayer system (don't re-load)
+      const mpState = useMultiplayerStore.getState();
+      if (mpState.isConnected && mpState.localPeerId) {
+        const loadedVRM = avatarManager.getVRM();
+        if (loadedVRM) {
+          multiAvatarManager.registerExistingAvatar(
+            mpState.localPeerId,
+            loadedVRM,
+            true,
+            mpState.localDisplayName
+          );
+          mpState.updatePeer(mpState.localPeerId, { hasAvatar: true });
+          syncManager.broadcastFullState();
+          
+          // Send VRM to peers
+          setTimeout(() => {
+            mpState.peers.forEach((peer) => {
+              if (!peer.isLocal) {
+                syncManager.sendVRMToPeer(peer.peerId);
+              }
+            });
+          }, 500);
+        }
+      }
+      
       setAvatarReady(true);
       addToast('Avatar loaded successfully', 'success');
     } catch (error) {
@@ -229,6 +281,25 @@ export function SceneTab() {
     setCustomBackground(typeUrl);
     setSelectedBackground('custom');
     await sceneManager.setBackground(typeUrl);
+    
+    // Store base64 for persistence and multiplayer sync
+    // Only for images that aren't too large (under 5MB)
+    if (file.type.startsWith('image/') && file.size < 5 * 1024 * 1024) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64 = (reader.result as string).split(',')[1];
+        setCustomBackgroundStore(base64, file.type);
+        
+        // Notify multiplayer (will be handled by sync manager)
+        notifySceneChange({ background: 'custom' });
+      };
+      reader.readAsDataURL(file);
+    } else {
+      // Just update local state for large files or videos
+      setCurrentBackground('custom');
+      setBackgroundLocked(true);
+      addToast('Background set (too large for multiplayer sync)', 'info');
+    }
   };
 
   const handleHdriUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -256,16 +327,24 @@ export function SceneTab() {
 
   const handleBackgroundSelect = async (backgroundId: string) => {
     setSelectedBackground(backgroundId);
+    setCurrentBackground(backgroundId);
+    
     if (backgroundId === 'custom' && customBackground) {
       await sceneManager.setBackground(customBackground);
     } else {
       await sceneManager.setBackground(backgroundId as BackgroundId);
     }
+    
+    // Notify multiplayer peers if we're the host
+    notifySceneChange({ background: backgroundId });
   };
 
   const handleAspectRatioChange = (ratio: AspectRatio) => {
     setAspectRatio(ratio);
     sceneManager.setAspectRatio(ratio);
+    
+    // Notify multiplayer peers if we're the host
+    notifySceneChange({ aspectRatio: ratio });
   };
 
   const handleHdriPreset = async (presetId: string) => {
@@ -295,16 +374,42 @@ export function SceneTab() {
         </button>
         
         {isAvatarReady && (
-          <button
-            className="secondary full-width"
-            onClick={() => {
-              const vrm = avatarManager.getVRM();
-              if (vrm) sceneManager.frameObject(vrm.scene);
-            }}
-            style={{ marginTop: '0.5rem' }}
-          >
-            🔍 Fit Avatar to Screen
-          </button>
+          <>
+            <button
+              className="secondary full-width"
+              onClick={() => {
+                const vrm = avatarManager.getVRM();
+                if (vrm) sceneManager.frameObject(vrm.scene);
+              }}
+              style={{ marginTop: '0.5rem' }}
+            >
+              🔍 Fit Avatar to Screen
+            </button>
+            
+            {/* Rotation lock toggle */}
+            <div style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'space-between',
+              marginTop: '0.75rem',
+              padding: '0.5rem 0.75rem',
+              background: rotationLocked ? 'rgba(255, 193, 7, 0.1)' : 'rgba(255, 255, 255, 0.05)',
+              borderRadius: '6px',
+              border: rotationLocked ? '1px solid rgba(255, 193, 7, 0.3)' : '1px solid transparent',
+            }}>
+              <span className="small" style={{ color: rotationLocked ? '#ffc107' : 'var(--text-muted)' }}>
+                {rotationLocked ? '🔒 Rotation locked' : '🔓 Rotation unlocked'}
+              </span>
+              <button
+                className={`secondary small ${rotationLocked ? 'active' : ''}`}
+                onClick={() => setRotationLocked(!rotationLocked)}
+                style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem' }}
+                title={rotationLocked ? 'Unlock rotation (will change with poses)' : 'Lock rotation (won\'t change with poses)'}
+              >
+                {rotationLocked ? 'Unlock' : 'Lock'}
+              </button>
+            </div>
+          </>
         )}
         
         <input
@@ -564,6 +669,30 @@ export function SceneTab() {
 
       {/* Backgrounds Section */}
       <Section title="Backgrounds" icon="🎨" defaultOpen={true}>
+        {/* Lock toggle */}
+        <div style={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'space-between',
+          marginBottom: '0.75rem',
+          padding: '0.5rem 0.75rem',
+          background: backgroundLocked ? 'rgba(255, 193, 7, 0.1)' : 'rgba(255, 255, 255, 0.05)',
+          borderRadius: '6px',
+          border: backgroundLocked ? '1px solid rgba(255, 193, 7, 0.3)' : '1px solid transparent',
+        }}>
+          <span className="small" style={{ color: backgroundLocked ? '#ffc107' : 'var(--text-muted)' }}>
+            {backgroundLocked ? '🔒 Background locked' : '🔓 Background unlocked'}
+          </span>
+          <button
+            className={`secondary small ${backgroundLocked ? 'active' : ''}`}
+            onClick={() => setBackgroundLocked(!backgroundLocked)}
+            style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem' }}
+            title={backgroundLocked ? 'Unlock background (will change with poses)' : 'Lock background (won\'t change with poses)'}
+          >
+            {backgroundLocked ? 'Unlock' : 'Lock'}
+          </button>
+        </div>
+        
         <div className="background-grid">
           <button
             className={`background-thumbnail ${selectedBackground === 'custom' ? 'active' : ''}`}
@@ -648,6 +777,11 @@ export function SceneTab() {
             </button>
           ))}
         </div>
+      </Section>
+
+      {/* Co-op / Multiplayer */}
+      <Section title="Co-op Session" icon="🌐" defaultOpen={false}>
+        <MultiplayerPanel />
       </Section>
     </div>
   );

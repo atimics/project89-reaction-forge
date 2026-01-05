@@ -3,9 +3,13 @@ import { sceneManager } from '../three/sceneManager';
 import { avatarManager } from '../three/avatarManager';
 import { useReactionStore } from '../state/useReactionStore';
 import { useUIStore } from '../state/useUIStore';
+import { useSceneSettingsStore } from '../state/useSceneSettingsStore';
 import type { ReactionPreset } from '../types/reactions';
 import { useAvatarSource } from '../state/useAvatarSource';
 import { OnboardingOverlay } from './OnboardingOverlay';
+import { useMultiplayerStore } from '../state/useMultiplayerStore';
+import { multiAvatarManager } from '../three/multiAvatarManager';
+import { syncManager } from '../multiplayer/syncManager';
 
 // Simple Toast Component for Errors
 function ErrorToast({ message, onClose }: { message: string; onClose: () => void }) {
@@ -57,6 +61,9 @@ export function CanvasStage() {
     // Ensure avatar is in the new scene (if one is already loaded)
     avatarManager.rebindToScene();
     
+    // Rebind multi-avatar manager for multiplayer
+    multiAvatarManager.rebindToScene();
+    
     // Initialize Interaction Manager (Gizmos)
     // We do this after scene init to ensure renderer exists
     // The lazy init in toggle() usually handles it, but this ensures events are bound if enabled
@@ -83,28 +90,61 @@ export function CanvasStage() {
     setErrorMessage(null);
     console.log('[CanvasStage] Loading avatar from:', currentUrl);
     
-    avatarManager
-      .load(currentUrl)
-      .then(() => {
+    const loadAvatar = async () => {
+      try {
+        // Load via avatarManager (original system)
+        await avatarManager.load(currentUrl);
+        
         if (cancelled) return;
+        
+        // If in multiplayer session, register with multiAvatarManager (don't re-load)
+        const mpState = useMultiplayerStore.getState();
+        if (mpState.isConnected && mpState.localPeerId) {
+          const loadedVRM = avatarManager.getVRM();
+          if (loadedVRM) {
+            console.log('[CanvasStage] Registering avatar with multiplayer system');
+            // Use registerExistingAvatar to avoid creating a duplicate
+            multiAvatarManager.registerExistingAvatar(
+              mpState.localPeerId,
+              loadedVRM,
+              true,
+              mpState.localDisplayName
+            );
+            
+            // Notify peers about our avatar
+            mpState.updatePeer(mpState.localPeerId, { hasAvatar: true });
+            syncManager.broadcastFullState();
+            
+            // Send our VRM to all connected peers (after a short delay for buffer to be ready)
+            setTimeout(() => {
+              mpState.peers.forEach((peer) => {
+                if (!peer.isLocal) {
+                  console.log(`[CanvasStage] Sending VRM to peer: ${peer.peerId}`);
+                  syncManager.sendVRMToPeer(peer.peerId);
+                }
+              });
+            }, 500);
+          }
+        }
+        
         console.log('[CanvasStage] Avatar loaded successfully');
         setAvatarReady(true);
-        useReactionStore.setState({ isAvatarReady: true }); // Update global store
+        useReactionStore.setState({ isAvatarReady: true });
         const currentPreset = useReactionStore.getState().activePreset;
         console.log('[CanvasStage] Applying initial preset:', currentPreset.id);
         applyPreset(currentPreset);
-      })
-      .catch((error) => {
+      } catch (error) {
         if (cancelled) return;
         console.error('[CanvasStage] Failed to load VRM:', error);
         setErrorMessage(error instanceof Error ? error.message : 'Failed to load VRM file');
-        // Reset to allow retrying
         setAvatarReady(false);
-        useReactionStore.setState({ isAvatarReady: false }); // Update global store
-      })
-      .finally(() => {
+        useReactionStore.setState({ isAvatarReady: false });
+      } finally {
         if (!cancelled) setIsLoading(false);
-      });
+      }
+    };
+    
+    loadAvatar();
       
     return () => {
       cancelled = true;
@@ -130,7 +170,12 @@ export function CanvasStage() {
     
     avatarManager.applyPose(currentPreset.pose, animated, mode);
     avatarManager.applyExpression(currentPreset.expression);
-    sceneManager.setBackground(currentPreset.background);
+    
+    // Only change background if not locked
+    const { backgroundLocked } = useSceneSettingsStore.getState();
+    if (!backgroundLocked) {
+      sceneManager.setBackground(currentPreset.background);
+    }
   };
 
   return (

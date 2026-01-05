@@ -71,7 +71,7 @@ This document outlines the planned upgrades and feature requests for PoseLab, fo
 - [x] **Advanced Lighting:** 3-point lighting controls (Key, Fill, Rim) with 6 presets.
 - [x] **HDRI Support:** Upload `.hdr`/`.exr` environment maps with 5 built-in presets.
 - [x] **Post-Processing:** Bloom, Color Grading, Vignette, Film Grain with 6 cinematic presets.
-- [x] **Toon Shader Settings:** Customize outlines, rim lighting, and emissive glow.
+- [x] **Toon Shader Settings:** Customize outlines, rim lighting, and emissive glow (MToon VRMs only).
 
 ### 9. 👥 Multi-Avatar Composition
 **Goal:** Create interactions between multiple characters.

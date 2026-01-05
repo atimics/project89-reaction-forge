@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { MotionCaptureManager } from '../../utils/motionCapture';
+import { voiceLipSync } from '../../utils/voiceLipSync';
 import { avatarManager } from '../../three/avatarManager';
 import { useAnimationStore } from '../../state/useAnimationStore';
 import { useToastStore } from '../../state/useToastStore';
@@ -24,6 +25,11 @@ export function MocapTab() {
   
   const [isGreenScreen, setIsGreenScreen] = useState(false);
   const [mocapMode, setMocapMode] = useState<'full' | 'face'>('full');
+  
+  // Voice Lip Sync state
+  const [isVoiceLipSyncActive, setIsVoiceLipSyncActive] = useState(false);
+  const [voiceVolume, setVoiceVolume] = useState(0);
+  const [voiceSensitivity, setVoiceSensitivity] = useState(2.0);
 
   useEffect(() => {
     if (videoRef.current && !managerRef.current) {
@@ -124,6 +130,53 @@ export function MocapTab() {
           }, 1000);
       }
   };
+
+  // Voice Lip Sync handlers
+  const toggleVoiceLipSync = async () => {
+    if (isVoiceLipSyncActive) {
+      voiceLipSync.stop();
+      setIsVoiceLipSyncActive(false);
+      setVoiceVolume(0);
+    } else {
+      const vrm = avatarManager.getVRM();
+      if (!vrm) {
+        addToast("Load an avatar first!", "error");
+        return;
+      }
+      
+      try {
+        voiceLipSync.setVRM(vrm);
+        voiceLipSync.setOnVolumeChange(setVoiceVolume);
+        voiceLipSync.setSensitivity(voiceSensitivity);
+        await voiceLipSync.start();
+        setIsVoiceLipSyncActive(true);
+        addToast("Voice Lip Sync started", "success");
+      } catch (e: any) {
+        console.error('[VoiceLipSync]', e);
+        let msg = "Failed to access microphone.";
+        if (e.name === 'NotAllowedError' || e.name === 'PermissionDeniedError') {
+          msg = "Microphone permission denied. Please allow access in browser settings.";
+        } else if (e.name === 'NotFoundError') {
+          msg = "No microphone found.";
+        }
+        addToast(msg, "error");
+      }
+    }
+  };
+
+  const handleSensitivityChange = (value: number) => {
+    setVoiceSensitivity(value);
+    voiceLipSync.setSensitivity(value);
+  };
+
+  // Cleanup voice lip sync on unmount
+  useEffect(() => {
+    return () => {
+      if (isVoiceLipSyncActive) {
+        voiceLipSync.stop();
+      }
+    };
+  }, [isVoiceLipSyncActive]);
 
   const toggleMocap = async () => {
     if (!managerRef.current) return;
@@ -323,6 +376,82 @@ export function MocapTab() {
               <li><strong>Calibration:</strong> Use the <strong>Wizard</strong> button to align your body and gaze.</li>
               <li>Ensure good lighting on your face.</li>
           </ul>
+      </div>
+
+      {/* Voice Lip Sync Section */}
+      <div className="tab-section">
+        <h3>🎤 Voice Lip Sync</h3>
+        <p className="muted small">
+          Use your microphone to drive mouth movements. Works alongside or instead of camera face tracking.
+        </p>
+
+        <button 
+          className={`primary full-width ${isVoiceLipSyncActive ? 'secondary' : ''}`}
+          onClick={toggleVoiceLipSync}
+          style={{ marginBottom: '12px' }}
+        >
+          {isVoiceLipSyncActive ? '🛑 Stop Voice Sync' : '🎤 Start Voice Sync'}
+        </button>
+
+        {isVoiceLipSyncActive && (
+          <>
+            {/* Volume meter */}
+            <div style={{ marginBottom: '12px' }}>
+              <div style={{ 
+                display: 'flex', 
+                justifyContent: 'space-between', 
+                alignItems: 'center',
+                marginBottom: '4px' 
+              }}>
+                <span className="small">Volume</span>
+                <span className="small muted">{Math.round(voiceVolume * 100)}%</span>
+              </div>
+              <div style={{
+                height: '8px',
+                background: 'var(--bg-input)',
+                borderRadius: '4px',
+                overflow: 'hidden'
+              }}>
+                <div style={{
+                  height: '100%',
+                  width: `${voiceVolume * 100}%`,
+                  background: voiceVolume > 0.5 
+                    ? 'var(--accent-warning)' 
+                    : 'var(--accent-success)',
+                  transition: 'width 50ms ease-out',
+                  borderRadius: '4px'
+                }} />
+              </div>
+            </div>
+
+            {/* Sensitivity slider */}
+            <div>
+              <div style={{ 
+                display: 'flex', 
+                justifyContent: 'space-between', 
+                alignItems: 'center',
+                marginBottom: '4px' 
+              }}>
+                <span className="small">Sensitivity</span>
+                <span className="small muted">{voiceSensitivity.toFixed(1)}x</span>
+              </div>
+              <input 
+                type="range"
+                min="0.5"
+                max="5"
+                step="0.1"
+                value={voiceSensitivity}
+                onChange={(e) => handleSensitivityChange(parseFloat(e.target.value))}
+                style={{ width: '100%' }}
+              />
+            </div>
+          </>
+        )}
+
+        <p className="small muted" style={{ marginTop: '12px' }}>
+          💡 <strong>Tip:</strong> Voice lip sync can run simultaneously with camera mocap for best results - 
+          camera tracks face expressions while microphone drives precise mouth movements.
+        </p>
       </div>
     </div>
   );

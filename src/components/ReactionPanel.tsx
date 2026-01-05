@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useReactionStore } from '../state/useReactionStore';
+import { useSceneSettingsStore } from '../state/useSceneSettingsStore';
 import { sceneManager } from '../three/sceneManager';
 import { avatarManager } from '../three/avatarManager';
 import { reactionPresets } from '../data/reactions';
@@ -118,9 +119,12 @@ export function ReactionPanel() {
       const expression = poseData.expression || 'calm';
       avatarManager.applyExpression(expression);
       
-      // Apply background if available (default to midnight-circuit)
-      const background = poseData.background || 'midnight-circuit';
-      await sceneManager.setBackground(background);
+      // Apply background if available, but only if not locked
+      const { backgroundLocked } = useSceneSettingsStore.getState();
+      if (!backgroundLocked) {
+        const background = poseData.background || 'midnight-circuit';
+        await sceneManager.setBackground(background);
+      }
       
       setStatusMessage(`✅ Applied custom pose: ${customPoseName || 'Custom'}`);
     } catch (error) {

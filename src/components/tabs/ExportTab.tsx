@@ -369,6 +369,17 @@ export function ExportTab({ mode = 'reactions' }: ExportTabProps) {
             <div className="progress-bar__fill" style={{ width: `${exportProgress}%` }} />
           </div>
         )}
+        
+        {exportFormat === 'png' && (
+          <p className="muted small" style={{ marginTop: '0.75rem', textAlign: 'center' }}>
+            💡 Quick Export: Press <kbd style={{ 
+              background: 'rgba(255,255,255,0.1)', 
+              padding: '2px 6px', 
+              borderRadius: '4px',
+              fontFamily: 'monospace'
+            }}>P</kbd> to instantly save PNG with current Effects & FX
+          </p>
+        )}
       </div>
     </div>
   );

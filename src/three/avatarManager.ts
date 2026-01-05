@@ -9,6 +9,7 @@ import { getPoseDefinition, getPoseDefinitionWithAnimation, type PoseDefinition 
 import { poseToAnimationClip } from '../poses/poseToAnimation';
 import { getAnimatedPose } from '../poses/animatedPoses';
 import { materialManager } from './materialManager';
+import { useSceneSettingsStore } from '../state/useSceneSettingsStore';
 
 type ExpressionMutator = (vrm: VRM) => void;
 
@@ -123,6 +124,10 @@ class AvatarManager {
     
     // Apply material settings to the newly loaded VRM
     materialManager.onVRMLoaded();
+    
+    // Reset rotation lock when loading a new avatar so the first pose applies correctly
+    // The user can re-lock rotation after using the gizmo
+    useSceneSettingsStore.getState().setRotationLocked(false);
 
     return vrm;
   }
@@ -131,7 +136,9 @@ class AvatarManager {
     if (!this.vrm) return;
     this.isInteracting = false;
 
-    if (poseData.sceneRotation) {
+    // Only apply scene rotation if not locked
+    const { rotationLocked } = useSceneSettingsStore.getState();
+    if (poseData.sceneRotation && !rotationLocked) {
       this.vrm.scene.rotation.set(
         THREE.MathUtils.degToRad(poseData.sceneRotation.x ?? 0),
         THREE.MathUtils.degToRad(poseData.sceneRotation.y ?? 0),
@@ -163,7 +170,15 @@ class AvatarManager {
     const def = shouldAnimate ? await getPoseDefinitionWithAnimation(pose) : getPoseDefinition(pose);
     if (!def) return;
 
-    this.vrm.scene.rotation.set(THREE.MathUtils.degToRad(def.sceneRotation?.x ?? 0), THREE.MathUtils.degToRad(def.sceneRotation?.y ?? 0), THREE.MathUtils.degToRad(def.sceneRotation?.z ?? 0));
+    // Only apply scene rotation if not locked (user hasn't manually rotated)
+    const { rotationLocked } = useSceneSettingsStore.getState();
+    if (!rotationLocked) {
+      this.vrm.scene.rotation.set(
+        THREE.MathUtils.degToRad(def.sceneRotation?.x ?? 0), 
+        THREE.MathUtils.degToRad(def.sceneRotation?.y ?? 0), 
+        THREE.MathUtils.degToRad(def.sceneRotation?.z ?? 0)
+      );
+    }
 
     if (shouldAnimate && def.animationClip) {
       this.playAnimationClip(def.animationClip, animationMode === 'loop');

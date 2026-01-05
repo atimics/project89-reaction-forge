@@ -254,6 +254,15 @@
   justify-content: center;
 }
 
+.viewport-overlay.top-right {
+  top: 1.5rem;
+  right: 1.5rem;
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
 .camera-controls,
 .playback-controls {
   display: flex;
