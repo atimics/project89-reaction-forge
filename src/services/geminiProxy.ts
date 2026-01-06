@@ -8,7 +8,8 @@
  * The proxy URL can be configured via environment variable: VITE_GEMINI_PROXY_URL
  */
 
-import { apiKeyStorage } from '../utils/secureStorage';
+// apiKeyStorage imported for potential future use in direct mode
+// import { apiKeyStorage } from '../utils/secureStorage';
 
 // Configuration
 // Netlify functions are at /.netlify/functions/[name]
@@ -40,29 +41,10 @@ class GeminiProxyService {
   private systemPrompt: string = '';
 
   constructor() {
-    // Check if we have a proxy available, otherwise fall back to direct
-    this.detectMode();
-  }
-
-  private async detectMode() {
-    // If proxy URL is explicitly set and not the default, use proxy
-    if (import.meta.env.VITE_GEMINI_PROXY_URL) {
-      this.mode = 'proxy';
-      console.log('[GeminiProxy] Using server-side proxy');
-      return;
-    }
-
-    // Check if we have a stored API key for direct mode
-    const storedKey = apiKeyStorage.get();
-    if (storedKey) {
-      this.directApiKey = storedKey;
-      this.mode = 'direct';
-      console.log('[GeminiProxy] Using direct API with stored key');
-      return;
-    }
-
-    // Default to proxy mode (will fail gracefully if not configured)
+    // Default to proxy mode - it's the secure option
+    // Only switch to direct if user explicitly provides a key
     this.mode = 'proxy';
+    console.log('[GeminiProxy] Initialized in proxy mode (/.netlify/functions/gemini)');
   }
 
   /**
@@ -132,31 +114,50 @@ class GeminiProxyService {
   // ==================== Proxy Methods ====================
 
   private async chatViaProxy(message: string): Promise<GeminiResponse> {
-    const response = await fetch(PROXY_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        action: 'chat',
-        prompt: message,
-        history: this.chatHistory,
-        systemPrompt: this.systemPrompt
-      })
-    });
+    console.log('[GeminiProxy] Sending chat request to:', PROXY_URL);
+    
+    try {
+      const response = await fetch(PROXY_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'chat',
+          prompt: message,
+          history: this.chatHistory,
+          systemPrompt: this.systemPrompt
+        })
+      });
 
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({ error: 'Unknown error' }));
-      throw new Error(error.error || `Proxy error: ${response.status}`);
+      console.log('[GeminiProxy] Response status:', response.status);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('[GeminiProxy] Error response:', errorText);
+        
+        let errorData;
+        try {
+          errorData = JSON.parse(errorText);
+        } catch {
+          errorData = { error: errorText || `HTTP ${response.status}` };
+        }
+        
+        throw new Error(errorData.error || errorData.details || `Proxy error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log('[GeminiProxy] Success, response length:', data.text?.length);
+
+      // Update history
+      this.chatHistory.push(
+        { role: 'user', parts: [{ text: message }] },
+        { role: 'model', parts: [{ text: data.text }] }
+      );
+
+      return data;
+    } catch (error: any) {
+      console.error('[GeminiProxy] Request failed:', error);
+      throw error;
     }
-
-    const data = await response.json();
-
-    // Update history
-    this.chatHistory.push(
-      { role: 'user', parts: [{ text: message }] },
-      { role: 'model', parts: [{ text: data.text }] }
-    );
-
-    return data;
   }
 
   private async generateViaProxy(prompt: string): Promise<GeminiResponse> {

@@ -42,13 +42,25 @@ function checkRateLimit(ip: string): boolean {
 }
 
 const handler: Handler = async (event: HandlerEvent, _context: HandlerContext) => {
-  // CORS headers - restricted to poselab.studio
+  // CORS headers - allow both www and non-www, plus localhost for testing
+  const origin = event.headers.origin || '';
+  const allowedOrigins = [
+    'https://poselab.studio',
+    'https://www.poselab.studio',
+    'http://localhost:5173',
+    'http://localhost:3000'
+  ];
+  
+  const corsOrigin = allowedOrigins.includes(origin) ? origin : 'https://poselab.studio';
+  
   const headers = {
-    'Access-Control-Allow-Origin': 'https://poselab.studio',
+    'Access-Control-Allow-Origin': corsOrigin,
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type',
     'Content-Type': 'application/json'
   };
+
+  console.log('[Gemini Function] Request received:', event.httpMethod, 'from:', origin);
 
   // Handle preflight
   if (event.httpMethod === 'OPTIONS') {
@@ -66,13 +78,15 @@ const handler: Handler = async (event: HandlerEvent, _context: HandlerContext) =
 
   // Check API key is configured
   if (!GEMINI_API_KEY) {
-    console.error('GEMINI_API_KEY not configured in Netlify environment variables');
+    console.error('[Gemini Function] GEMINI_API_KEY not configured!');
     return {
       statusCode: 500,
       headers,
-      body: JSON.stringify({ error: 'Server configuration error - API key not set' })
+      body: JSON.stringify({ error: 'Server configuration error - API key not set. Please add GEMINI_API_KEY to Netlify environment variables.' })
     };
   }
+  
+  console.log('[Gemini Function] API key is configured (length:', GEMINI_API_KEY.length, ')');
 
   // Rate limiting
   const clientIP = event.headers['x-forwarded-for']?.split(',')[0]?.trim() || 
