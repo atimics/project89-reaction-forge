@@ -1,4 +1,3 @@
-
 import { useRef, useState } from 'react';
 import { useAvatarSource } from '../state/useAvatarSource';
 import { useReactionStore } from '../state/useReactionStore';
@@ -6,6 +5,14 @@ import { useToastStore } from '../state/useToastStore';
 import { AboutModal } from './AboutModal';
 import { SettingsModal } from './SettingsModal';
 import { projectManager } from '../persistence/projectManager';
+import { 
+  GearSix, 
+  FloppyDisk, 
+  FolderOpen, 
+  Question,
+  Atom,
+  Flask
+} from '@phosphor-icons/react';
 
 interface AppHeaderProps {
   mode: 'reactions' | 'poselab';
@@ -65,13 +72,15 @@ export function AppHeader({ mode, onModeChange }: AppHeaderProps) {
               className={mode === 'reactions' ? 'active' : ''}
               onClick={() => onModeChange('reactions')}
             >
-              Reactions
+              <Atom size={16} weight="duotone" />
+              <span>Reactions</span>
             </button>
             <button
               className={mode === 'poselab' ? 'active' : ''}
               onClick={() => onModeChange('poselab')}
             >
-              Pose Lab
+              <Flask size={16} weight="duotone" />
+              <span>Pose Lab</span>
             </button>
           </div>
         </div>
@@ -112,30 +121,30 @@ export function AppHeader({ mode, onModeChange }: AppHeaderProps) {
           </div>
           <button 
             className="icon-button"
-            style={{ width: '32px', height: '32px', fontSize: '1.1rem', marginLeft: '0.5rem' }}
+            style={{ width: '32px', height: '32px', marginLeft: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
             onClick={() => setShowSettings(true)}
             title="Settings"
           >
-            ⚙️
+            <GearSix size={20} weight="duotone" />
           </button>
           
           <div style={{ width: '1px', height: '20px', background: 'var(--border-color)', margin: '0 0.5rem' }}></div>
 
           <button 
             className="icon-button"
-            style={{ width: '32px', height: '32px', fontSize: '1.1rem' }}
+            style={{ width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
             onClick={handleProjectSave}
             title="Save Project"
           >
-            💾
+            <FloppyDisk size={20} weight="duotone" />
           </button>
           <button 
             className="icon-button"
-            style={{ width: '32px', height: '32px', fontSize: '1.1rem' }}
+            style={{ width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
             onClick={() => projectInputRef.current?.click()}
             title="Load Project"
           >
-            📂
+            <FolderOpen size={20} weight="duotone" />
           </button>
           
           <input
@@ -148,11 +157,11 @@ export function AppHeader({ mode, onModeChange }: AppHeaderProps) {
 
           <button 
             className="icon-button"
-            style={{ width: '32px', height: '32px', fontSize: '0.9rem', marginLeft: '0.5rem' }}
+            style={{ width: '32px', height: '32px', marginLeft: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
             onClick={() => setShowAbout(true)}
             title="About PoseLab"
           >
-            ?
+            <Question size={20} weight="duotone" />
           </button>
         </div>
       </header>

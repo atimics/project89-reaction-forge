@@ -27,18 +27,18 @@ const LOGO_CONFIG = {
 const CAMERA_CONFIG = {
   /** Field of view in degrees */
   FOV: 35,
-  /** Near clipping plane */
-  NEAR: 0.1,
+  /** Near clipping plane - set very small to prevent clipping when zoomed in */
+  NEAR: 0.01,
   /** Far clipping plane */
   FAR: 100,
   /** Default camera position */
   DEFAULT_POSITION: { x: 0, y: 1.4, z: 1.6 },
   /** Default orbit target */
   DEFAULT_TARGET: { x: 0, y: 1.4, z: 0 },
-  /** Minimum orbit distance */
-  MIN_DISTANCE: 0.8,
+  /** Minimum orbit distance - allow close-ups but not inside the model */
+  MIN_DISTANCE: 0.3,
   /** Maximum orbit distance */
-  MAX_DISTANCE: 3,
+  MAX_DISTANCE: 5,
 };
 
 /** Timing constants in milliseconds */
@@ -381,15 +381,18 @@ class SceneManager {
     const dir = new THREE.Vector3(0, 0, 1);
     this.camera.position.copy(this.center).addScaledVector(dir, distance);
 
-    this.camera.near = distance / 100;
+    // Use a very small near plane to prevent clipping on close-ups
+    // but not so small it causes z-fighting
+    this.camera.near = Math.max(0.01, distance / 500);
     this.camera.far = distance * 100;
     this.camera.updateProjectionMatrix();
 
     this.controls.target.copy(this.center);
     
     // Scale controls limits to accommodate the object size
-    this.controls.maxDistance = distance * 10;
-    this.controls.minDistance = distance * 0.1;
+    // Allow getting quite close for detail shots, but not inside the model
+    this.controls.maxDistance = distance * 5;
+    this.controls.minDistance = Math.max(0.2, distance * 0.05);
     
     this.controls.update();
   }
@@ -709,31 +712,159 @@ class SceneManager {
 
   /**
    * Set camera to a preset view
+   * Hotkeys: 1=headshot, 3=quarter, 5=side, 7=full body
    */
-  setCameraPreset(preset: 'front' | 'quarter' | 'side') {
+  setCameraPreset(preset: 'headshot' | 'quarter' | 'side' | 'fullbody') {
     if (!this.controls || !this.camera) return;
     
     const targetY = CAMERA_CONFIG.DEFAULT_TARGET.y;
     
     switch (preset) {
-      case 'front':
-        this.camera.position.set(0, targetY, 1.6);
-        break;
+      case 'headshot':
+        // Headshot mode - use frameHeadshot for smart head targeting
+        this.frameHeadshot();
+        return; // frameHeadshot handles everything
       case 'quarter':
+        // 3/4 view - angled for dynamic poses
         this.camera.position.set(1.2, targetY + 0.1, 1.4);
+        this.controls.target.set(
+          CAMERA_CONFIG.DEFAULT_TARGET.x,
+          CAMERA_CONFIG.DEFAULT_TARGET.y,
+          CAMERA_CONFIG.DEFAULT_TARGET.z
+        );
         break;
       case 'side':
-        this.camera.position.set(1.6, targetY, 0);
+        // Profile/side view
+        this.camera.position.set(2.0, targetY, 0);
+        this.controls.target.set(
+          CAMERA_CONFIG.DEFAULT_TARGET.x,
+          CAMERA_CONFIG.DEFAULT_TARGET.y,
+          CAMERA_CONFIG.DEFAULT_TARGET.z
+        );
         break;
+      case 'fullbody':
+        // Full body view - pull back to see entire avatar
+        this.frameFullBody();
+        return; // frameFullBody handles everything
     }
     
-    this.controls.target.set(
-      CAMERA_CONFIG.DEFAULT_TARGET.x,
-      CAMERA_CONFIG.DEFAULT_TARGET.y,
-      CAMERA_CONFIG.DEFAULT_TARGET.z
-    );
     this.controls.update();
     console.log('[SceneManager] Camera set to', preset, 'view');
+  }
+
+  /**
+   * Smart full body framing - frames the entire avatar with proper margins
+   */
+  frameFullBody() {
+    if (!this.controls || !this.camera || !this.scene) return;
+    
+    // Find the VRM avatar bounds
+    let avatarBox: THREE.Box3 | null = null;
+    
+    this.scene.traverse((obj) => {
+      if (obj.userData?.vrm || obj.name === 'VRMRoot') {
+        avatarBox = new THREE.Box3().setFromObject(obj);
+      }
+    });
+    
+    if (!avatarBox) {
+      // Fallback to default full body position
+      this.camera.position.set(0, 0.9, 2.5);
+      this.controls.target.set(0, 0.9, 0);
+      this.controls.update();
+      console.log('[SceneManager] Full body: Using default fallback');
+      return;
+    }
+    
+    const box = avatarBox as THREE.Box3;
+    const center = new THREE.Vector3();
+    const size = new THREE.Vector3();
+    box.getCenter(center);
+    box.getSize(size);
+    
+    // Calculate distance needed to fit avatar with margin
+    const maxDim = Math.max(size.x, size.y, size.z);
+    const fov = (this.camera as THREE.PerspectiveCamera).fov * (Math.PI / 180);
+    const distance = (maxDim / 2) / Math.tan(fov / 2) * 1.3; // 1.3x for margin
+    
+    // Position camera in front, centered on avatar
+    this.camera.position.set(
+      center.x,
+      center.y,
+      center.z + distance
+    );
+    
+    this.controls.target.copy(center);
+    this.controls.update();
+    
+    console.log('[SceneManager] Full body: Framed avatar at distance', distance.toFixed(2));
+  }
+
+  /**
+   * Smart headshot framing - finds the avatar's head and frames it nicely
+   */
+  frameHeadshot() {
+    if (!this.controls || !this.camera || !this.scene) return;
+    
+    // Try to find the VRM's head bone for accurate targeting
+    let headPosition: THREE.Vector3 | null = null;
+    let avatarCenter: THREE.Vector3 | null = null;
+    
+    this.scene.traverse((obj) => {
+      // Look for head bone (VRM naming conventions)
+      if (obj.name.toLowerCase().includes('head') && !obj.name.toLowerCase().includes('headset')) {
+        headPosition = new THREE.Vector3();
+        obj.getWorldPosition(headPosition);
+      }
+      // Also get avatar root for fallback
+      if (obj.userData?.vrm || obj.name === 'VRMRoot') {
+        const box = new THREE.Box3().setFromObject(obj);
+        avatarCenter = new THREE.Vector3();
+        box.getCenter(avatarCenter);
+      }
+    });
+    
+    // Use head position if found, otherwise estimate from avatar bounds
+    let targetPos: THREE.Vector3;
+    
+    if (headPosition) {
+      targetPos = headPosition;
+      console.log('[SceneManager] Headshot: Using detected head bone position');
+    } else if (avatarCenter) {
+      // Estimate head position as ~85% up the avatar height
+      const box = new THREE.Box3();
+      this.scene.traverse((obj) => {
+        if (obj.userData?.vrm) {
+          box.setFromObject(obj);
+        }
+      });
+      const height = box.max.y - box.min.y;
+      const center = avatarCenter as THREE.Vector3; // TypeScript narrowing help
+      targetPos = new THREE.Vector3(
+        center.x,
+        box.min.y + height * 0.85, // Head is roughly at 85% height
+        center.z
+      );
+      console.log('[SceneManager] Headshot: Estimating head from avatar bounds');
+    } else {
+      // Fallback to default target with slight offset
+      targetPos = new THREE.Vector3(0, CAMERA_CONFIG.DEFAULT_TARGET.y + 0.2, 0);
+      console.log('[SceneManager] Headshot: Using default fallback position');
+    }
+    
+    // Position camera in front of the head at a good portrait distance
+    const headDistance = 0.7; // Distance from head for nice portrait framing
+    this.camera.position.set(
+      targetPos.x,
+      targetPos.y,
+      targetPos.z + headDistance
+    );
+    
+    // Look at the head
+    this.controls.target.copy(targetPos);
+    this.controls.update();
+    
+    console.log('[SceneManager] Headshot framed at:', targetPos);
   }
 
   dispose() {

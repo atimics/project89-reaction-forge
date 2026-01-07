@@ -2,6 +2,7 @@ import { useRef, useEffect } from 'react';
 import { useAvatarSource } from '../state/useAvatarSource';
 import { useToastStore } from '../state/useToastStore';
 import { useUIStore } from '../state/useUIStore';
+import { Eye, FolderOpen, Robot } from '@phosphor-icons/react';
 
 const TUTORIAL_STEPS = [
   {
@@ -170,7 +171,7 @@ export function OnboardingOverlay() {
      return (
         <div className="onboarding-overlay">
           <div className="onboarding-card">
-              <div className="onboarding-icon">👁️</div>
+              <div className="onboarding-icon"><Eye size={48} weight="duotone" /></div>
               <h2>Welcome to PoseLab</h2>
               <p>Turn your digital presence into endless expressions and manifestations.</p>
               
@@ -179,14 +180,14 @@ export function OnboardingOverlay() {
                     className="primary large full-width"
                     onClick={() => vrmInputRef.current?.click()}
                 >
-                    📂 Materialize VRM
+                    <FolderOpen size={18} weight="duotone" /> Materialize VRM
                 </button>
                 
                 <button 
                     className="secondary full-width"
                     onClick={loadSampleAvatar}
                 >
-                    🤖 Deploy Agent HarmonVox
+                    <Robot size={18} weight="duotone" /> Deploy Agent HarmonVox
                 </button>
 
                 <div className="divider" style={{ margin: '1.5rem 0', borderTop: '1px solid var(--border-color)' }}></div>

@@ -7,8 +7,21 @@ import { useToastStore } from '../../state/useToastStore';
 import { useUIStore } from '../../state/useUIStore';
 import { convertAnimationToScenePaths } from '../../pose-lab/convertAnimationToScenePaths';
 import { CalibrationWizard } from '../CalibrationWizard';
-
 import { sceneManager } from '../../three/sceneManager';
+import { 
+  VideoCamera, 
+  Person, 
+  UserFocus, 
+  Stop, 
+  Record, 
+  MagicWand, 
+  Rectangle,
+  Microphone,
+  StopCircle,
+  Lightbulb,
+  ArrowRight,
+  Lock
+} from '@phosphor-icons/react';
 
 export function MocapTab() {
   const { addToast } = useToastStore();
@@ -242,7 +255,7 @@ export function MocapTab() {
   return (
     <div className="tab-content">
       <div className="tab-section">
-        <h3>🎥 Webcam Motion Capture</h3>
+        <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><VideoCamera size={18} weight="duotone" /> Webcam Motion Capture</h3>
         <p className="muted small">
             Control your avatar with your webcam. Requires good lighting and full body visibility for best results.
         </p>
@@ -286,7 +299,7 @@ export function MocapTab() {
                 {error}
                 {error.includes("Permission") && (
                     <div style={{ marginTop: '5px', fontSize: '0.8em' }}>
-                        👉 Check the lock icon 🔒 in your address bar to reset permissions.
+                        <ArrowRight size={14} weight="bold" /> Check the lock icon <Lock size={14} weight="fill" /> in your address bar to reset permissions.
                     </div>
                 )}
             </div>
@@ -298,15 +311,17 @@ export function MocapTab() {
                 className={`secondary full-width ${mocapMode === 'full' ? 'active' : ''}`}
                 onClick={() => handleModeChange('full')}
                 title="Track both body and face"
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
             >
-                🧍 Full Body
+                <Person size={16} weight="duotone" /> Full Body
             </button>
             <button
                 className={`secondary full-width ${mocapMode === 'face' ? 'active' : ''}`}
                 onClick={() => handleModeChange('face')}
                 title="Track face only (Body stays idle)"
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
             >
-                👤 Face Only
+                <UserFocus size={16} weight="duotone" /> Face Only
             </button>
         </div>
 
@@ -316,7 +331,7 @@ export function MocapTab() {
                 onClick={toggleMocap}
                 style={{ flex: isActive ? '1 1 45%' : '1 1 100%' }}
             >
-                {isActive ? '🛑 Stop Camera' : '🎥 Start Camera'}
+                {isActive ? <><StopCircle size={16} weight="fill" /> Stop Camera</> : <><VideoCamera size={16} weight="duotone" /> Start Camera</>}
             </button>
 
             {isActive && (
@@ -325,7 +340,7 @@ export function MocapTab() {
                     onClick={toggleRecording}
                     style={{ flex: '1 1 45%' }}
                 >
-                    {isRecording ? `⏹️ Stop (${recordingTime}s)` : '🔴 Record'}
+                    {isRecording ? <><Stop size={16} weight="fill" /> Stop ({recordingTime}s)</> : <><Record size={16} weight="fill" style={{ color: '#ff4444' }} /> Record</>}
                 </button>
             )}
 
@@ -336,18 +351,18 @@ export function MocapTab() {
                         onClick={() => {
                             startCalibration();
                         }}
-                        style={{ flex: '1' }}
+                        style={{ flex: '1', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
                         title="Launch the calibration wizard for body and face"
                     >
-                        📏 Wizard
+                        <MagicWand size={16} weight="duotone" /> Wizard
                     </button>
                     <button
                         className={`secondary full-width ${isGreenScreen ? 'active' : ''}`}
                         onClick={toggleGreenScreen}
-                        style={{ flex: '1' }}
+                        style={{ flex: '1', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
                         title="Toggle Green Screen Background"
                     >
-                        🟩 Green Screen
+                        <Rectangle size={16} weight="fill" style={{ color: '#00ff00' }} /> Green Screen
                     </button>
                 </div>
             )}
@@ -356,10 +371,10 @@ export function MocapTab() {
                 <button
                     className={`secondary full-width ${isGreenScreen ? 'active' : ''}`}
                     onClick={toggleGreenScreen}
-                    style={{ flex: '1 1 100%' }}
+                    style={{ flex: '1 1 100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
                     title="Toggle Green Screen Background"
                 >
-                    🟩 Green Screen
+                    <Rectangle size={16} weight="fill" style={{ color: '#00ff00' }} /> Green Screen
                 </button>
             )}
         </div>
@@ -380,7 +395,7 @@ export function MocapTab() {
 
       {/* Voice Lip Sync Section */}
       <div className="tab-section">
-        <h3>🎤 Voice Lip Sync</h3>
+        <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Microphone size={18} weight="duotone" /> Voice Lip Sync</h3>
         <p className="muted small">
           Use your microphone to drive mouth movements. Works alongside or instead of camera face tracking.
         </p>
@@ -390,7 +405,7 @@ export function MocapTab() {
           onClick={toggleVoiceLipSync}
           style={{ marginBottom: '12px' }}
         >
-          {isVoiceLipSyncActive ? '🛑 Stop Voice Sync' : '🎤 Start Voice Sync'}
+          {isVoiceLipSyncActive ? <><StopCircle size={16} weight="fill" /> Stop Voice Sync</> : <><Microphone size={16} weight="duotone" /> Start Voice Sync</>}
         </button>
 
         {isVoiceLipSyncActive && (
@@ -448,9 +463,10 @@ export function MocapTab() {
           </>
         )}
 
-        <p className="small muted" style={{ marginTop: '12px' }}>
-          💡 <strong>Tip:</strong> Voice lip sync can run simultaneously with camera mocap for best results - 
-          camera tracks face expressions while microphone drives precise mouth movements.
+        <p className="small muted" style={{ marginTop: '12px', display: 'flex', alignItems: 'flex-start', gap: '6px' }}>
+          <Lightbulb size={14} weight="duotone" style={{ flexShrink: 0, marginTop: '2px' }} /> 
+          <span><strong>Tip:</strong> Voice lip sync can run simultaneously with camera mocap for best results - 
+          camera tracks face expressions while microphone drives precise mouth movements.</span>
         </p>
       </div>
     </div>

@@ -37,6 +37,12 @@ export interface PeerInfo {
   connectionState: ConnectionState;
   hasAvatar: boolean;
   isLocal: boolean;
+  /** Current presence state */
+  presence?: PresenceState;
+  /** Latency in ms */
+  latency?: number;
+  /** Last activity timestamp */
+  lastActivity?: number;
 }
 
 /** Session state */
@@ -62,7 +68,13 @@ export type MessageType =
   | 'sync-response'     // Full state sync response
   | 'scene-sync'        // Scene settings sync (background, etc.)
   | 'ping'              // Latency check
-  | 'pong';             // Latency response
+  | 'pong'              // Latency response
+  // Social features
+  | 'chat'              // Text chat message
+  | 'reaction'          // Quick emoji reaction (triggers avatar animation)
+  | 'presence'          // Presence update (typing, AFK, recording, etc.)
+  | 'group-photo'       // Synchronized photo capture
+  | 'countdown';        // Countdown sync for group photos
 
 /** Base message structure */
 export interface BaseMessage {
@@ -160,6 +172,47 @@ export interface PongMessage extends BaseMessage {
   receivedAt: number;
 }
 
+/** Chat message */
+export interface ChatMessage extends BaseMessage {
+  type: 'chat';
+  text: string;
+  displayName: string;
+}
+
+/** Quick reaction types */
+export type ReactionType = 'wave' | 'clap' | 'heart' | 'laugh' | 'fire' | 'thumbsUp' | 'celebrate' | 'think';
+
+/** Reaction message - triggers avatar animation */
+export interface ReactionMessage extends BaseMessage {
+  type: 'reaction';
+  reaction: ReactionType;
+  displayName: string;
+}
+
+/** Presence states */
+export type PresenceState = 'active' | 'typing' | 'afk' | 'recording' | 'posing' | 'capturing';
+
+/** Presence update */
+export interface PresenceMessage extends BaseMessage {
+  type: 'presence';
+  state: PresenceState;
+}
+
+/** Group photo request/sync */
+export interface GroupPhotoMessage extends BaseMessage {
+  type: 'group-photo';
+  action: 'request' | 'ready' | 'capture' | 'complete';
+  /** Photo ID for tracking */
+  photoId: string;
+}
+
+/** Countdown sync for group photos */
+export interface CountdownMessage extends BaseMessage {
+  type: 'countdown';
+  count: number; // 3, 2, 1, 0 (capture)
+  photoId: string;
+}
+
 /** Union type for all messages */
 export type PeerMessage = 
   | AvatarStateMessage
@@ -174,7 +227,13 @@ export type PeerMessage =
   | SyncResponseMessage
   | SceneSyncMessage
   | PingMessage
-  | PongMessage;
+  | PongMessage
+  // Social messages
+  | ChatMessage
+  | ReactionMessage
+  | PresenceMessage
+  | GroupPhotoMessage
+  | CountdownMessage;
 
 /** Configuration for multiplayer */
 export interface MultiplayerConfig {

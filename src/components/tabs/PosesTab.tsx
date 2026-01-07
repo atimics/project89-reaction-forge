@@ -4,6 +4,14 @@ import { animationManager } from '../../three/animationManager';
 import { serializeAnimationClip } from '../../poses/animationClipSerializer';
 import type { VRMPose } from '@pixiv/three-vrm';
 import { useToastStore } from '../../state/useToastStore';
+import { 
+  Camera, 
+  Check, 
+  FloppyDisk, 
+  Trash, 
+  Export,
+  FilmStrip
+} from '@phosphor-icons/react';
 
 interface SavedPose {
   id: string;
@@ -213,8 +221,9 @@ export function PosesTab() {
           className="primary full-width"
           onClick={handleCapturePose}
           disabled={!poseName.trim()}
+          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
         >
-          📸 Capture Current Pose
+          <Camera size={16} weight="duotone" /> Capture Current Pose
         </button>
       </div>
 
@@ -230,7 +239,7 @@ export function PosesTab() {
                     <strong>{pose.name}</strong>
                     <span className="muted small">
                       {pose.timestamp.toLocaleTimeString()}
-                      {pose.animationClip && ' 🎬'}
+                      {pose.animationClip && <FilmStrip size={12} weight="duotone" style={{ marginLeft: '4px' }} />}
                     </span>
                   </div>
 <div className="pose-item__actions">
@@ -240,7 +249,7 @@ export function PosesTab() {
                                       title="Apply"
                                       aria-label="Apply pose"
                                     >
-                                      ✓
+                                      <Check size={16} weight="bold" />
                                     </button>
                                     <button
                                       className="icon-button"
@@ -248,7 +257,7 @@ export function PosesTab() {
                                       title="Export"
                                       aria-label="Export pose"
                                     >
-                                      💾
+                                      <FloppyDisk size={16} weight="duotone" />
                                     </button>
                                     <button
                                       className="icon-button"
@@ -256,7 +265,7 @@ export function PosesTab() {
                                       title="Delete"
                                       aria-label="Delete pose"
                                     >
-                                      🗑️
+                                      <Trash size={16} weight="duotone" />
                                     </button>
                                   </div>
                 </div>
@@ -265,8 +274,8 @@ export function PosesTab() {
           </div>
 
           <div className="tab-section">
-            <button className="secondary full-width" onClick={handleExportAll}>
-              Export All Poses
+            <button className="secondary full-width" onClick={handleExportAll} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+              <Export size={16} weight="duotone" /> Export All Poses
             </button>
           </div>
         </>

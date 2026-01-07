@@ -11,6 +11,7 @@ import { useUIStore } from './state/useUIStore';
 import { initAvatarBridge } from './multiplayer/avatarBridge';
 import { ConnectionProgressPanel } from './components/ConnectionProgressPanel';
 import { AIAgentWidget } from './components/AIAgentWidget';
+import { SessionHUD } from './components/SessionHUD';
 
 // import { LobbyPanel } from './components/LobbyPanel';
 
@@ -72,6 +73,7 @@ function App() {
       <ToastHost />
       <ConnectionProgressPanel />
       <AIAgentWidget />
+      <SessionHUD />
       {/* <LobbyPanel /> */}
     </div>
   );

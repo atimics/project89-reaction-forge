@@ -166,8 +166,6 @@ export function getAnimatedPose(poseId: string, basePose: VRMPose, vrm: VRM): TH
   switch (poseId) {
     case 'stand-tall':
       return createStandTallAnimation(basePose, vrm);
-    case 'typing':
-      return createTypingAnimation(basePose, vrm);
     case 'agent-taunt':
       return createTauntAnimation(basePose, vrm);
     default:

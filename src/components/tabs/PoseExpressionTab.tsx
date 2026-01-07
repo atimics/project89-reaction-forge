@@ -8,6 +8,7 @@ import { interactionManager } from '../../three/interactionManager';
 import type { AnimationMode } from '../../types/reactions';
 import { useToastStore } from '../../state/useToastStore';
 import { notifyExpressionChange } from '../../multiplayer';
+import { CheckCircle, File } from '@phosphor-icons/react';
 
 export function PoseExpressionTab() {
   const { isAvatarReady, animationMode, setAnimationMode } = useReactionStore();
@@ -226,7 +227,7 @@ export function PoseExpressionTab() {
         >
           {customPose ? (
             <>
-              <span className="drop-zone__icon">✅</span>
+              <span className="drop-zone__icon"><CheckCircle size={32} weight="fill" style={{ color: 'var(--accent)' }} /></span>
               <div className="drop-zone__text">
                 <strong>{customPoseName}</strong>
                 <small>Click to replace or drag another</small>
@@ -234,7 +235,7 @@ export function PoseExpressionTab() {
             </>
           ) : (
             <>
-              <span className="drop-zone__icon">📄</span>
+              <span className="drop-zone__icon"><File size={32} weight="duotone" /></span>
               <div className="drop-zone__text">
                 <strong>Drop JSON here</strong>
                 <small>Or click to browse</small>

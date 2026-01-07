@@ -4,12 +4,15 @@ import { avatarManager } from '../three/avatarManager';
 import { useReactionStore } from '../state/useReactionStore';
 import { useUIStore } from '../state/useUIStore';
 import { useSceneSettingsStore } from '../state/useSceneSettingsStore';
+import { useIntroStore } from '../state/useIntroStore';
 import type { ReactionPreset } from '../types/reactions';
 import { useAvatarSource } from '../state/useAvatarSource';
 import { OnboardingOverlay } from './OnboardingOverlay';
 import { useMultiplayerStore } from '../state/useMultiplayerStore';
 import { multiAvatarManager } from '../three/multiAvatarManager';
 import { syncManager } from '../multiplayer/syncManager';
+import { introSequence } from '../intro/IntroSequence';
+import { Warning } from '@phosphor-icons/react';
 
 // Simple Toast Component for Errors
 function ErrorToast({ message, onClose }: { message: string; onClose: () => void }) {
@@ -35,7 +38,7 @@ function ErrorToast({ message, onClose }: { message: string; onClose: () => void
       boxShadow: '0 4px 20px rgba(0, 0, 0, 0.5)',
       animation: 'slideDown 0.3s ease-out'
     }}>
-      ⚠️ {message}
+      <Warning size={18} weight="fill" /> {message}
     </div>
   );
 }
@@ -130,9 +133,21 @@ export function CanvasStage() {
         console.log('[CanvasStage] Avatar loaded successfully');
         setAvatarReady(true);
         useReactionStore.setState({ isAvatarReady: true });
-        const currentPreset = useReactionStore.getState().activePreset;
-        console.log('[CanvasStage] Applying initial preset:', currentPreset.id);
-        applyPreset(currentPreset);
+        
+        // Trigger intro sequence (or apply default pose if disabled)
+        const introStore = useIntroStore.getState();
+        
+        if (introStore.enabled) {
+          console.log('[CanvasStage] Playing intro sequence:', introStore.sequenceId);
+          introStore.setPlaying(true);
+          introSequence.play(introStore.sequenceId).then(() => {
+            introStore.setPlaying(false);
+          });
+        } else {
+          // Just apply sunset-call as default
+          console.log('[CanvasStage] Intro disabled, applying default pose');
+          await introSequence.applyDefaultPose();
+        }
       } catch (error) {
         if (cancelled) return;
         console.error('[CanvasStage] Failed to load VRM:', error);
@@ -161,6 +176,24 @@ export function CanvasStage() {
     console.log('[CanvasStage] Preset or animation mode changed, applying:', preset.id, animationMode);
     applyPreset(preset);
   }, [preset, avatarReady, animationMode]);
+
+  // Random auto-snapshot timer
+  const randomSnapshotInterval = useIntroStore((s) => s.randomSnapshotInterval);
+  
+  useEffect(() => {
+    if (!avatarReady || randomSnapshotInterval === 0) return;
+    
+    console.log(`[CanvasStage] Random snapshot timer: every ${randomSnapshotInterval}s`);
+    
+    const timer = setInterval(() => {
+      // Only capture if not in intro sequence
+      if (!introSequence.getIsPlaying()) {
+        introSequence.triggerRandomSnapshot();
+      }
+    }, randomSnapshotInterval * 1000);
+    
+    return () => clearInterval(timer);
+  }, [avatarReady, randomSnapshotInterval]);
 
   const applyPreset = (currentPreset: ReactionPreset) => {
     // Use preset's animation settings or fall back to global animation mode

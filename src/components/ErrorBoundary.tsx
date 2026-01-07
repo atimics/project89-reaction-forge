@@ -1,4 +1,5 @@
 import { Component, type ReactNode, type ErrorInfo } from 'react';
+import { Warning } from '@phosphor-icons/react';
 
 interface Props {
   children: ReactNode;
@@ -53,7 +54,7 @@ export class ErrorBoundary extends Component<Props, State> {
           borderRadius: '16px',
           border: '1px solid rgba(255, 68, 68, 0.3)',
         }}>
-          <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>⚠️</div>
+          <div style={{ fontSize: '3rem', marginBottom: '1rem' }}><Warning size={48} weight="fill" /></div>
           <h2 style={{ 
             margin: '0 0 0.5rem 0', 
             color: '#ff4444',

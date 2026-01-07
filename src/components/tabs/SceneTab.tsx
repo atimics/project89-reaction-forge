@@ -6,6 +6,8 @@ import { useReactionStore } from '../../state/useReactionStore';
 import { useToastStore } from '../../state/useToastStore';
 import { useUIStore } from '../../state/useUIStore';
 import { useSceneSettingsStore } from '../../state/useSceneSettingsStore';
+import { useIntroStore } from '../../state/useIntroStore';
+import { introSequence } from '../../intro/IntroSequence';
 import { LIGHT_PRESETS } from '../../three/lightingManager';
 import { POST_PRESETS } from '../../three/postProcessingManager';
 import { HDRI_PRESETS, environmentManager } from '../../three/environmentManager';
@@ -16,6 +18,27 @@ import { useMultiplayerStore } from '../../state/useMultiplayerStore';
 import { multiAvatarManager } from '../../three/multiAvatarManager';
 import { syncManager } from '../../multiplayer/syncManager';
 import { notifySceneChange } from '../../multiplayer/avatarBridge';
+import { 
+  User, 
+  Lightbulb, 
+  Palette, 
+  Sparkle, 
+  Image, 
+  FilmStrip, 
+  Globe, 
+  FilmSlate,
+  CaretDown,
+  ArrowsClockwise,
+  Package,
+  Lock,
+  LockOpen,
+  UploadSimple,
+  Plus,
+  FrameCorners,
+  Play,
+  Sun,
+  MagnifyingGlass
+} from '@phosphor-icons/react';
 
 type AspectRatio = '16:9' | '1:1' | '9:16';
 
@@ -27,7 +50,7 @@ function Section({
   defaultOpen = false 
 }: { 
   title: string; 
-  icon: string; 
+  icon: React.ReactNode; 
   children: React.ReactNode; 
   defaultOpen?: boolean;
 }) {
@@ -53,13 +76,17 @@ function Section({
         }}
       >
         <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <span>{icon}</span>
+          <span style={{ display: 'flex', alignItems: 'center', color: 'var(--accent, #00ffd6)' }}>{icon}</span>
           <span>{title}</span>
         </span>
-        <span style={{ 
-          transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
-          transition: 'transform 0.2s ease'
-        }}>▼</span>
+        <CaretDown 
+          size={16} 
+          weight="bold"
+          style={{ 
+            transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+            transition: 'transform 0.2s ease'
+          }}
+        />
       </button>
       {isOpen && (
         <div style={{ 
@@ -364,13 +391,13 @@ export function SceneTab() {
   return (
     <div className="tab-content" style={{ gap: '0.5rem' }}>
       {/* Avatar Section */}
-      <Section title="Avatar" icon="🎭" defaultOpen={!isAvatarReady}>
+      <Section title="Avatar" icon={<User size={18} weight="duotone" />} defaultOpen={!isAvatarReady}>
         <p className="muted small">Load or change the VRM avatar</p>
         <button
           className={isAvatarReady ? 'secondary full-width' : 'primary full-width'}
           onClick={() => vrmInputRef.current?.click()}
         >
-          {isAvatarReady ? '🔄 Change Avatar' : '📦 Load VRM Avatar'}
+          {isAvatarReady ? <><ArrowsClockwise size={16} weight="duotone" /> Change Avatar</> : <><Package size={16} weight="duotone" /> Load VRM Avatar</>}
         </button>
         
         {isAvatarReady && (
@@ -383,7 +410,7 @@ export function SceneTab() {
               }}
               style={{ marginTop: '0.5rem' }}
             >
-              🔍 Fit Avatar to Screen
+              <MagnifyingGlass size={16} weight="duotone" /> Fit Avatar to Screen
             </button>
             
             {/* Rotation lock toggle */}
@@ -398,7 +425,7 @@ export function SceneTab() {
               border: rotationLocked ? '1px solid rgba(255, 193, 7, 0.3)' : '1px solid transparent',
             }}>
               <span className="small" style={{ color: rotationLocked ? '#ffc107' : 'var(--text-muted)' }}>
-                {rotationLocked ? '🔒 Rotation locked' : '🔓 Rotation unlocked'}
+                {rotationLocked ? <><Lock size={14} weight="fill" /> Rotation locked</> : <><LockOpen size={14} weight="duotone" /> Rotation unlocked</>}
               </span>
               <button
                 className={`secondary small ${rotationLocked ? 'active' : ''}`}
@@ -422,7 +449,7 @@ export function SceneTab() {
       </Section>
 
       {/* Lighting Section */}
-      <Section title="Lighting" icon="💡" defaultOpen={false}>
+      <Section title="Lighting" icon={<Lightbulb size={18} weight="duotone" />} defaultOpen={false}>
         <p className="muted small" style={{ marginBottom: '0.75rem' }}>
           3-point lighting presets for professional renders
         </p>
@@ -470,7 +497,7 @@ export function SceneTab() {
       </Section>
 
       {/* Material/Toon Shader Section */}
-      <Section title="Toon Shader" icon="🎨" defaultOpen={false}>
+      <Section title="Toon Shader" icon={<Palette size={18} weight="duotone" />} defaultOpen={false}>
         <p className="muted small" style={{ marginBottom: '0.75rem' }}>
           VRM material and outline customization
         </p>
@@ -524,13 +551,13 @@ export function SceneTab() {
             onClick={() => materialManager.debugMaterials()}
             style={{ marginTop: '0.75rem', fontSize: '0.75rem' }}
           >
-            🔍 Debug Materials (Console)
+            <MagnifyingGlass size={16} weight="duotone" /> Debug Materials (Console)
           </button>
         </div>
       </Section>
 
       {/* Post-Processing Section */}
-      <Section title="Effects" icon="✨" defaultOpen={false}>
+      <Section title="Effects" icon={<Sparkle size={18} weight="duotone" />} defaultOpen={false}>
         <p className="muted small" style={{ marginBottom: '0.75rem' }}>
           Post-processing effects for cinematic looks
         </p>
@@ -607,7 +634,7 @@ export function SceneTab() {
       </Section>
 
       {/* Environment/HDRI Section */}
-      <Section title="Environment" icon="🌍" defaultOpen={false}>
+      <Section title="Environment" icon={<Sun size={18} weight="duotone" />} defaultOpen={false}>
         <p className="muted small" style={{ marginBottom: '0.75rem' }}>
           HDRI environment maps for realistic lighting and reflections
         </p>
@@ -629,7 +656,7 @@ export function SceneTab() {
           onClick={() => hdriInputRef.current?.click()}
           disabled={isLoadingHdri}
         >
-          📤 Upload Custom HDR
+          <UploadSimple size={16} weight="duotone" /> Upload Custom HDR
         </button>
         <input
           ref={hdriInputRef}
@@ -668,7 +695,7 @@ export function SceneTab() {
       </Section>
 
       {/* Backgrounds Section */}
-      <Section title="Backgrounds" icon="🎨" defaultOpen={true}>
+      <Section title="Backgrounds" icon={<Image size={18} weight="duotone" />} defaultOpen={false}>
         {/* Lock toggle */}
         <div style={{ 
           display: 'flex', 
@@ -681,7 +708,7 @@ export function SceneTab() {
           border: backgroundLocked ? '1px solid rgba(255, 193, 7, 0.3)' : '1px solid transparent',
         }}>
           <span className="small" style={{ color: backgroundLocked ? '#ffc107' : 'var(--text-muted)' }}>
-            {backgroundLocked ? '🔒 Background locked' : '🔓 Background unlocked'}
+            {backgroundLocked ? <><Lock size={14} weight="fill" /> Background locked</> : <><LockOpen size={14} weight="duotone" /> Background unlocked</>}
           </span>
           <button
             className={`secondary small ${backgroundLocked ? 'active' : ''}`}
@@ -708,7 +735,7 @@ export function SceneTab() {
               alignItems: 'center',
               justifyContent: 'center'
             }}>
-              {!customBackground && <span style={{ fontSize: '1.5rem' }}>➕</span>}
+              {!customBackground && <Plus size={24} weight="bold" />}
             </div>
             <span className="background-thumbnail__name">Custom</span>
           </button>
@@ -736,7 +763,7 @@ export function SceneTab() {
           onClick={() => bgInputRef.current?.click()}
           style={{ marginTop: '0.75rem' }}
         >
-          📤 Upload Background
+          <UploadSimple size={16} weight="duotone" /> Upload Background
         </button>
         <input
           ref={bgInputRef}
@@ -748,7 +775,7 @@ export function SceneTab() {
       </Section>
 
       {/* FX Overlays */}
-      <Section title="FX Overlays" icon="🎞️" defaultOpen={false}>
+      <Section title="FX Overlays" icon={<FilmStrip size={18} weight="duotone" />} defaultOpen={false}>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
           {['overlay-scanlines', 'overlay-vignette', 'overlay-glitch', 'overlay-crt'].map((overlay) => (
             <button
@@ -764,7 +791,7 @@ export function SceneTab() {
       </Section>
 
       {/* Aspect Ratio */}
-      <Section title="Aspect Ratio" icon="📐" defaultOpen={false}>
+      <Section title="Aspect Ratio" icon={<FrameCorners size={18} weight="duotone" />} defaultOpen={false}>
         <div className="button-group" style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
           {(['16:9', '1:1', '9:16'] as AspectRatio[]).map((ratio) => (
             <button
@@ -779,10 +806,209 @@ export function SceneTab() {
         </div>
       </Section>
 
+      {/* Intro Sequence */}
+      <IntroSection />
+
       {/* Co-op / Multiplayer */}
-      <Section title="Co-op Session" icon="🌐" defaultOpen={false}>
+      <Section title="Co-op Session" icon={<Globe size={18} weight="duotone" />} defaultOpen={false}>
         <MultiplayerPanel />
       </Section>
     </div>
+  );
+}
+
+/** Intro Sequence Settings Section */
+function IntroSection() {
+  const { 
+    enabled, 
+    sequenceId, 
+    autoCapture, 
+    isPlaying,
+    randomSnapshotInterval,
+    autoCaptures,
+    setEnabled, 
+    setSequenceId, 
+    setAutoCapture,
+    setRandomSnapshotInterval,
+    clearAutoCaptures,
+    downloadAutoCapture,
+  } = useIntroStore();
+  
+  const isAvatarReady = useReactionStore((s) => s.isAvatarReady);
+  const addToast = useToastStore((s) => s.addToast);
+  
+  const sequenceIds = introSequence.getSequenceIds();
+  
+  const handlePlayNow = async () => {
+    if (!isAvatarReady) {
+      addToast('Load an avatar first!', 'warning');
+      return;
+    }
+    
+    useIntroStore.getState().setPlaying(true);
+    await introSequence.play(sequenceId);
+    useIntroStore.getState().setPlaying(false);
+  };
+  
+  return (
+    <Section title="Opening Sequence" icon={<FilmSlate size={18} weight="duotone" />} defaultOpen={false}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+        {/* Enable Toggle */}
+        <label style={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          gap: '0.75rem',
+          cursor: 'pointer'
+        }}>
+          <input
+            type="checkbox"
+            checked={enabled}
+            onChange={(e) => setEnabled(e.target.checked)}
+            style={{ width: '18px', height: '18px', accentColor: '#00ffd6' }}
+          />
+          <span style={{ color: '#e6f3ff', fontSize: '0.9rem' }}>
+            Play intro on avatar load
+          </span>
+        </label>
+        
+        {/* Sequence Selector */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+          <label style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.6)' }}>
+            Intro Style
+          </label>
+          <select
+            value={sequenceId}
+            onChange={(e) => setSequenceId(e.target.value)}
+            style={{
+              padding: '0.5rem 0.75rem',
+              borderRadius: '6px',
+              background: 'rgba(17, 21, 32, 0.8)',
+              border: '1px solid rgba(255, 255, 255, 0.15)',
+              color: '#e6f3ff',
+              fontSize: '0.9rem',
+            }}
+          >
+            {sequenceIds.map((id) => {
+              const info = introSequence.getSequenceInfo(id);
+              return (
+                <option key={id} value={id}>
+                  {info?.name || id} ({info?.duration}s)
+                </option>
+              );
+            })}
+          </select>
+        </div>
+        
+        {/* Auto-Capture Toggle */}
+        <label style={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          gap: '0.75rem',
+          cursor: 'pointer'
+        }}>
+          <input
+            type="checkbox"
+            checked={autoCapture}
+            onChange={(e) => setAutoCapture(e.target.checked)}
+            style={{ width: '18px', height: '18px', accentColor: '#00ffd6' }}
+          />
+          <span style={{ color: '#e6f3ff', fontSize: '0.9rem' }}>
+            Auto-capture at key moments
+          </span>
+        </label>
+        
+        {/* Random Snapshot Interval */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+          <label style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.6)' }}>
+            Random Auto-Snapshot ({randomSnapshotInterval === 0 ? 'Off' : `Every ${randomSnapshotInterval}s`})
+          </label>
+          <input
+            type="range"
+            min={0}
+            max={60}
+            step={5}
+            value={randomSnapshotInterval}
+            onChange={(e) => setRandomSnapshotInterval(parseInt(e.target.value))}
+            style={{ accentColor: '#00ffd6' }}
+          />
+        </div>
+        
+        {/* Play Now Button */}
+        <button
+          onClick={handlePlayNow}
+          disabled={!isAvatarReady || isPlaying}
+          style={{
+            padding: '0.75rem 1rem',
+            borderRadius: '8px',
+            background: isPlaying 
+              ? 'rgba(255, 255, 255, 0.1)' 
+              : 'linear-gradient(135deg, rgba(0, 255, 214, 0.2), rgba(0, 200, 180, 0.15))',
+            border: '1px solid rgba(0, 255, 214, 0.3)',
+            color: '#00ffd6',
+            fontSize: '0.9rem',
+            fontWeight: 600,
+            cursor: isAvatarReady && !isPlaying ? 'pointer' : 'not-allowed',
+            opacity: isAvatarReady ? 1 : 0.5,
+          }}
+        >
+          {isPlaying ? <><FilmSlate size={16} weight="duotone" /> Playing...</> : <><Play size={16} weight="fill" /> Play Intro Now</>}
+        </button>
+        
+        {/* Auto-Captured Gallery */}
+        {autoCaptures.length > 0 && (
+          <div style={{ marginTop: '0.5rem' }}>
+            <div style={{ 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              alignItems: 'center',
+              marginBottom: '0.5rem' 
+            }}>
+              <span style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.6)' }}>
+                Auto-Captured ({autoCaptures.length})
+              </span>
+              <button
+                onClick={clearAutoCaptures}
+                style={{
+                  padding: '0.25rem 0.5rem',
+                  borderRadius: '4px',
+                  background: 'rgba(255, 100, 100, 0.2)',
+                  border: '1px solid rgba(255, 100, 100, 0.3)',
+                  color: '#ff8888',
+                  fontSize: '0.75rem',
+                  cursor: 'pointer',
+                }}
+              >
+                Clear All
+              </button>
+            </div>
+            <div style={{ 
+              display: 'flex', 
+              gap: '0.5rem', 
+              overflowX: 'auto',
+              padding: '0.25rem 0',
+            }}>
+              {autoCaptures.map((url, i) => (
+                <img
+                  key={i}
+                  src={url}
+                  alt={`Capture ${i + 1}`}
+                  onClick={() => downloadAutoCapture(i)}
+                  style={{
+                    width: '60px',
+                    height: '60px',
+                    objectFit: 'cover',
+                    borderRadius: '6px',
+                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                    cursor: 'pointer',
+                    flexShrink: 0,
+                  }}
+                  title="Click to download"
+                />
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </Section>
   );
 }

@@ -10,8 +10,6 @@ const POSE_TO_MOTION_TYPE: Record<string, 'wave' | 'idle' | 'breath' | 'point' |
   'agent-dance': 'idle',  // Dance will be handled separately
   'agent-clapping': 'idle',
   'silly-agent': 'idle',
-  'victory-celebration': 'idle',
-  'typing': 'idle',
 };
 
 /**

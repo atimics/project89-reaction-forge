@@ -3,6 +3,16 @@ import { useAIStore } from '../state/useAIStore';
 import { aiManager } from '../ai/AIManager';
 import { apiKeyStorage } from '../utils/secureStorage';
 import './AIAgentWidget.css';
+import { 
+  Brain, 
+  CaretLeft, 
+  Key, 
+  X, 
+  Lightning, 
+  Plug, 
+  PaperPlaneTilt,
+  Lock
+} from '@phosphor-icons/react';
 
 // Check if server proxy is available (no env API key means we use proxy)
 const USE_SERVER_PROXY = !import.meta.env.VITE_GEMINI_API_KEY;
@@ -100,7 +110,7 @@ export function AIAgentWidget() {
     <div className={`ai-widget-container ${isOpen ? 'open' : ''}`}>
       {/* Toggle Tab (Visible when closed or open) */}
       <div className="ai-drawer-toggle" onClick={() => setIsOpen(!isOpen)} title="Toggle AI Assistant">
-        <span className="ai-drawer-icon">{isOpen ? '◀' : '🧠'}</span>
+        <span className="ai-drawer-icon">{isOpen ? <CaretLeft size={18} weight="bold" /> : <Brain size={20} weight="duotone" />}</span>
       </div>
 
       {/* Drawer Content */}
@@ -121,7 +131,7 @@ export function AIAgentWidget() {
                 onClick={handleClearKey}
                 title="Clear API Key"
               >
-                🔑✕
+                <Key size={14} weight="duotone" /><X size={10} weight="bold" />
               </button>
             )}
             <button 
@@ -129,7 +139,7 @@ export function AIAgentWidget() {
               onClick={handleToggleActive}
               title={isAIActive ? "Deactivate AI" : "Activate AI"}
             >
-              {isAIActive ? '⚡' : '🔌'}
+              {isAIActive ? <Lightning size={16} weight="fill" /> : <Plug size={16} weight="duotone" />}
             </button>
           </div>
         </div>
@@ -155,8 +165,8 @@ export function AIAgentWidget() {
               />
               <span>Remember across sessions</span>
             </label>
-            <small className="ai-security-note">
-              🔒 Key stored locally, {rememberKey ? 'persists until cleared' : 'cleared when tab closes'}
+            <small className="ai-security-note" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <Lock size={12} weight="duotone" /> Key stored locally, {rememberKey ? 'persists until cleared' : 'cleared when tab closes'}
             </small>
             <small>Get a free key at <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noreferrer">Google AI Studio</a></small>
           </div>
@@ -176,8 +186,8 @@ export function AIAgentWidget() {
               ))}
               
               {currentThought && (
-                <div className="ai-thought">
-                  ⚡ {currentThought}
+                <div className="ai-thought" style={{ display: 'flex', alignItems: 'flex-start', gap: '6px' }}>
+                  <Lightning size={14} weight="fill" style={{ flexShrink: 0, marginTop: '2px' }} /> {currentThought}
                 </div>
               )}
               <div ref={chatEndRef} />
@@ -192,7 +202,7 @@ export function AIAgentWidget() {
                 disabled={!isAIActive || isLoading}
               />
               <button type="submit" disabled={!isAIActive || isLoading || !inputText.trim()}>
-                ➤
+                <PaperPlaneTilt size={16} weight="fill" />
               </button>
             </form>
           </>

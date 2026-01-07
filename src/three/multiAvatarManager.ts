@@ -110,7 +110,8 @@ class MultiAvatarManager {
     if (!vrm) throw new Error('Invalid VRM file');
 
     VRMUtils.removeUnnecessaryVertices(vrm.scene);
-    VRMUtils.removeUnnecessaryJoints(vrm.scene);
+    // Combine skeletons for better performance (replaces deprecated removeUnnecessaryJoints)
+    VRMUtils.combineSkeletons(vrm.scene);
 
     // Calculate position offset based on avatar count
     const positionOffset = this.calculatePositionOffset(peerId, isLocal);
@@ -129,6 +130,8 @@ class MultiAvatarManager {
 
     // Position the avatar
     vrm.scene.position.copy(positionOffset);
+    // Rotate 180° on Y so the avatar faces the camera (VRMs export facing +Z, camera looks at -Z)
+    vrm.scene.rotation.set(0, Math.PI, 0);
 
     // Add to scene
     scene.add(vrm.scene);

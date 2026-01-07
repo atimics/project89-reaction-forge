@@ -71,13 +71,43 @@ export const commands: Action[] = [
       } 
   },
   { 
-      id: "camera-front", 
-      name: "Camera: Front", 
+      id: "camera-headshot", 
+      name: "Camera: Headshot", 
       shortcut: ["1"], 
-      keywords: "view front",
+      keywords: "view front headshot portrait",
       perform: () => {
-          sceneManager.setCameraPreset('front');
-          getToast().addToast('Camera: Front', 'info');
+          sceneManager.setCameraPreset('headshot');
+          getToast().addToast('Camera: Headshot [1]', 'info');
+      } 
+  },
+  { 
+      id: "camera-quarter", 
+      name: "Camera: 3/4 View", 
+      shortcut: ["3"], 
+      keywords: "view quarter angle",
+      perform: () => {
+          sceneManager.setCameraPreset('quarter');
+          getToast().addToast('Camera: 3/4 View [3]', 'info');
+      } 
+  },
+  { 
+      id: "camera-side", 
+      name: "Camera: Side View", 
+      shortcut: ["5"], 
+      keywords: "view side profile",
+      perform: () => {
+          sceneManager.setCameraPreset('side');
+          getToast().addToast('Camera: Side View [5]', 'info');
+      } 
+  },
+  { 
+      id: "camera-home", 
+      name: "Camera: Home", 
+      shortcut: ["7"], 
+      keywords: "view home reset default",
+      perform: () => {
+          sceneManager.resetCamera();
+          getToast().addToast('Camera: Home [7]', 'info');
       } 
   },
   { 

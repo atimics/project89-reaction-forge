@@ -8,6 +8,7 @@ import { VRMLoaderPlugin, type VRM } from '@pixiv/three-vrm';
 import { getMixamoAnimation } from './getMixamoAnimation';
 import { poseFromClip } from './poseFromClip';
 import { convertAnimationToScenePaths } from './convertAnimationToScenePaths';
+import { BatchFBXConverter } from './BatchFBXConverter';
 // import type { PoseId } from '../types/reactions';
 // import type { VRMPose } from '@pixiv/three-vrm';
 
@@ -602,6 +603,11 @@ function PoseLab() {
           📦 Batch Export All Poses (Disabled)
         </button>
       </div>
+
+      {/* Batch FBX Converter */}
+      {vrmRef.current && (
+        <BatchFBXConverter vrm={vrmRef.current} />
+      )}
     </div>
   );
 }

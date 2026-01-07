@@ -28,6 +28,12 @@ class PeerManager {
   private config: MultiplayerConfig;
   private reconnectTimers = new Map<PeerId, ReturnType<typeof setTimeout>>();
   private isDestroyed = false;
+  
+  // Auto-reconnect state
+  private reconnectAttempts = 0;
+  private lastRoomId: RoomId | null = null;
+  private lastDisplayName: string | null = null;
+  private lastRole: 'host' | 'guest' | null = null;
 
   constructor(config: Partial<MultiplayerConfig> = {}) {
     this.config = { ...DEFAULT_MULTIPLAYER_CONFIG, ...config };
@@ -80,6 +86,12 @@ class PeerManager {
 
         // Share peer instance with voice chat manager
         voiceChatManager.setPeer(this.peer);
+        
+        // Store for auto-reconnect
+        this.lastRoomId = id;
+        this.lastDisplayName = displayName;
+        this.lastRole = 'host';
+        this.reconnectAttempts = 0;
 
         resolve(id);
       });
@@ -98,10 +110,7 @@ class PeerManager {
 
       this.peer.on('disconnected', () => {
         console.warn('[PeerManager] Disconnected from signaling server');
-        // Try to reconnect
-        if (!this.isDestroyed && this.peer) {
-          this.peer.reconnect();
-        }
+        this.handleDisconnect();
       });
     });
   }
@@ -187,6 +196,12 @@ class PeerManager {
             peerId: id,
             timestamp: Date.now(),
           });
+          
+          // Store for auto-reconnect
+          this.lastRoomId = roomId;
+          this.lastDisplayName = displayName;
+          this.lastRole = 'guest';
+          this.reconnectAttempts = 0;
 
           resolve();
         });
@@ -211,6 +226,11 @@ class PeerManager {
         this.notifyError(err);
         reject(err);
       });
+      
+      this.peer.on('disconnected', () => {
+        console.warn('[PeerManager] Guest disconnected from signaling server');
+        this.handleDisconnect();
+      });
     });
   }
 
@@ -229,6 +249,12 @@ class PeerManager {
         timestamp: Date.now(),
       });
     }
+
+    // Clear reconnect state (intentional leave)
+    this.lastRoomId = null;
+    this.lastDisplayName = null;
+    this.lastRole = null;
+    this.reconnectAttempts = 0;
 
     this.destroy();
     store.resetSession();
@@ -528,6 +554,77 @@ class PeerManager {
         console.error('[PeerManager] Error handler error:', e);
       }
     });
+  }
+
+  /**
+   * Handle disconnection with auto-reconnect
+   */
+  private handleDisconnect() {
+    const store = useMultiplayerStore.getState();
+    
+    // Try to reconnect using PeerJS built-in reconnect first
+    if (!this.isDestroyed && this.peer && this.peer.disconnected) {
+      console.log('[PeerManager] Attempting PeerJS reconnect...');
+      try {
+        this.peer.reconnect();
+        return;
+      } catch (e) {
+        console.warn('[PeerManager] PeerJS reconnect failed:', e);
+      }
+    }
+    
+    // If that fails, try full reconnection
+    if (this.reconnectAttempts < this.config.reconnectAttempts && 
+        this.lastRoomId && 
+        this.lastDisplayName && 
+        !this.isDestroyed) {
+      
+      this.reconnectAttempts++;
+      const delay = Math.min(1000 * Math.pow(2, this.reconnectAttempts - 1), 10000); // Exponential backoff, max 10s
+      
+      console.log(`[PeerManager] Auto-reconnecting in ${delay}ms (attempt ${this.reconnectAttempts}/${this.config.reconnectAttempts})`);
+      store.setError(`Reconnecting... (${this.reconnectAttempts}/${this.config.reconnectAttempts})`);
+      
+      setTimeout(() => {
+        if (this.isDestroyed) return;
+        
+        // Clean up current peer
+        if (this.peer) {
+          try { this.peer.destroy(); } catch (_e) { /* ignore */ }
+          this.peer = null;
+        }
+        this.connections.clear();
+        
+        // Attempt to rejoin
+        if (this.lastRole === 'guest' && this.lastRoomId && this.lastDisplayName) {
+          this.joinSession(this.lastRoomId, this.lastDisplayName)
+            .then(() => {
+              console.log('[PeerManager] Auto-reconnect successful');
+              store.setError(null);
+            })
+            .catch((err) => {
+              console.error('[PeerManager] Auto-reconnect failed:', err);
+              this.handleDisconnect(); // Try again
+            });
+        } else if (this.lastRole === 'host' && this.lastDisplayName) {
+          // Host can't really "rejoin" with the same room ID
+          // Just attempt to recreate with new ID
+          this.createSession(this.lastDisplayName)
+            .then(() => {
+              console.log('[PeerManager] Auto-reconnect (new session) successful');
+              store.setError('Session recreated with new ID');
+            })
+            .catch((err) => {
+              console.error('[PeerManager] Auto-reconnect failed:', err);
+              this.handleDisconnect(); // Try again
+            });
+        }
+      }, delay);
+    } else if (this.reconnectAttempts >= this.config.reconnectAttempts) {
+      console.error('[PeerManager] Max reconnect attempts reached');
+      store.setError('Connection lost. Please rejoin manually.');
+      store.setConnected(false);
+    }
   }
 
   private generateRoomId(): RoomId {

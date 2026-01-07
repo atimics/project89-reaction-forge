@@ -1,3 +1,16 @@
+import { 
+  X, 
+  Robot, 
+  Users, 
+  Microphone, 
+  Camera, 
+  Sparkle,
+  VideoCamera,
+  FilmSlate,
+  Cube,
+  Brain,
+  GithubLogo
+} from '@phosphor-icons/react';
 
 interface AboutModalProps {
   isOpen: boolean;
@@ -9,33 +22,90 @@ export function AboutModal({ isOpen, onClose }: AboutModalProps) {
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        <button className="modal-close" onClick={onClose}>&times;</button>
+      <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '600px' }}>
+        <button className="modal-close" onClick={onClose}><X size={20} weight="bold" /></button>
         
-        <h2>About PoseLab</h2>
+        <h2 style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <img src="/logo/poselab.svg" alt="PoseLab" style={{ width: '32px', height: '32px' }} />
+          PoseLab
+        </h2>
+        
         <div className="modal-body">
-          <p className="lead">
-            A procedural animation synthesis engine and pose library for Project 89.
+          <p className="lead" style={{ fontSize: '1.1rem', opacity: 0.9 }}>
+            The ultimate browser-based VRM avatar studio for creating, posing, animating, and streaming.
           </p>
           
-          <h3>Core Systems</h3>
-          <ul>
-            <li><strong>Motion Engine:</strong> Bio-mechanical constraint solver with kinetic lag simulation.</li>
-            <li><strong>Reaction Synthesis:</strong> Real-time emotional state mapping to pose dynamics.</li>
-            <li><strong>AI Generation:</strong> Text-to-motion synthesis using Google Gemini.</li>
-            <li><strong>Retargeting:</strong> Adaptive skeleton mapping for VRM 0.0 & 1.0 avatars.</li>
+          <h3 style={{ marginTop: '1.5rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Sparkle size={18} weight="duotone" /> Core Features
+          </h3>
+          <ul style={{ listStyle: 'none', padding: 0, display: 'grid', gap: '8px' }}>
+            <li style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <Robot size={18} weight="duotone" style={{ color: 'var(--accent)' }} />
+              <span><strong>AI Avatar Agent:</strong> Chat-driven posing & expressions via Gemini</span>
+            </li>
+            <li style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <Users size={18} weight="duotone" style={{ color: 'var(--accent)' }} />
+              <span><strong>Multiplayer Co-op:</strong> Real-time P2P sessions with WebRTC</span>
+            </li>
+            <li style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <Microphone size={18} weight="duotone" style={{ color: 'var(--accent)' }} />
+              <span><strong>Voice Chat & Lip Sync:</strong> Live voice with mouth animations</span>
+            </li>
+            <li style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <VideoCamera size={18} weight="duotone" style={{ color: 'var(--accent)' }} />
+              <span><strong>Webcam Mocap:</strong> Full body & face tracking via MediaPipe</span>
+            </li>
+            <li style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <FilmSlate size={18} weight="duotone" style={{ color: 'var(--accent)' }} />
+              <span><strong>FBX/GLTF Import:</strong> Mixamo animation retargeting</span>
+            </li>
+            <li style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <Camera size={18} weight="duotone" style={{ color: 'var(--accent)' }} />
+              <span><strong>Cinematic Export:</strong> PNG, WebM video, GLB with effects</span>
+            </li>
+            <li style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <Cube size={18} weight="duotone" style={{ color: 'var(--accent)' }} />
+              <span><strong>Post-Processing:</strong> Bloom, color grading, film overlays</span>
+            </li>
+            <li style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <Brain size={18} weight="duotone" style={{ color: 'var(--accent)' }} />
+              <span><strong>Motion Engine:</strong> Procedural animation with biomechanics</span>
+            </li>
           </ul>
 
-          <h3>Context</h3>
-          <p>
-            PoseLab is an open-source initiative designed to democratize 3D character animation and pose creation for the VRM ecosystem. By combining procedural animation, inverse kinematics, and AI-driven synthesis, it empowers creators to bring avatars to life directly in the browser without complex 3D software.
-          </p>
-          <p>
-            We welcome contributions from developers, animators, and AI researchers. Join us in evolving the engine on <a href="https://github.com/0xQuan93/project89-reaction-forge" target="_blank" rel="noopener noreferrer" style={{ color: '#00ffd6', textDecoration: 'none' }}>GitHub</a>.
+          <h3 style={{ marginTop: '1.5rem' }}>About</h3>
+          <p style={{ opacity: 0.85, lineHeight: 1.6 }}>
+            PoseLab is an open-source initiative by Project 89 to democratize VRM avatar creation and animation. 
+            Built entirely in the browser using Three.js, React, and WebRTC - no downloads or accounts required.
           </p>
           
-          <div className="version-info">
-            <small>Version 1.1.0 - Engine V2</small>
+          <div style={{ 
+            marginTop: '1.5rem', 
+            padding: '1rem', 
+            background: 'rgba(0, 255, 214, 0.05)', 
+            borderRadius: '8px',
+            border: '1px solid rgba(0, 255, 214, 0.15)'
+          }}>
+            <a 
+              href="https://github.com/0xQuan93/project89-reaction-forge" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              style={{ 
+                color: 'var(--accent)', 
+                textDecoration: 'none',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                fontWeight: 600
+              }}
+            >
+              <GithubLogo size={20} weight="duotone" />
+              Contribute on GitHub
+            </a>
+          </div>
+          
+          <div className="version-info" style={{ marginTop: '1.5rem', opacity: 0.6 }}>
+            <small>Version 1.3.0 • Phosphor Icons • Orbitron Typography</small>
           </div>
         </div>
       </div>

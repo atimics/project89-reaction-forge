@@ -5,6 +5,17 @@ import { usePopOutViewport } from '../hooks/usePopOutViewport';
 import { useUIStore } from '../state/useUIStore';
 import { MultiplayerPanel } from './MultiplayerPanel';
 import { notifySceneChange } from '../multiplayer/avatarBridge';
+import { 
+  House, 
+  User, 
+  Cube, 
+  Eye, 
+  ArrowSquareOut, 
+  ArrowSquareIn,
+  Play,
+  Pause,
+  Stop
+} from '@phosphor-icons/react';
 
 type AspectRatio = '16:9' | '1:1' | '9:16';
 
@@ -35,8 +46,8 @@ export function ViewportOverlay({ mode, isPlaying, onPlayPause, onStop }: Viewpo
     sceneManager.resetCamera();
   };
 
-  const handleFrontView = () => {
-    sceneManager.setCameraPreset('front');
+  const handleHeadshotView = () => {
+    sceneManager.setCameraPreset('headshot');
   };
 
   const handleQuarterView = () => {
@@ -54,35 +65,35 @@ export function ViewportOverlay({ mode, isPlaying, onPlayPause, onStop }: Viewpo
         <div className="camera-controls">
           <button
             className="icon-button"
-            onClick={handleResetCamera}
-            title="Reset camera to default"
-            aria-label="Reset camera to default"
+            onClick={handleHeadshotView}
+            title="Headshot view [1]"
+            aria-label="Headshot view"
           >
-            🏠
-          </button>
-          <button
-            className="icon-button"
-            onClick={handleFrontView}
-            title="Front view"
-            aria-label="Front view"
-          >
-            👤
+            <User size={18} weight="duotone" />
           </button>
           <button
             className="icon-button"
             onClick={handleQuarterView}
-            title="3/4 view"
+            title="3/4 view [3]"
             aria-label="Three quarter view"
           >
-            📐
+            <Cube size={18} weight="duotone" />
           </button>
           <button
             className="icon-button"
             onClick={handleSideView}
-            title="Side view"
+            title="Side view [5]"
             aria-label="Side view"
           >
-            👁️
+            <Eye size={18} weight="duotone" />
+          </button>
+          <button
+            className="icon-button"
+            onClick={handleResetCamera}
+            title="Home view [7]"
+            aria-label="Home view"
+          >
+            <House size={18} weight="duotone" />
           </button>
           
           {/* Pop Out Toggle */}
@@ -93,7 +104,7 @@ export function ViewportOverlay({ mode, isPlaying, onPlayPause, onStop }: Viewpo
             aria-label={isPoppedOut ? "Restore viewport" : "Pop out viewport"}
             style={{ marginLeft: '0.5rem', borderLeft: '1px solid rgba(255,255,255,0.1)', paddingLeft: '0.5rem' }}
           >
-            {isPoppedOut ? '🔙' : '↗️'}
+            {isPoppedOut ? <ArrowSquareIn size={18} weight="duotone" /> : <ArrowSquareOut size={18} weight="duotone" />}
           </button>
           
           {/* Aspect Ratio Toggle */}
@@ -145,7 +156,7 @@ export function ViewportOverlay({ mode, isPlaying, onPlayPause, onStop }: Viewpo
               title={isPlaying ? 'Pause' : 'Play'}
               aria-label={isPlaying ? 'Pause animation' : 'Play animation'}
             >
-              {isPlaying ? '⏸️' : '▶️'}
+              {isPlaying ? <Pause size={18} weight="fill" /> : <Play size={18} weight="fill" />}
             </button>
             <button
               className="icon-button"
@@ -153,7 +164,7 @@ export function ViewportOverlay({ mode, isPlaying, onPlayPause, onStop }: Viewpo
               title="Stop"
               aria-label="Stop animation"
             >
-              ⏹️
+              <Stop size={18} weight="fill" />
             </button>
           </div>
         </div>

@@ -12,8 +12,8 @@ const USE_PROXY = !import.meta.env.VITE_GEMINI_API_KEY;
 // Valid pose IDs that exist in the pose library
 const VALID_POSE_IDS: PoseId[] = [
   'dawn-runner', 'sunset-call', 'cipher-whisper', 'nebula-drift',
-  'signal-reverie', 'typing', 'agent-taunt', 'agent-dance',
-  'agent-clapping', 'silly-agent', 'victory-celebration', 'simple-wave', 'point'
+  'signal-reverie', 'agent-taunt', 'agent-dance',
+  'agent-clapping', 'silly-agent', 'simple-wave', 'point'
 ];
 
 // Map AI commands to actual pose IDs
@@ -21,15 +21,14 @@ const POSE_COMMAND_MAP: Record<string, PoseId> = {
   'wave': 'simple-wave',
   'dance': 'agent-dance',
   'point': 'point',
-  'victory': 'victory-celebration',
-  'celebrate': 'victory-celebration',
+  'victory': 'agent-clapping',
+  'celebrate': 'agent-clapping',
   'think': 'cipher-whisper',
   'ponder': 'cipher-whisper',
   'angry': 'agent-taunt',
   'taunt': 'agent-taunt',
   'clap': 'agent-clapping',
   'silly': 'silly-agent',
-  'typing': 'typing',
 };
 
 // Map AI commands to gestures (new system)
@@ -102,8 +101,7 @@ class AIManager {
     
     ### Complex Poses (full body):
     [POSE: dance] - Dancing animation
-    [POSE: victory] - Victory celebration
-    [POSE: typing] - Typing at keyboard
+    [POSE: clap] - Clapping celebration
     
     ### Reactions (gesture + emotion combo):
     [REACT: greeting] - Wave + happy

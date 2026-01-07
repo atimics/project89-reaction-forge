@@ -4,6 +4,15 @@ import { voiceChatManager } from '../multiplayer/voiceChatManager';
 import type { VoiceChatState } from '../multiplayer/voiceChatManager';
 import { useToastStore } from '../state/useToastStore';
 import './VoiceChatControls.css';
+import { 
+  Microphone, 
+  MicrophoneSlash, 
+  SpeakerHigh, 
+  SpeakerSlash,
+  Spinner,
+  Phone,
+  PhoneDisconnect
+} from '@phosphor-icons/react';
 
 interface VoiceChatControlsProps {
   /** Compact mode for minimal UI */
@@ -115,11 +124,11 @@ export function VoiceChatControls({ compact = false }: VoiceChatControlsProps) {
           }
         >
           {isConnecting ? (
-            <span className="voice-spinner">⏳</span>
+            <Spinner size={18} weight="bold" className="voice-spinner-icon" />
           ) : voiceChatEnabled ? (
-            voiceChatMuted ? '🔇' : localIsSpeaking ? '🗣️' : '🎙️'
+            voiceChatMuted ? <MicrophoneSlash size={18} weight="fill" /> : <Microphone size={18} weight="fill" />
           ) : (
-            '🎤'
+            <Microphone size={18} weight="duotone" />
           )}
         </button>
         {voiceChatEnabled && activePeerCount > 0 && (
@@ -133,10 +142,10 @@ export function VoiceChatControls({ compact = false }: VoiceChatControlsProps) {
   return (
     <div className="voice-chat-controls">
       <div className="voice-header">
-        <span className="voice-title">🎤 Voice Chat</span>
+        <span className="voice-title" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Microphone size={16} weight="duotone" /> Voice Chat</span>
         {voiceChatEnabled && (
           <span className={`voice-status ${localIsSpeaking ? 'speaking' : ''}`}>
-            {localIsSpeaking ? '🗣️ Speaking' : voiceChatMuted ? '🔇 Muted' : '● Active'}
+            {localIsSpeaking ? 'Speaking' : voiceChatMuted ? 'Muted' : '● Active'}
           </span>
         )}
       </div>
@@ -148,11 +157,11 @@ export function VoiceChatControls({ compact = false }: VoiceChatControlsProps) {
           disabled={isConnecting}
         >
           {isConnecting ? (
-            <>⏳ Connecting...</>
+            <><Spinner size={16} weight="bold" /> Connecting...</>
           ) : voiceChatEnabled ? (
-            <>🛑 Disable Voice</>
+            <><PhoneDisconnect size={16} weight="duotone" /> Disable Voice</>
           ) : (
-            <>🎤 Enable Voice</>
+            <><Phone size={16} weight="duotone" /> Enable Voice</>
           )}
         </button>
 
@@ -162,7 +171,7 @@ export function VoiceChatControls({ compact = false }: VoiceChatControlsProps) {
             onClick={handleToggleMute}
             title={voiceChatMuted ? 'Unmute' : 'Mute'}
           >
-            {voiceChatMuted ? '🔇' : '🔊'}
+            {voiceChatMuted ? <SpeakerSlash size={16} weight="fill" /> : <SpeakerHigh size={16} weight="fill" />}
           </button>
         )}
       </div>
@@ -186,8 +195,8 @@ export function VoiceChatControls({ compact = false }: VoiceChatControlsProps) {
 
           {activePeerCount > 0 && (
             <div className="voice-peers-info">
-              <span className="voice-peers-label">
-                🔊 {activePeerCount} peer{activePeerCount !== 1 ? 's' : ''} connected
+              <span className="voice-peers-label" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <SpeakerHigh size={14} weight="duotone" /> {activePeerCount} peer{activePeerCount !== 1 ? 's' : ''} connected
               </span>
             </div>
           )}

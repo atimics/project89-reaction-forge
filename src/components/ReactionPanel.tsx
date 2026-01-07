@@ -7,6 +7,7 @@ import { reactionPresets } from '../data/reactions';
 import { exportAsWebM, canExportVideo } from '../export/exportVideo';
 import { useAvatarSource } from '../state/useAvatarSource';
 import type { AnimationMode } from '../types/reactions';
+import { MaskHappy, Package, Trash, File as FileIcon, CheckCircle } from '@phosphor-icons/react';
 
 export function ReactionPanel() {
   const { nameInput, setNameInput, applyName, randomize, activePreset, isAvatarReady, setPresetById, animationMode, setAnimationMode } =
@@ -258,7 +259,7 @@ export function ReactionPanel() {
       {/* Empty State or VRM Upload Section */}
       {!sourceUrl ? (
         <div className="empty-state">
-          <div className="empty-state__icon">🎭</div>
+          <div className="empty-state__icon"><MaskHappy size={48} weight="duotone" /></div>
           <h2>Welcome to Reaction Forge</h2>
           <p>Load a VRM avatar to get started</p>
           <button 
@@ -266,7 +267,7 @@ export function ReactionPanel() {
             onClick={() => vrmInputRef.current?.click()}
             className="primary-large"
           >
-            📦 Load VRM Avatar
+            <Package size={18} weight="duotone" /> Load VRM Avatar
           </button>
           <input
             ref={vrmInputRef}
@@ -287,7 +288,7 @@ export function ReactionPanel() {
                 className="secondary"
                 onClick={() => vrmInputRef.current?.click()}
               >
-                📦 Change VRM
+                <Package size={16} weight="duotone" /> Change VRM
               </button>
               <button 
                 type="button" 
@@ -295,7 +296,7 @@ export function ReactionPanel() {
                 onClick={handleResetAvatar}
                 title="Clear avatar"
               >
-                🗑️ Clear
+                <Trash size={16} weight="duotone" /> Clear
               </button>
             </div>
             <p className="muted" style={{ fontSize: '0.85rem', marginTop: '0.5rem' }}>
@@ -349,7 +350,7 @@ export function ReactionPanel() {
             >
               {customPose ? (
                 <>
-                  <span className="drop-zone-small__icon">✅</span>
+                  <span className="drop-zone-small__icon"><CheckCircle size={24} weight="fill" style={{ color: 'var(--accent)' }} /></span>
                   <span className="drop-zone-small__text">
                     <strong>{customPoseName}</strong>
                     <small>Click to replace or drag another</small>
@@ -357,7 +358,7 @@ export function ReactionPanel() {
                 </>
               ) : (
                 <>
-                  <span className="drop-zone-small__icon">📄</span>
+                  <span className="drop-zone-small__icon"><FileIcon size={24} weight="duotone" /></span>
                   <span className="drop-zone-small__text">
                     <strong>Drop JSON here</strong>
                     <small>Or click to browse</small>
@@ -373,14 +374,14 @@ export function ReactionPanel() {
                   onClick={() => applyCustomPose(customPose)}
                   disabled={!isAvatarReady}
                 >
-                  🎭 Apply Pose
+                  <MaskHappy size={16} weight="duotone" /> Apply Pose
                 </button>
                 <button 
                   type="button" 
                   className="secondary"
                   onClick={handleClearCustomPose}
                 >
-                  🗑️ Clear
+                  <Trash size={16} weight="duotone" /> Clear
                 </button>
               </div>
             )}

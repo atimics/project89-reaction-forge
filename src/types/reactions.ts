@@ -4,12 +4,10 @@ export type PoseId =
   | 'cipher-whisper'
   | 'nebula-drift'
   | 'signal-reverie'
-  | 'typing'
   | 'agent-taunt'
   | 'agent-dance'
   | 'agent-clapping'
   | 'silly-agent'
-  | 'victory-celebration'
   | 'simple-wave'
   | 'point';
 

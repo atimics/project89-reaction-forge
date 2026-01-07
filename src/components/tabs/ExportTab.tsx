@@ -7,6 +7,15 @@ import { exportAsWebM, canExportVideo } from '../../export/exportVideo';
 import { exportAsGLB } from '../../export/exportGLB';
 import { useToastStore } from '../../state/useToastStore';
 import { postProcessingManager } from '../../three/postProcessingManager';
+import { 
+  Image, 
+  FilmStrip, 
+  Cube, 
+  Monitor, 
+  Square, 
+  DeviceMobileCamera,
+  Lightbulb
+} from '@phosphor-icons/react';
 
 interface ExportTabProps {
   mode?: 'reactions' | 'poselab';
@@ -279,7 +288,10 @@ export function ExportTab({ mode = 'reactions' }: ExportTabProps) {
               checked={exportFormat === 'png'}
               onChange={(e) => setExportFormat(e.target.value as 'png' | 'webm' | 'glb')}
             />
-            <span>PNG (Static Image)</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Image size={16} weight="duotone" />
+              PNG (Static Image)
+            </span>
           </label>
           <label className="radio-option">
             <input
@@ -290,7 +302,10 @@ export function ExportTab({ mode = 'reactions' }: ExportTabProps) {
               onChange={(e) => setExportFormat(e.target.value as 'png' | 'webm' | 'glb')}
               disabled={!canExportVideo()}
             />
-            <span>WebM (Video Animation)</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <FilmStrip size={16} weight="duotone" />
+              WebM (Video Animation)
+            </span>
           </label>
           <label className="radio-option">
             <input
@@ -300,7 +315,10 @@ export function ExportTab({ mode = 'reactions' }: ExportTabProps) {
               checked={exportFormat === 'glb'}
               onChange={(e) => setExportFormat(e.target.value as 'png' | 'webm' | 'glb')}
             />
-            <span>GLB (3D Model + Animation)</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Cube size={16} weight="duotone" />
+              GLB (3D Model + Animation)
+            </span>
           </label>
         </div>
       </div>
@@ -317,25 +335,28 @@ export function ExportTab({ mode = 'reactions' }: ExportTabProps) {
                 className={resolution === '720p' ? 'secondary active' : 'secondary'}
                 onClick={() => setResolution('720p')}
                 title="1280x720 (YouTube Thumbnail)"
-                style={{ flex: '1 1 100px' }}
+                style={{ flex: '1 1 100px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
               >
-                Thumbnail (HD)
+                <Monitor size={16} weight="duotone" />
+                HD
               </button>
               <button
                 className={resolution === 'square' ? 'secondary active' : 'secondary'}
                 onClick={() => setResolution('square')}
                 title="1080x1080 (Instagram/Twitter)"
-                style={{ flex: '1 1 100px' }}
+                style={{ flex: '1 1 100px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
               >
-                Square (1:1)
+                <Square size={16} weight="duotone" />
+                1:1
               </button>
               <button
                 className={resolution === '1080p' ? 'secondary active' : 'secondary'}
                 onClick={() => setResolution('1080p')}
                 title="1080x1920 (TikTok/Shorts/Reels)"
-                style={{ flex: '1 1 100px' }}
+                style={{ flex: '1 1 100px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
               >
-                Vertical (9:16)
+                <DeviceMobileCamera size={16} weight="duotone" />
+                9:16
               </button>
             </div>
           </>
@@ -388,8 +409,8 @@ export function ExportTab({ mode = 'reactions' }: ExportTabProps) {
         )}
         
         {exportFormat === 'png' && (
-          <p className="muted small" style={{ marginTop: '0.75rem', textAlign: 'center' }}>
-            💡 Quick Export: Press <kbd style={{ 
+          <p className="muted small" style={{ marginTop: '0.75rem', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+            <Lightbulb size={14} weight="duotone" /> Quick Export: Press <kbd style={{ 
               background: 'rgba(255,255,255,0.1)', 
               padding: '2px 6px', 
               borderRadius: '4px',

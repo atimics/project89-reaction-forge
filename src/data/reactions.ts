@@ -7,7 +7,7 @@ export const reactionPresets: ReactionPreset[] = [
     description: 'Dynamic action pose for reconnaissance briefs.',
     pose: 'dawn-runner',
     expression: 'calm',
-    background: 'protocol-dawn',
+    background: 'midnight-circuit',
   },
   {
     id: 'sunset-call',
@@ -42,14 +42,6 @@ export const reactionPresets: ReactionPreset[] = [
     background: 'signal-breach',
   },
   {
-    id: 'typing',
-    label: 'Typing',
-    description: 'Focused data entry for intelligence processing.',
-    pose: 'typing',
-    expression: 'calm',
-    background: 'neural-grid',
-  },
-  {
     id: 'agent-taunt',
     label: 'Agent Taunt',
     description: 'Playful provocation for psychological operations.',
@@ -64,6 +56,38 @@ export const reactionPresets: ReactionPreset[] = [
     pose: 'agent-dance',
     expression: 'joy',
     background: 'green-loom-matrix',
+  },
+  {
+    id: 'agent-clapping',
+    label: 'Agent Clapping',
+    description: 'Enthusiastic applause for team victories.',
+    pose: 'agent-clapping',
+    expression: 'joy',
+    background: 'green-loom-matrix',
+  },
+  {
+    id: 'silly-agent',
+    label: 'Silly Agent',
+    description: 'Playful and carefree dance moves.',
+    pose: 'silly-agent',
+    expression: 'joy',
+    background: 'cyber-waves',
+  },
+  {
+    id: 'simple-wave',
+    label: 'Wave',
+    description: 'Friendly greeting gesture.',
+    pose: 'simple-wave',
+    expression: 'joy',
+    background: 'protocol-dawn',
+  },
+  {
+    id: 'point',
+    label: 'Point',
+    description: 'Directing attention forward.',
+    pose: 'point',
+    expression: 'calm',
+    background: 'midnight-circuit',
   },
 ];
 

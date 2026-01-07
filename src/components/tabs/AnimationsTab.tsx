@@ -7,8 +7,14 @@ import { getMixamoAnimation } from '../../pose-lab/getMixamoAnimation';
 import { convertAnimationToScenePaths } from '../../pose-lab/convertAnimationToScenePaths';
 import { useReactionStore } from '../../state/useReactionStore';
 import { useToastStore } from '../../state/useToastStore';
-
 import { useAnimationStore } from '../../state/useAnimationStore';
+import { 
+  FilmSlate, 
+  Play, 
+  Pause, 
+  Stop, 
+  Warning
+} from '@phosphor-icons/react';
 
 export function AnimationsTab() {
   const { addToast } = useToastStore();
@@ -135,7 +141,7 @@ export function AnimationsTab() {
         
         {!isAvatarReady && (
           <div className="status-card" style={{ marginBottom: '1rem' }}>
-            <p className="muted small">⚠️ Please load a VRM avatar first</p>
+            <p className="muted small" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Warning size={14} weight="duotone" /> Please load a VRM avatar first</p>
           </div>
         )}
         
@@ -150,7 +156,7 @@ export function AnimationsTab() {
           onClick={() => isAvatarReady && fileInputRef.current?.click()}
           style={{ opacity: isAvatarReady ? 1 : 0.5, cursor: isAvatarReady ? 'pointer' : 'not-allowed' }}
         >
-          <span className="drop-zone__icon">🎬</span>
+          <span className="drop-zone__icon"><FilmSlate size={32} weight="duotone" /></span>
           <div className="drop-zone__text">
             <strong>Drop FBX/GLTF here</strong>
             <small>Or click to browse</small>
@@ -188,7 +194,7 @@ export function AnimationsTab() {
                                     title="Play animation"
                                     aria-label={currentAnimation === anim.clip ? 'Pause animation' : 'Play animation'}
                                   >
-                                    {currentAnimation === anim.clip ? '⏸️' : '▶️'}
+                                    {currentAnimation === anim.clip ? <Pause size={16} weight="fill" /> : <Play size={16} weight="fill" />}
                                   </button>
                 </div>
               ))}
@@ -201,9 +207,9 @@ export function AnimationsTab() {
             <button
               className="secondary full-width"
               onClick={handleStopAnimation}
-              style={{ marginBottom: '1rem' }}
+              style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
             >
-              ⏹️ Stop Animation
+              <Stop size={16} weight="fill" /> Stop Animation
             </button>
             
             <label className="checkbox-option">

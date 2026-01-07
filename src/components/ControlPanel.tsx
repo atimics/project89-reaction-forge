@@ -6,6 +6,16 @@ import { ExportTab } from './tabs/ExportTab';
 import { PosesTab } from './tabs/PosesTab';
 import { MocapTab } from './tabs/MocapTab';
 import { AnimationsTab } from './tabs/AnimationsTab';
+import { 
+  Sliders, 
+  PersonArmsSpread, 
+  Gear, 
+  Export,
+  Play,
+  UserFocus,
+  VideoCamera,
+  FloppyDisk
+} from '@phosphor-icons/react';
 
 interface ControlPanelProps {
   mode: 'reactions' | 'poselab';
@@ -22,25 +32,29 @@ export function ControlPanel({ mode }: ControlPanelProps) {
             className={reactionTab === 'presets' ? 'active' : ''}
             onClick={() => setReactionTab('presets')}
           >
-            Presets
+            <Sliders size={16} weight="duotone" />
+            <span>Presets</span>
           </button>
           <button
             className={reactionTab === 'pose' ? 'active' : ''}
             onClick={() => setReactionTab('pose')}
           >
-            Pose & Expression
+            <PersonArmsSpread size={16} weight="duotone" />
+            <span>Pose</span>
           </button>
           <button
             className={reactionTab === 'scene' ? 'active' : ''}
             onClick={() => setReactionTab('scene')}
           >
-            Scene
+            <Gear size={16} weight="duotone" />
+            <span>Scene</span>
           </button>
           <button
             className={reactionTab === 'export' ? 'active' : ''}
             onClick={() => setReactionTab('export')}
           >
-            Export
+            <Export size={16} weight="duotone" />
+            <span>Export</span>
           </button>
         </div>
 
@@ -62,25 +76,29 @@ export function ControlPanel({ mode }: ControlPanelProps) {
           className={poseLabTab === 'animations' ? 'active' : ''}
           onClick={() => setPoseLabTab('animations')}
         >
-          Anims
+          <Play size={16} weight="duotone" />
+          <span>Anims</span>
         </button>
         <button
           className={poseLabTab === 'poses' ? 'active' : ''}
           onClick={() => setPoseLabTab('poses')}
         >
-          Poses
+          <UserFocus size={16} weight="duotone" />
+          <span>Poses</span>
         </button>
         <button
           className={poseLabTab === 'mocap' ? 'active' : ''}
           onClick={() => setPoseLabTab('mocap')}
         >
-          Mocap
+          <VideoCamera size={16} weight="duotone" />
+          <span>Mocap</span>
         </button>
         <button
           className={poseLabTab === 'export' ? 'active' : ''}
           onClick={() => setPoseLabTab('export')}
         >
-          Save
+          <FloppyDisk size={16} weight="duotone" />
+          <span>Save</span>
         </button>
       </div>
 

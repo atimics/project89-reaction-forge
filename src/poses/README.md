@@ -23,8 +23,8 @@ Each pose can have **two files**:
 | Pose ID | Static Pose File | Animation File |
 |---------|-----------------|----------------|
 | agent-taunt | `agent-taunt.json` | `agent-taunt-animation.json` |
-| typing | `typing.json` | `typing-animation.json` |
-| stand-tall | `stand-tall.json` | `stand-tall-animation.json` |
+| simple-wave | `simple-wave.json` | `simple-wave-animation.json` |
+| point | `point.json` | `point-animation.json` |
 
 **Rule:** Animation file = pose file name + `-animation` suffix
 
@@ -50,10 +50,10 @@ pose.json → agent-taunt.json
 pose-animation.json → agent-taunt-animation.json
 ```
 
-**For pose ID "typing":**
+**For pose ID "simple-wave":**
 ```bash
-pose.json → typing.json
-pose-animation.json → typing-animation.json
+pose.json → simple-wave.json
+pose-animation.json → simple-wave-animation.json
 ```
 
 ### Step 3: Place in src/poses/
@@ -98,9 +98,12 @@ When "Loop" or "Play Once" is selected:
 | Cipher Whisper | ✅ cipher-whisper.json | ❌ | Procedural |
 | Nebula Drift | ✅ nebula-drift.json | ❌ | Procedural |
 | Signal Reverie | ✅ signal-reverie.json | ❌ | Procedural |
-| Typing | ✅ typing.json | ❌ | Procedural |
 | Agent Taunt | ✅ agent-taunt.json | ✅ agent-taunt-animation.json | **FBX Animation!** ✨ |
 | Agent Dance | ✅ agent-dance.json | ✅ agent-dance-animation.json | **FBX Animation!** ✨ |
+| Agent Clapping | ✅ agent-clapping.json | ✅ agent-clapping-animation.json | **FBX Animation!** ✨ |
+| Silly Agent | ✅ silly-agent.json | ✅ silly-agent-animation.json | **FBX Animation!** ✨ |
+| Simple Wave | ✅ simple-wave.json | ✅ simple-wave-animation.json | **FBX Animation!** ✨ |
+| Point | ✅ point.json | ✅ point-animation.json | **FBX Animation!** ✨ |
 
 ---
 

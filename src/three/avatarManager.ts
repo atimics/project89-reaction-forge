@@ -9,7 +9,35 @@ import { getPoseDefinition, getPoseDefinitionWithAnimation, type PoseDefinition 
 import { poseToAnimationClip } from '../poses/poseToAnimation';
 import { getAnimatedPose } from '../poses/animatedPoses';
 import { materialManager } from './materialManager';
-import { useSceneSettingsStore } from '../state/useSceneSettingsStore';
+
+// Import type only to avoid circular dependency at runtime
+// The actual store access happens after all modules are initialized
+import type { useSceneSettingsStore as SceneSettingsStoreType } from '../state/useSceneSettingsStore';
+
+// Lazy getter to avoid circular dependency with useSceneSettingsStore
+// (useSceneSettingsStore -> materialManager -> avatarManager -> useSceneSettingsStore)
+let _sceneSettingsStore: typeof SceneSettingsStoreType | null = null;
+const getSceneSettingsStore = (): typeof SceneSettingsStoreType | null => {
+  if (!_sceneSettingsStore) {
+    // Dynamically import to break circular dependency - this runs after initial module load
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const module = (window as any).__sceneSettingsStoreModule;
+      if (module) {
+        _sceneSettingsStore = module.useSceneSettingsStore;
+      }
+    } catch {
+      // Store not yet available
+    }
+  }
+  return _sceneSettingsStore;
+};
+
+// Register the store module globally after it's loaded (called from useSceneSettingsStore.ts)
+export const registerSceneSettingsStore = (store: typeof SceneSettingsStoreType) => {
+  _sceneSettingsStore = store;
+  (window as any).__sceneSettingsStoreModule = { useSceneSettingsStore: store };
+};
 
 type ExpressionMutator = (vrm: VRM) => void;
 
@@ -112,7 +140,8 @@ class AvatarManager {
     if (!vrm) throw new Error('Invalid VRM file');
     
     VRMUtils.removeUnnecessaryVertices(vrm.scene);
-    VRMUtils.removeUnnecessaryJoints(vrm.scene);
+    // Combine skeletons for better performance (replaces deprecated removeUnnecessaryJoints)
+    VRMUtils.combineSkeletons(vrm.scene);
 
     if (this.vrm) {
       scene.remove(this.vrm.scene);
@@ -122,6 +151,8 @@ class AvatarManager {
     this.currentUrl = url;
 
     vrm.scene.position.set(0, 0, 0);
+    // Rotate 180° on Y so the avatar faces the camera (VRMs export facing +Z, camera looks at -Z)
+    vrm.scene.rotation.set(0, Math.PI, 0);
     scene.add(vrm.scene);
     animationManager.initialize(vrm);
     sceneManager.frameObject(vrm.scene);
@@ -133,7 +164,7 @@ class AvatarManager {
     
     // Reset rotation lock when loading a new avatar so the first pose applies correctly
     // The user can re-lock rotation after using the gizmo
-    useSceneSettingsStore.getState().setRotationLocked(false);
+    getSceneSettingsStore()?.getState().setRotationLocked(false);
 
     return vrm;
   }
@@ -146,7 +177,7 @@ class AvatarManager {
     this.isInteracting = false;
 
     // Only apply scene rotation if not locked
-    const { rotationLocked } = useSceneSettingsStore.getState();
+    const { rotationLocked } = getSceneSettingsStore()?.getState() ?? { rotationLocked: false };
     if (poseData.sceneRotation && !rotationLocked) {
       this.vrm.scene.rotation.set(
         THREE.MathUtils.degToRad(poseData.sceneRotation.x ?? 0),
@@ -231,7 +262,7 @@ class AvatarManager {
     }
 
     // Only apply scene rotation if not locked (user hasn't manually rotated)
-    const { rotationLocked } = useSceneSettingsStore.getState();
+    const { rotationLocked } = getSceneSettingsStore()?.getState() ?? { rotationLocked: false };
     if (!rotationLocked) {
       this.vrm.scene.rotation.set(
         THREE.MathUtils.degToRad(def.sceneRotation?.x ?? 0), 

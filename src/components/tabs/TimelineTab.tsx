@@ -4,6 +4,7 @@ import { avatarManager } from '../../three/avatarManager';
 import { timelineToAnimationClip } from '../../utils/timelineToAnimation';
 import * as THREE from 'three';
 import { useReactionStore } from '../../state/useReactionStore';
+import { Play, Pause, Stop, Plus, FloppyDisk, ArrowsClockwise } from '@phosphor-icons/react';
 
 export function TimelineTab() {
   const { 
@@ -153,7 +154,7 @@ export function TimelineTab() {
             onClick={() => setIsPlaying(!isPlaying)}
             style={{ flex: '1 1 120px' }}
           >
-            {isPlaying ? '⏸️ Pause' : '▶️ Play'}
+            {isPlaying ? <><Pause size={16} weight="fill" /> Pause</> : <><Play size={16} weight="fill" /> Play</>}
           </button>
           
            <button 
@@ -165,7 +166,7 @@ export function TimelineTab() {
             style={{ width: '40px', flexShrink: 0 }}
             title="Stop & Rewind"
           >
-            ⏹️
+            <Stop size={16} weight="fill" />
           </button>
           
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(0,0,0,0.2)', padding: '0 0.5rem', borderRadius: '8px', flex: '1 1 auto' }}>
@@ -267,7 +268,7 @@ export function TimelineTab() {
                 onClick={handleCaptureKeyframe}
                 disabled={!isAvatarReady}
             >
-                ➕ Add Keyframe at {currentTime.toFixed(2)}s
+                <Plus size={16} weight="bold" /> Add Keyframe at {currentTime.toFixed(2)}s
             </button>
             <button 
                 className="secondary"
@@ -289,7 +290,7 @@ export function TimelineTab() {
                 disabled={sequence.keyframes.length === 0}
                 title="Export Sequence JSON"
             >
-                💾 Export
+                <FloppyDisk size={16} weight="duotone" /> Export
             </button>
         </div>
       </div>
@@ -318,7 +319,7 @@ export function TimelineTab() {
                     }
                 }}
               >
-                🔄 Update with Current Pose
+                <ArrowsClockwise size={16} weight="duotone" /> Update with Current Pose
               </button>
               <p className="muted small" style={{ marginTop: '0.5rem', textAlign: 'center' }}>
                 Set character pose first, then click Update

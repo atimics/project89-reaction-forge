@@ -5,6 +5,16 @@ import { useToastStore } from '../../state/useToastStore';
 import { avatarManager } from '../../three/avatarManager';
 import { apiKeyStorage } from '../../utils/secureStorage';
 import type { VRMPose } from '@pixiv/three-vrm';
+import { 
+  Robot, 
+  Sparkle, 
+  MagnifyingGlass, 
+  FloppyDisk, 
+  DownloadSimple, 
+  UploadSimple, 
+  Trash, 
+  Check
+} from '@phosphor-icons/react';
 
 export function AIGeneratorTab() {
   const { addCustomPose, customPoses, removeCustomPose, importPoses } = useCustomPoseStore();
@@ -202,7 +212,7 @@ export function AIGeneratorTab() {
     return (
       <div className="tab-content">
         <div className="tab-section">
-          <h3>🤖 AI Setup Required</h3>
+          <h3><Robot size={18} weight="duotone" /> AI Setup Required</h3>
           <p className="muted small">
             To use the AI generator, you need a Google Gemini API Key.
           </p>
@@ -312,7 +322,7 @@ export function AIGeneratorTab() {
             onClick={handleGenerate}
             disabled={!prompt.trim() || isGenerating}
           >
-            {isGenerating ? '✨ Generating...' : '✨ Generate Pose'}
+            {isGenerating ? <><Sparkle size={16} weight="fill" /> Generating...</> : <><Sparkle size={16} weight="duotone" /> Generate Pose</>}
           </button>
         </div>
         
@@ -365,7 +375,7 @@ export function AIGeneratorTab() {
                 onClick={handleCheckModels}
                 style={{ fontSize: '0.8em' }}
               >
-                🔍 Troubleshoot: Check Available Models
+                <MagnifyingGlass size={16} weight="duotone" /> Troubleshoot: Check Available Models
               </button>
             </div>
 
@@ -401,7 +411,7 @@ export function AIGeneratorTab() {
                 Re-Apply
               </button>
               <button className="primary small" onClick={handleSave}>
-                💾 Save to Library
+                <FloppyDisk size={16} weight="duotone" /> Save to Library
               </button>
             </div>
           </div>
@@ -413,7 +423,7 @@ export function AIGeneratorTab() {
           <h3>Your Library ({customPoses.length})</h3>
           <div style={{ display: 'flex', gap: '8px' }}>
             <label className="secondary small button" style={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
-              📥 Import
+              <UploadSimple size={16} weight="duotone" /> Import
               <input
                 type="file"
                 accept=".json"
@@ -426,7 +436,7 @@ export function AIGeneratorTab() {
               onClick={handleExportLibrary}
               disabled={customPoses.length === 0}
             >
-              📤 Export All
+              <DownloadSimple size={16} weight="duotone" /> Export All
             </button>
           </div>
         </div>
@@ -451,21 +461,21 @@ export function AIGeneratorTab() {
                     onClick={() => handleApplySaved(pose.poseData)}
                     title="Apply"
                   >
-                    ✓
+                    <Check size={16} weight="bold" />
                   </button>
                   <button
                     className="icon-button"
                     onClick={() => handleExportPose(pose)}
                     title="Download JSON"
                   >
-                    ⬇️
+                    <DownloadSimple size={16} weight="duotone" />
                   </button>
                   <button
                     className="icon-button"
                     onClick={() => removeCustomPose(pose.id)}
                     title="Delete"
                   >
-                    🗑️
+                    <Trash size={16} weight="duotone" />
                   </button>
                 </div>
               </div>

@@ -5,6 +5,20 @@ import { syncManager } from '../multiplayer/syncManager';
 import { useToastStore } from '../state/useToastStore';
 import { VoiceChatControls } from './VoiceChatControls';
 import './MultiplayerPanel.css';
+import { 
+  Users, 
+  X, 
+  Rocket, 
+  Link, 
+  Copy, 
+  SignOut, 
+  Crown, 
+  User,
+  Pencil,
+  Check,
+  Warning,
+  Person
+} from '@phosphor-icons/react';
 
 interface MultiplayerPanelProps {
   /** Compact mode for viewport overlay */
@@ -116,7 +130,7 @@ export function MultiplayerPanel({ compact = false }: MultiplayerPanelProps) {
               <span className="mp-dot" />
               <span className="mp-count">{peerCount}</span>
               <button className="mp-leave-btn" onClick={handleLeaveSession} title="Leave Session">
-                ✕
+                <X size={14} weight="bold" />
               </button>
             </div>
           </>
@@ -127,7 +141,7 @@ export function MultiplayerPanel({ compact = false }: MultiplayerPanelProps) {
             disabled={isConnecting}
             title="Start Co-op Session"
           >
-            {isConnecting ? '...' : '👥'}
+            {isConnecting ? '...' : <Users size={18} weight="duotone" />}
           </button>
         )}
       </div>
@@ -138,7 +152,7 @@ export function MultiplayerPanel({ compact = false }: MultiplayerPanelProps) {
   return (
     <div className="multiplayer-panel">
       <div className="mp-header">
-        <h3>🌐 Co-op Session</h3>
+        <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Users size={18} weight="duotone" /> Co-op Session</h3>
         {isInSession && (
           <span className={`mp-status ${isConnected ? 'connected' : 'disconnected'}`}>
             {isConnected ? '● Connected' : '○ Disconnected'}
@@ -147,8 +161,8 @@ export function MultiplayerPanel({ compact = false }: MultiplayerPanelProps) {
       </div>
 
       {error && (
-        <div className="mp-error">
-          ⚠️ {error}
+        <div className="mp-error" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <Warning size={14} weight="duotone" /> {error}
         </div>
       )}
 
@@ -165,13 +179,13 @@ export function MultiplayerPanel({ compact = false }: MultiplayerPanelProps) {
               autoFocus
               maxLength={20}
             />
-            <button onClick={handleSaveName}>✓</button>
-            <button onClick={() => { setEditingName(false); setTempName(localDisplayName); }}>✕</button>
+            <button onClick={handleSaveName}><Check size={14} weight="bold" /></button>
+            <button onClick={() => { setEditingName(false); setTempName(localDisplayName); }}><X size={14} weight="bold" /></button>
           </div>
         ) : (
           <div className="mp-name-display" onClick={() => { setEditingName(true); setTempName(localDisplayName); }}>
             <span>{localDisplayName}</span>
-            <span className="mp-edit-hint">✏️</span>
+            <span className="mp-edit-hint"><Pencil size={12} weight="duotone" /></span>
           </div>
         )}
       </div>
@@ -184,7 +198,7 @@ export function MultiplayerPanel({ compact = false }: MultiplayerPanelProps) {
             onClick={handleCreateSession}
             disabled={isConnecting}
           >
-            {isConnecting ? 'Connecting...' : '🚀 Create Session'}
+            {isConnecting ? 'Connecting...' : <><Rocket size={16} weight="duotone" /> Create Session</>}
           </button>
 
           {showJoinInput ? (
@@ -219,7 +233,7 @@ export function MultiplayerPanel({ compact = false }: MultiplayerPanelProps) {
               onClick={() => setShowJoinInput(true)}
               disabled={isConnecting}
             >
-              🔗 Join Session
+              <Link size={16} weight="duotone" /> Join Session
             </button>
           )}
         </div>
@@ -230,10 +244,10 @@ export function MultiplayerPanel({ compact = false }: MultiplayerPanelProps) {
             <label className="mp-label">Room ID</label>
             <div className="mp-room-info">
               <code className="mp-room-id">{roomId}</code>
-              <span className="mp-role">{role === 'host' ? '👑 Host' : '👤 Guest'}</span>
+              <span className="mp-role">{role === 'host' ? <><Crown size={14} weight="fill" /> Host</> : <><User size={14} weight="duotone" /> Guest</>}</span>
             </div>
             <button className="mp-btn secondary small" onClick={handleCopyLink}>
-              📋 Copy Invite Link
+              <Copy size={14} weight="duotone" /> Copy Invite Link
             </button>
           </div>
 
@@ -246,7 +260,7 @@ export function MultiplayerPanel({ compact = false }: MultiplayerPanelProps) {
                   className={`mp-peer ${peer.isLocal ? 'local' : ''} ${peer.connectionState}`}
                 >
                   <span className="mp-peer-avatar">
-                    {peer.hasAvatar ? '🧍' : '👤'}
+                    {peer.hasAvatar ? <Person size={16} weight="duotone" /> : <User size={16} weight="duotone" />}
                   </span>
                   <span className="mp-peer-name">
                     {peer.displayName}
@@ -271,7 +285,7 @@ export function MultiplayerPanel({ compact = false }: MultiplayerPanelProps) {
           </div>
 
           <button className="mp-btn danger" onClick={handleLeaveSession}>
-            🚪 Leave Session
+            <SignOut size={16} weight="duotone" /> Leave Session
           </button>
         </>
       )}

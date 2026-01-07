@@ -1,4 +1,5 @@
 import { useSettingsStore, type QualityLevel } from '../state/useSettingsStore';
+import { GearSix } from '@phosphor-icons/react';
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -14,7 +15,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={e => e.stopPropagation()}>
         <div className="modal-header">
-          <h2>⚙️ Settings</h2>
+          <h2><GearSix size={24} weight="duotone" /> Settings</h2>
           <button className="close-button" onClick={onClose}>&times;</button>
         </div>
         
