@@ -44,7 +44,7 @@
 
 /* Force text color inheritance and prevent black text */
 html {
-  color: #ffffff;
+  /* color: #ffffff;  Removed to allow theme override */
   color-scheme: dark;
 }
 
@@ -102,7 +102,7 @@ button:disabled {
 button.primary,
 .btn-primary {
   background: linear-gradient(135deg, var(--accent) 0%, var(--accent-600) 100%);
-  color: var(--color-abyss);
+  color: var(--text-on-accent);
   border-radius: var(--radius-lg);
   padding: var(--space-3) var(--space-5);
   font-weight: var(--weight-semibold);

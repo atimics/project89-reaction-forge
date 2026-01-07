@@ -211,7 +211,7 @@
 .ai-message.user {
   align-self: flex-end;
   background: linear-gradient(135deg, var(--violet) 0%, var(--violet-700) 100%);
-  color: white;
+  color: var(--text-on-accent);
   border: none;
   border-bottom-right-radius: var(--radius-sm);
   box-shadow: 0 4px 12px rgba(124, 58, 237, 0.2);
@@ -295,7 +295,7 @@
   border-radius: 50%;
   font-size: 1.1rem;
   background: linear-gradient(135deg, var(--accent) 0%, var(--accent-600) 100%);
-  color: var(--color-abyss);
+  color: var(--text-on-accent);
   border: none;
   cursor: pointer;
   transition: var(--transition-all);
@@ -403,7 +403,7 @@
   width: 100%;
   padding: var(--space-3) var(--space-4);
   background: linear-gradient(135deg, var(--accent) 0%, var(--accent-600) 100%);
-  color: var(--color-abyss);
+  color: var(--text-on-accent);
   border: none;
   border-radius: var(--radius-lg);
   font-size: var(--text-sm);

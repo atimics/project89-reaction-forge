@@ -52,27 +52,18 @@ type PhotoCapturedListener = (photoId: string, dataUrl: string) => void;
 /** Maps reactions to avatar gestures */
 const REACTION_TO_GESTURE: Record<ReactionType, string> = {
   wave: 'wave',
-  clap: 'clap',
-  heart: 'celebrate',
-  laugh: 'celebrate',
-  fire: 'celebrate',
   thumbsUp: 'thumbsUp',
+  nod: 'nod',
   celebrate: 'celebrate',
-  think: 'think',
 };
 
 /** Maps reactions to expressions */
 const REACTION_TO_EXPRESSION: Record<ReactionType, string> = {
   wave: 'happy',
-  clap: 'happy',
-  heart: 'happy',
-  laugh: 'happy',
-  fire: 'surprised',
   thumbsUp: 'happy',
+  nod: 'happy',
   celebrate: 'happy',
-  think: 'neutral',
 };
-
 class SocialManager {
   private chatListeners = new Set<ChatListener>();
   private reactionListeners = new Set<ReactionListener>();
@@ -251,13 +242,9 @@ class SocialManager {
   static getReactionEmoji(reaction: ReactionType): string {
     const emojis: Record<ReactionType, string> = {
       wave: '👋',
-      clap: '👏',
-      heart: '❤️',
-      laugh: '😄',
-      fire: '🔥',
       thumbsUp: '👍',
+      nod: ' nodding_head::skin-tone-3',
       celebrate: '🎉',
-      think: '🤔',
     };
     return emojis[reaction] || '✨';
   }

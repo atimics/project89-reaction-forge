@@ -8,6 +8,7 @@ import { ControlPanel } from './components/ControlPanel';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { ToastHost } from './ui/Toast';
 import { useUIStore } from './state/useUIStore';
+import { useSettingsStore } from './state/useSettingsStore';
 import { initAvatarBridge } from './multiplayer/avatarBridge';
 import { ConnectionProgressPanel } from './components/ConnectionProgressPanel';
 import { AIAgentWidget } from './components/AIAgentWidget';
@@ -20,7 +21,13 @@ initAvatarBridge();
 
 function App() {
   const { mode, setMode, mobileDrawerOpen, setMobileDrawerOpen } = useUIStore();
+  const { theme } = useSettingsStore();
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 960);
+
+  useEffect(() => {
+    // Apply theme to HTML element
+    document.documentElement.setAttribute('data-theme', theme);
+  }, [theme]);
 
   useEffect(() => {
     const handleResize = () => {

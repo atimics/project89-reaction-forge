@@ -35,9 +35,12 @@ export const commands: Action[] = [
         input.onchange = async (e) => {
             const file = (e.target as HTMLInputElement).files?.[0];
             if (file) {
-                const success = await projectManager.loadFromFile(file);
-                if (success) {
+                const result = await projectManager.loadFromFile(file);
+                if (result.success) {
                     getToast().addToast("Project loaded", "success");
+                    if (result.avatarWarning) {
+                        setTimeout(() => getToast().addToast(result.avatarWarning!, "warning"), 500);
+                    }
                 } else {
                     getToast().addToast("Failed to load project", "error");
                 }

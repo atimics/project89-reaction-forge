@@ -7,53 +7,60 @@ import { Eye, FolderOpen, Robot } from '@phosphor-icons/react';
 const TUTORIAL_STEPS = [
   {
     id: 'welcome',
-    title: 'Welcome to the Loop',
-    description: 'You\'ve entered PoseLab—a tool for subverting reality and giving life to your VRM avatars. Let\'s synchronize your interface.',
+    title: 'Welcome to PoseLab',
+    description: 'Your creative studio for VRM avatars. Pose, animate, capture—let\'s get you started.',
     targetId: null,
     highlight: false
   },
   {
     id: 'upload',
-    title: '1. Materialize Your Avatar',
-    description: 'Load your own VRM file or use our HarmonVox agent. This is your digital presence in the Loom.',
+    title: '1. Load Your Avatar',
+    description: 'Upload your own VRM file or try our sample avatar. This is your digital canvas.',
     targetId: 'canvas-stage',
     highlight: true
   },
   {
     id: 'modes',
-    title: '2. Frequency Tuning',
-    description: 'Switch to "Reactions" for instant expressive patterns, or "Pose Lab" for deep neural manipulation.',
+    title: '2. Choose Your Mode',
+    description: '"Reactions" gives you instant presets for streaming and content. "Pose Lab" unlocks full creative control.',
     targetId: 'mode-switch',
     highlight: true,
     action: (store: any) => store.setMode('reactions')
   },
   {
     id: 'poselab',
-    title: '3. Neural Manipulation',
-    description: 'Enter the Pose Lab to access advanced surgical tools for bone posing and animation.',
+    title: '3. Pose Lab Tools',
+    description: 'In Pose Lab, access Animations, Poses, and Mocap tabs for deep customization.',
     targetId: 'mode-switch',
     highlight: true,
     action: (store: any) => store.setMode('poselab')
   },
   {
     id: 'tabs',
-    title: '4. The Arsenal',
-    description: 'Access Poses, Mocap, and AI tools here. Each module expands your capability to hack the consensus.',
+    title: '4. Your Toolkit',
+    description: 'Anims: play imported animations. Poses: save and load poses. Mocap: use your webcam for motion capture.',
     targetId: 'poselab-tabs',
     highlight: true
   },
   {
     id: 'export',
-    title: '5. Signal Broadcast',
-    description: 'When your manifestation is complete, use the Export tab to broadcast your avatar to other realms (Images, Video, GLB).',
+    title: '5. Export & Save',
+    description: 'Export images, videos, or 3D models. Use Ctrl+S to save your project and Ctrl+O to load it later.',
     targetId: 'poselab-tabs',
     highlight: true,
     action: (store: any) => store.setPoseLabTab('export')
   },
   {
+    id: 'camera',
+    title: '6. Camera Controls',
+    description: 'Use hotkeys 1, 3, 5, 7 for quick camera views: Headshot, 3/4, Side, and Home. Scroll to zoom, drag to orbit.',
+    targetId: 'canvas-stage',
+    highlight: true
+  },
+  {
     id: 'finish',
-    title: 'Awaken',
-    description: 'You are now ready to weave your own narrative. Hack the reality, change the world. See you in the loop.',
+    title: 'You\'re Ready!',
+    description: 'Explore, create, and share. Check the About (?) for more features. Have fun!',
     targetId: null,
     highlight: false
   }
@@ -173,27 +180,27 @@ export function OnboardingOverlay() {
           <div className="onboarding-card">
               <div className="onboarding-icon"><Eye size={48} weight="duotone" /></div>
               <h2>Welcome to PoseLab</h2>
-              <p>Turn your digital presence into endless expressions and manifestations.</p>
+              <p>Create stunning poses, animations, and captures with your VRM avatar.</p>
               
               <div className="onboarding-actions">
                 <button 
                     className="primary large full-width"
                     onClick={() => vrmInputRef.current?.click()}
                 >
-                    <FolderOpen size={18} weight="duotone" /> Materialize VRM
+                    <FolderOpen size={18} weight="duotone" /> Load Your VRM
                 </button>
                 
                 <button 
                     className="secondary full-width"
                     onClick={loadSampleAvatar}
                 >
-                    <Robot size={18} weight="duotone" /> Deploy Agent HarmonVox
+                    <Robot size={18} weight="duotone" /> Try Sample Avatar
                 </button>
 
                 <div className="divider" style={{ margin: '1.5rem 0', borderTop: '1px solid var(--border-color)' }}></div>
                 
                 <p className="muted small" style={{ marginBottom: 0 }}>
-                    First time in the loop? Load the agent to begin your synchronization.
+                    New here? Try the sample avatar to explore all features.
                 </p>
               </div>
 

@@ -180,7 +180,7 @@ export interface ChatMessage extends BaseMessage {
 }
 
 /** Quick reaction types */
-export type ReactionType = 'wave' | 'clap' | 'heart' | 'laugh' | 'fire' | 'thumbsUp' | 'celebrate' | 'think';
+export type ReactionType = 'wave' | 'thumbsUp' | 'nod' | 'celebrate';
 
 /** Reaction message - triggers avatar animation */
 export interface ReactionMessage extends BaseMessage {

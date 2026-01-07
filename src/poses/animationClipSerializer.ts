@@ -294,17 +294,21 @@ function extractBoneNameFromTrack(trackName: string): VRMHumanBoneName | null {
   return null;
 }
 
+export interface RetargetOptions {
+  stripHipsPosition?: boolean;
+}
+
 /**
  * Retarget an animation clip to work with a specific VRM model
  * This converts VRMHumanoidRig paths to actual scene node paths
  */
-export function retargetAnimationClip(clip: THREE.AnimationClip, vrm: VRM): THREE.AnimationClip {
+export function retargetAnimationClip(clip: THREE.AnimationClip, vrm: VRM, options: RetargetOptions = {}): THREE.AnimationClip {
   const retargetedTracks: THREE.KeyframeTrack[] = [];
   let successCount = 0;
   let failCount = 0;
   const failedTracks: string[] = [];
 
-  console.log(`[retargetAnimationClip] Processing clip "${clip.name}" with ${clip.tracks.length} tracks`);
+  console.log(`[retargetAnimationClip] Processing clip "${clip.name}" with ${clip.tracks.length} tracks`, options);
 
   clip.tracks.forEach(track => {
     const boneName = extractBoneNameFromTrack(track.name);
@@ -321,6 +325,12 @@ export function retargetAnimationClip(clip: THREE.AnimationClip, vrm: VRM): THRE
     if (!boneNode) {
       failCount++;
       failedTracks.push(`${track.name} (bone not found: ${boneName})`);
+      return;
+    }
+
+    // Check if we should strip hips position
+    if (options.stripHipsPosition && boneName === 'hips' && track.name.endsWith('.position')) {
+      console.log(`[retargetAnimationClip] Stripping hips position track: ${track.name}`);
       return;
     }
 

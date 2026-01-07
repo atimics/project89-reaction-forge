@@ -87,6 +87,7 @@ class AvatarManager {
   private isAnimated = false;
   private isInteracting = false; 
   private isManualPosing = false;
+  private defaultHipsPosition: THREE.Vector3 = new THREE.Vector3(0, 1.0, 0);
 
   constructor() {
     this.loader.register((parser) => new VRMLoaderPlugin(parser));
@@ -157,6 +158,14 @@ class AvatarManager {
     animationManager.initialize(vrm);
     sceneManager.frameObject(vrm.scene);
 
+    // Capture the default hips position (usually around Y=0.8-1.0)
+    // This serves as the anchor point for all transitions to prevent drift
+    const hipsNode = vrm.humanoid?.getNormalizedBoneNode(VRMHumanBoneName.Hips);
+    if (hipsNode) {
+      this.defaultHipsPosition.copy(hipsNode.position);
+      console.log('[AvatarManager] Captured default hips position:', this.defaultHipsPosition);
+    }
+
     this.startTickLoop();
     
     // Apply material settings to the newly loaded VRM
@@ -169,7 +178,7 @@ class AvatarManager {
     return vrm;
   }
 
-  async applyRawPose(poseData: RawPoseData, animationMode: AnimationMode = 'static') {
+  async applyRawPose(poseData: RawPoseData, animationMode: AnimationMode = 'static', smoothTransition = true) {
     if (!this.vrm) {
       console.warn('[AvatarManager] applyRawPose called but no VRM loaded');
       return;
@@ -191,34 +200,12 @@ class AvatarManager {
       // Cast through unknown to handle the structural mismatch between RawPoseData and SerializedAnimationClip
       this.playAnimationClip(deserializeAnimationClip(poseData as unknown as Parameters<typeof deserializeAnimationClip>[0]), animationMode === 'loop');
     } else if (poseData.vrmPose) {
-      // Stop any running animation first
-      this.stopAnimation(true);
-      
       // Validate and log the pose data
       const boneCount = Object.keys(poseData.vrmPose).length;
-      console.log(`[AvatarManager] Applying raw pose with ${boneCount} bones`);
+      console.log(`[AvatarManager] Applying raw pose with ${boneCount} bones, smooth=${smoothTransition}`);
       
       if (boneCount === 0) {
         console.warn('[AvatarManager] Empty vrmPose received - skipping');
-        return;
-      }
-      
-      // Log first few bones for debugging
-      const bones = Object.entries(poseData.vrmPose).slice(0, 3);
-      bones.forEach(([name, data]) => {
-        console.log(`  - ${name}:`, data);
-      });
-      
-      // Apply the pose
-      try {
-        // First reset to T-pose to clear any residual bone state
-        this.vrm.humanoid?.resetNormalizedPose();
-        this.vrm.update(0);
-        
-        // Now apply the new pose
-        this.vrm.humanoid?.setNormalizedPose(poseData.vrmPose);
-      } catch (e) {
-        console.error('[AvatarManager] Failed to set normalized pose:', e);
         return;
       }
       
@@ -230,10 +217,28 @@ class AvatarManager {
         });
       }
       
-      // Force update to apply changes
-      this.vrm.humanoid?.update();
-      this.vrm.update(0);
-      console.log('[AvatarManager] ✅ Raw pose applied successfully');
+      // Use smooth transition for preset-style changes, immediate for mocap/real-time
+      if (smoothTransition) {
+        this.transitionToPose(poseData.vrmPose, 0.4, () => {
+          console.log('[AvatarManager] ✅ Raw pose transition complete');
+        });
+      } else {
+        // Immediate application (for mocap, real-time updates)
+        this.stopAnimation(true);
+        this.vrm.humanoid?.resetNormalizedPose();
+        this.vrm.update(0);
+        this.vrm.humanoid?.setNormalizedPose(poseData.vrmPose);
+        
+        // Explicitly set hips to default position if not specified in poseData
+        const hipsNode = this.vrm.humanoid?.getNormalizedBoneNode(VRMHumanBoneName.Hips);
+        if (hipsNode && !poseData.vrmPose[VRMHumanBoneName.Hips]?.position) {
+          hipsNode.position.copy(this.defaultHipsPosition);
+        }
+        
+        this.vrm.humanoid?.update();
+        this.vrm.update(0);
+        console.log('[AvatarManager] ✅ Raw pose applied immediately');
+      }
     } else {
       console.warn('[AvatarManager] applyRawPose called with no vrmPose or tracks');
     }
@@ -280,19 +285,13 @@ class AvatarManager {
       const clip = getAnimatedPose(pose, vrmPose, this.vrm) || poseToAnimationClip(vrmPose, this.vrm, 0.5, pose);
       this.playAnimationClip(clip, shouldLoop);
     } else {
-      console.log(`[AvatarManager] Applying static pose: ${pose}`);
-      // Stop animation first
-      this.stopAnimation(true);
-      
-      // Reset to T-pose then apply new pose
-      this.vrm.humanoid?.resetNormalizedPose();
-      this.vrm.update(0);
-      
+      console.log(`[AvatarManager] Applying static pose with transition: ${pose}`);
       const vrmPose = buildVRMPose(def);
-      this.vrm.humanoid?.setNormalizedPose(vrmPose);
-      this.vrm.humanoid?.update();
-      this.vrm.update(0);
-      console.log(`[AvatarManager] ✅ Static pose applied: ${pose}`);
+      
+      // Use smooth transition instead of immediate snap
+      this.transitionToPose(vrmPose, 0.4, () => {
+        console.log(`[AvatarManager] ✅ Static pose transition complete: ${pose}`);
+      });
     }
   }
 
@@ -310,6 +309,117 @@ class AvatarManager {
   stopAnimation(immediate = false) {
     this.isAnimated = false;
     animationManager.stopAnimation(immediate);
+  }
+
+  /**
+   * Capture the current pose from all bones as a VRMPose
+   */
+  captureCurrentPose(): VRMPose {
+    const pose: VRMPose = {};
+    if (!this.vrm?.humanoid) return pose;
+
+    const boneNames = Object.values(VRMHumanBoneName) as VRMHumanBoneName[];
+    boneNames.forEach(name => {
+      const node = this.vrm!.humanoid!.getNormalizedBoneNode(name);
+      if (node) {
+        pose[name] = {
+          rotation: [node.quaternion.x, node.quaternion.y, node.quaternion.z, node.quaternion.w]
+        };
+        // Include position for hips
+        if (name === VRMHumanBoneName.Hips) {
+          pose[name]!.position = [node.position.x, node.position.y, node.position.z];
+        }
+      }
+    });
+    return pose;
+  }
+
+  /**
+   * Create a transition animation clip from current pose to target pose
+   * Maintains consistent hips positioning to prevent avatar from moving off-screen
+   */
+  createTransitionClip(targetPose: VRMPose, duration = 0.4): THREE.AnimationClip {
+    const tracks: THREE.KeyframeTrack[] = [];
+    const currentPose = this.captureCurrentPose();
+    const times = [0, duration];
+
+    const boneNames = Object.values(VRMHumanBoneName) as VRMHumanBoneName[];
+    boneNames.forEach(boneName => {
+      const node = this.vrm?.humanoid?.getNormalizedBoneNode(boneName);
+      if (!node) return;
+
+      const trackName = `${node.name}.quaternion`;
+      
+      // Get current rotation (or identity if not set)
+      const currentRot = currentPose[boneName]?.rotation || [0, 0, 0, 1];
+      // Get target rotation (or current if target doesn't specify this bone)
+      const targetRot = targetPose[boneName]?.rotation || currentRot;
+
+      // Only create track if there's a meaningful difference
+      const qCurrent = new THREE.Quaternion(currentRot[0], currentRot[1], currentRot[2], currentRot[3]);
+      const qTarget = new THREE.Quaternion(targetRot[0], targetRot[1], targetRot[2], targetRot[3]);
+      
+      if (qCurrent.angleTo(qTarget) > 0.001) {
+        tracks.push(new THREE.QuaternionKeyframeTrack(
+          trackName,
+          times,
+          [...currentRot, ...targetRot]
+        ));
+      }
+    });
+
+    // Always maintain hips position - keep avatar grounded
+    // This prevents the avatar from floating or sinking during transitions
+    const hipsNode = this.vrm?.humanoid?.getNormalizedBoneNode(VRMHumanBoneName.Hips);
+    if (hipsNode) {
+      const currentPos = currentPose[VRMHumanBoneName.Hips]?.position || [0, hipsNode.position.y, 0];
+      // If target has position, use it; otherwise return to default position
+      const targetPos = targetPose[VRMHumanBoneName.Hips]?.position || [
+        this.defaultHipsPosition.x,
+        this.defaultHipsPosition.y,
+        this.defaultHipsPosition.z
+      ];
+      
+      // Always animate position to ensure we return to center if we drifted
+      tracks.push(new THREE.VectorKeyframeTrack(
+        `${hipsNode.name}.position`,
+        times,
+        [...currentPos, ...targetPos]
+      ));
+    }
+
+    return new THREE.AnimationClip('pose-transition', duration, tracks);
+  }
+
+  /**
+   * Smoothly transition to a static pose with animation
+   * Preserves hips position to keep avatar in viewport
+   */
+  transitionToPose(targetPose: VRMPose, duration = 0.4, onComplete?: () => void) {
+    if (!this.vrm) return;
+
+    // We don't need to capture/restore manually anymore because createTransitionClip
+    // now actively targets the default position. This is more robust.
+
+    const transitionClip = this.createTransitionClip(targetPose, duration);
+    
+    // Play the transition once
+    this.isAnimated = true;
+    animationManager.playTransition(transitionClip, () => {
+      // When transition completes, apply the final pose statically
+      this.isAnimated = false;
+      this.vrm?.humanoid?.setNormalizedPose(targetPose);
+      
+      // Explicitly set hips to target (or default) to prevent any float error
+      const hipsNode = this.vrm?.humanoid?.getNormalizedBoneNode(VRMHumanBoneName.Hips);
+      if (hipsNode && !targetPose[VRMHumanBoneName.Hips]?.position) {
+        hipsNode.position.copy(this.defaultHipsPosition);
+      }
+      
+      this.vrm?.humanoid?.update();
+      this.vrm?.update(0);
+      onComplete?.();
+    });
   }
 
   freezeCurrentPose() {

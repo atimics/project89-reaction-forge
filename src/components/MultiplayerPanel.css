@@ -79,7 +79,7 @@
 
 .mp-status.disconnected {
   color: var(--text-muted);
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--glass-subtle);
   border: 1px solid var(--border-subtle);
 }
 
@@ -221,8 +221,8 @@
 
 .mp-btn.primary {
   background: linear-gradient(135deg, var(--violet) 0%, var(--violet-700) 100%);
-  color: white;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-on-accent);
+  border: 1px solid var(--border-subtle);
   box-shadow: 0 4px 16px rgba(124, 58, 237, 0.3);
 }
 
@@ -334,7 +334,7 @@
 .mp-role {
   font-size: var(--text-xs);
   padding: var(--space-1) var(--space-2);
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--glass-subtle);
   border-radius: var(--radius-sm);
   color: var(--text-tertiary);
   font-weight: var(--weight-medium);

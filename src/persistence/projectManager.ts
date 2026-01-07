@@ -1,5 +1,6 @@
 import { useReactionStore } from '../state/useReactionStore';
 import { useTimelineStore } from '../state/useTimelineStore';
+import { useAvatarSource } from '../state/useAvatarSource';
 import { sceneManager } from '../three/sceneManager';
 import { avatarManager } from '../three/avatarManager';
 import { PROJECT_VERSION, type ProjectState } from '../types/project';
@@ -11,23 +12,17 @@ export class ProjectManager {
   serializeProject(name: string = 'Untitled Project'): ProjectState {
     const reactionState = useReactionStore.getState();
     const timelineState = useTimelineStore.getState();
+    const avatarSource = useAvatarSource.getState();
     
     const camera = sceneManager.getCamera();
     const controls = sceneManager.getControls();
     
-    // Get background ID - this might need better access if stored in SceneManager private
-    // We can assume it's tracked or just use a default for now if not exposed
-    // Ideally SceneManager should expose getCurrentBackgroundId()
-    // For now, let's assume 'midnight' if we can't find it, or check reaction store if it tracks it?
-    // ReactionStore tracks activePreset which has background.
+    // Get background ID from the active preset
     const backgroundId = reactionState.activePreset.background || 'midnight';
 
-    // Get Avatar Metadata
-    // Note: We cannot save the BLOB itself efficiently in JSON. 
-    // We save the URL if it's remote, otherwise just metadata.
-    // AvatarManager doesn't expose currentUrl publicly in the interface I saw, 
-    // but we can add a getter or access it if we refactored.
-    // Let's assume for now we save what we can.
+    // Get avatar URL - check if it's a remote URL (not a blob)
+    const currentUrl = avatarManager.getCurrentUrl();
+    const isRemoteUrl = currentUrl && !currentUrl.startsWith('blob:');
     
     return {
       version: PROJECT_VERSION,
@@ -51,17 +46,18 @@ export class ProjectManager {
         activePresetId: reactionState.activePreset.id,
       },
       avatar: {
-        // We might need to ask AvatarManager for this info
-        name: 'Current Avatar', 
-        url: avatarManager.getCurrentUrl()
+        name: avatarSource.sourceLabel || 'Current Avatar',
+        // Only save URL if it's a remote/persistent URL
+        url: isRemoteUrl ? currentUrl : undefined
       }
     };
   }
 
   /**
    * Restore a project from a ProjectState object
+   * @returns Object with load status and any warnings
    */
-  async loadProject(project: ProjectState) {
+  async loadProject(project: ProjectState): Promise<{ success: boolean; avatarWarning?: string }> {
     console.log('[ProjectManager] Loading project:', project.metadata.name);
 
     if (project.version > PROJECT_VERSION) {
@@ -70,7 +66,11 @@ export class ProjectManager {
 
     // 1. Restore Scene
     // Set Background
-    await sceneManager.setBackground(project.scene.backgroundId);
+    try {
+      await sceneManager.setBackground(project.scene.backgroundId);
+    } catch (e) {
+      console.warn('[ProjectManager] Failed to set background:', e);
+    }
     
     // Set Camera
     const camera = sceneManager.getCamera();
@@ -92,8 +92,7 @@ export class ProjectManager {
     // 2. Restore Timeline
     const timelineStore = useTimelineStore.getState();
     timelineStore.clearTimeline();
-    // We need to construct the state update carefully
-    // Since clearTimeline resets everything, we manually set properties
+    // Set the full sequence state
     useTimelineStore.setState({
       sequence: project.timeline.sequence,
     });
@@ -104,10 +103,25 @@ export class ProjectManager {
     reactionStore.setAnimationMode(project.reaction.animationMode);
     reactionStore.setPresetById(project.reaction.activePresetId);
 
-    // 4. Avatar
-    // We can't auto-load local avatars. 
-    // If we had a remote URL, we could try: avatarManager.load(project.avatar.url)
-    console.log('[ProjectManager] Project loaded. Avatar must be loaded manually if not consistent.');
+    // 4. Avatar - Try to load if we have a valid URL
+    let avatarWarning: string | undefined;
+    if (project.avatar?.url) {
+      try {
+        const avatarSource = useAvatarSource.getState();
+        avatarSource.setRemoteUrl(project.avatar.url, project.avatar.name || 'Project Avatar');
+        console.log('[ProjectManager] Attempting to load avatar from:', project.avatar.url);
+      } catch (e) {
+        console.warn('[ProjectManager] Failed to load avatar:', e);
+        avatarWarning = 'Could not load avatar. Please reload it manually.';
+      }
+    } else if (project.avatar?.name) {
+      // Avatar was local file, can't restore
+      avatarWarning = `Avatar "${project.avatar.name}" was a local file and needs to be reloaded.`;
+      console.log('[ProjectManager] Avatar was local file, cannot auto-restore:', project.avatar.name);
+    }
+
+    console.log('[ProjectManager] Project loaded successfully:', project.metadata.name);
+    return { success: true, avatarWarning };
   }
 
   /**
@@ -126,16 +140,17 @@ export class ProjectManager {
 
   /**
    * Parse a file input and load the project
+   * @returns Object with success status and optional avatar warning
    */
-  async loadFromFile(file: File) {
+  async loadFromFile(file: File): Promise<{ success: boolean; avatarWarning?: string }> {
     try {
       const text = await file.text();
       const project = JSON.parse(text) as ProjectState;
-      await this.loadProject(project);
-      return true;
+      const result = await this.loadProject(project);
+      return result;
     } catch (e) {
       console.error('[ProjectManager] Failed to load project file:', e);
-      return false;
+      return { success: false };
     }
   }
 }

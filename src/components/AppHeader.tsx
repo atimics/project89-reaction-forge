@@ -44,9 +44,13 @@ export function AppHeader({ mode, onModeChange }: AppHeaderProps) {
       const file = event.target.files?.[0];
       if (!file) return;
       
-      const success = await projectManager.loadFromFile(file);
-      if (success) {
+      const result = await projectManager.loadFromFile(file);
+      if (result.success) {
           addToast("Project loaded", "success");
+          // Show avatar warning if needed
+          if (result.avatarWarning) {
+            setTimeout(() => addToast(result.avatarWarning!, "warning"), 500);
+          }
       } else {
           addToast("Failed to load project", "error");
       }

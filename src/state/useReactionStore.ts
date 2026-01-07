@@ -19,7 +19,7 @@ export const useReactionStore = create<ReactionState>((set, get) => ({
   nameInput: '',
   activePreset: defaultPreset,
   isAvatarReady: false,
-  animationMode: 'static',
+  animationMode: 'loop',
   setNameInput: (value) => set({ nameInput: value }),
   setAvatarReady: (ready) => set({ isAvatarReady: ready }),
   setAnimationMode: (mode) => set({ animationMode: mode }),

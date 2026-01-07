@@ -851,7 +851,7 @@ function IntroSection() {
   };
   
   return (
-    <Section title="Opening Sequence" icon={<FilmSlate size={18} weight="duotone" />} defaultOpen={false}>
+    <Section title="Sequence" icon={<FilmSlate size={18} weight="duotone" />} defaultOpen={false}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
         {/* Enable Toggle */}
         <label style={{ 

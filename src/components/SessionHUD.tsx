@@ -27,13 +27,9 @@ import {
 
 const REACTIONS: { type: ReactionType; emoji: string; label: string }[] = [
   { type: 'wave', emoji: '👋', label: 'Wave' },
-  { type: 'clap', emoji: '👏', label: 'Clap' },
-  { type: 'heart', emoji: '❤️', label: 'Love' },
-  { type: 'laugh', emoji: '😄', label: 'Laugh' },
-  { type: 'fire', emoji: '🔥', label: 'Fire' },
   { type: 'thumbsUp', emoji: '👍', label: 'Thumbs Up' },
+  { type: 'nod', emoji: '頷く', label: 'Nod' },
   { type: 'celebrate', emoji: '🎉', label: 'Celebrate' },
-  { type: 'think', emoji: '🤔', label: 'Think' },
 ];
 
 export function SessionHUD() {

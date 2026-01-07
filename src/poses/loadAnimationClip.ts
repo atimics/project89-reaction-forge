@@ -33,7 +33,9 @@ export async function loadAnimationClip(poseId: string, vrm?: VRM): Promise<THRE
       
       // If VRM is provided, retarget the animation to use actual scene paths
       if (vrm) {
-        clip = retargetAnimationClip(clip, vrm);
+        // Strip hips position to prevent off-screen movement
+        // This ensures the animation plays "in-place" at the avatar's current position
+        clip = retargetAnimationClip(clip, vrm, { stripHipsPosition: true });
         
         // Check if retargeting was successful (has valid tracks)
         if (clip.tracks.length === 0) {
@@ -96,7 +98,7 @@ async function generateProceduralAnimation(poseId: string, vrm?: VRM): Promise<T
     
     // Retarget if VRM is provided
     if (vrm) {
-      clip = retarget(clip, vrm);
+      clip = retarget(clip, vrm, { stripHipsPosition: true });
     }
     
     console.log(`[loadAnimationClip] Generated procedural animation for: ${poseId}`, {

@@ -169,6 +169,49 @@ class AnimationManager {
   }
 
   /**
+   * Play a transition clip once and call onComplete when finished
+   * Used for smooth pose-to-pose transitions
+   */
+  playTransition(clip: THREE.AnimationClip, onComplete?: () => void) {
+    if (!this.mixer || !this.vrm) {
+      console.warn('[AnimationManager] Cannot play transition - mixer not initialized');
+      onComplete?.();
+      return;
+    }
+
+    console.log('[AnimationManager] Playing transition:', clip.name, { duration: clip.duration, tracks: clip.tracks.length });
+
+    // Stop any current animation
+    if (this.currentAction) {
+      this.currentAction.stop();
+      this.currentAction = undefined;
+    }
+    this.mixer.stopAllAction();
+
+    // Create and configure transition action
+    const action = this.mixer.clipAction(clip);
+    action.reset();
+    action.setLoop(THREE.LoopOnce, 1);
+    action.clampWhenFinished = true;
+    action.enabled = true;
+    action.setEffectiveWeight(1);
+    action.setEffectiveTimeScale(1);
+    action.play();
+
+    this.currentAction = action;
+
+    // Listen for completion
+    const handleFinished = (event: { action: THREE.AnimationAction }) => {
+      if (event.action === action) {
+        this.mixer?.removeEventListener('finished', handleFinished);
+        console.log('[AnimationManager] Transition complete');
+        onComplete?.();
+      }
+    };
+    this.mixer.addEventListener('finished', handleFinished);
+  }
+
+  /**
    * Play a transition clip, then crossfade to target clip
    */
   playTransitionAndFade(fromClip: THREE.AnimationClip, toClip: THREE.AnimationClip, loop = true, duration = 0.5) {
