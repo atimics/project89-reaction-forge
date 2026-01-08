@@ -116,9 +116,15 @@ export function ReactionPanel() {
       // Apply the raw VRM pose data directly to avatarManager
       await avatarManager.applyRawPose(poseData, animationMode);
       
-      // Apply expression if available (default to calm)
-      const expression = poseData.expression || 'calm';
-      avatarManager.applyExpression(expression);
+      // Apply a single expression only when no expression map is provided
+      const hasExpressionMap =
+        poseData.expressions &&
+        typeof poseData.expressions === 'object' &&
+        Object.keys(poseData.expressions).length > 0;
+      if (!hasExpressionMap) {
+        const expression = poseData.expression || 'calm';
+        avatarManager.applyExpression(expression);
+      }
       
       // Apply background if available, but only if not locked
       const { backgroundLocked } = useSceneSettingsStore.getState();
@@ -446,4 +452,3 @@ export function ReactionPanel() {
     </section>
   );
 }
-
