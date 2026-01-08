@@ -55,6 +55,8 @@ export function MocapTab() {
   const previousVoiceActiveRef = useRef(false);
   const liveModeEnabledRef = useRef(liveModeEnabled);
   const liveShutdownRef = useRef(false);
+  const mocapStartingRef = useRef(false);
+  const voiceStartingRef = useRef(false);
 
   useEffect(() => {
     if (videoRef.current && !managerRef.current) {
@@ -165,13 +167,13 @@ export function MocapTab() {
   }, [isVoiceLipSyncActive]);
 
   const startVoiceLipSync = useCallback(async () => {
-    if (isVoiceLipSyncActive) return;
+    if (isVoiceLipSyncActive || voiceStartingRef.current) return;
     const vrm = avatarManager.getVRM();
     if (!vrm) {
       addToast("Load an avatar first!", "error");
       return;
     }
-    
+    voiceStartingRef.current = true;
     try {
       voiceLipSync.setVRM(vrm);
       voiceLipSync.setOnVolumeChange(setVoiceVolume);
@@ -193,6 +195,8 @@ export function MocapTab() {
         msg = "No microphone found.";
       }
       addToast(msg, "error");
+    } finally {
+      voiceStartingRef.current = false;
     }
   }, [addToast, isVoiceLipSyncActive, voiceSensitivity]);
 
@@ -224,16 +228,17 @@ export function MocapTab() {
     setIsActive(false);
     // Resume normal behavior when stopping camera
     avatarManager.setInteraction(false);
+    mocapStartingRef.current = false;
   }, [isActive]);
 
   const startMocap = useCallback(async (modeOverride?: 'full' | 'face') => {
-    if (!managerRef.current || isActive) return;
+    if (!managerRef.current || isActive || mocapStartingRef.current) return;
     const vrm = avatarManager.getVRM();
     if (!vrm) {
       setError("Load an avatar first!");
       return;
     }
-    
+    mocapStartingRef.current = true;
     try {
       // Check for secure context first
       if (!window.isSecureContext && window.location.hostname !== 'localhost') {
@@ -286,6 +291,8 @@ export function MocapTab() {
         msg = e.message;
       }
       setError(msg);
+    } finally {
+      mocapStartingRef.current = false;
     }
   }, [isActive, mocapMode]);
 
@@ -309,10 +316,10 @@ export function MocapTab() {
       if (mocapMode !== 'face') {
         handleModeChange('face');
       }
-      if (!isActive) {
+      if (!isActive && !mocapStartingRef.current) {
         startMocap('face');
       }
-      if (!isVoiceLipSyncActive) {
+      if (!isVoiceLipSyncActive && !voiceStartingRef.current) {
         startVoiceLipSync();
       }
       return;
