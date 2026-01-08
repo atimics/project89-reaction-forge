@@ -13,6 +13,7 @@ import { multiAvatarManager } from '../three/multiAvatarManager';
 import { syncManager } from '../multiplayer/syncManager';
 import { introSequence } from '../intro/IntroSequence';
 import { Warning } from '@phosphor-icons/react';
+import { findPresetById } from '../data/reactions';
 
 // Simple Toast Component for Errors
 function ErrorToast({ message, onClose }: { message: string; onClose: () => void }) {
@@ -202,13 +203,24 @@ export function CanvasStage() {
 
       const presetId = hotkeyMap[event.key];
       if (!presetId) return;
+      const { backgroundLocked } = useSceneSettingsStore.getState();
+      if (backgroundLocked) {
+        const preset = findPresetById(presetId);
+        if (!preset) return;
+        const animated = preset.animated ?? (animationMode !== 'static');
+        const mode = preset.animationMode ?? animationMode;
+        avatarManager.applyPose(preset.pose, animated, mode);
+        avatarManager.applyExpression(preset.expression);
+        event.preventDefault();
+        return;
+      }
       event.preventDefault();
       setPresetById(presetId);
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [avatarReady, liveControlsEnabled, setPresetById]);
+  }, [avatarReady, animationMode, liveControlsEnabled, setPresetById]);
 
   // Random auto-snapshot timer
   const randomSnapshotInterval = useIntroStore((s) => s.randomSnapshotInterval);
