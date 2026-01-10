@@ -7,6 +7,7 @@ import { useSceneSettingsStore } from '../state/useSceneSettingsStore';
 import { useIntroStore } from '../state/useIntroStore';
 import type { ReactionPreset } from '../types/reactions';
 import { useAvatarSource } from '../state/useAvatarSource';
+import { live2dManager } from '../live2d/live2dManager';
 import { OnboardingOverlay } from './OnboardingOverlay';
 import { useMultiplayerStore } from '../state/useMultiplayerStore';
 import { multiAvatarManager } from '../three/multiAvatarManager';
@@ -47,9 +48,12 @@ import { interactionManager } from '../three/interactionManager';
 
 export function CanvasStage() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
   const preset = useReactionStore((state) => state.activePreset);
   const animationMode = useReactionStore((state) => state.animationMode);
-  const { currentUrl } = useAvatarSource();
+  const liveControlsEnabled = useReactionStore((state) => state.liveControlsEnabled);
+  const setPresetById = useReactionStore((state) => state.setPresetById);
+  const { currentUrl, avatarType, live2dSource } = useAvatarSource();
   const { activeCssOverlay } = useUIStore();
   
   const [isLoading, setIsLoading] = useState(false);
@@ -60,6 +64,12 @@ export function CanvasStage() {
     const canvas = canvasRef.current;
     if (!canvas) return;
     sceneManager.init(canvas);
+
+    const container = containerRef.current;
+    if (container) {
+      live2dManager.attachToCanvas(canvas, container);
+      live2dManager.setTickRegistrar(sceneManager.registerTick.bind(sceneManager));
+    }
     
     // Ensure avatar is in the new scene (if one is already loaded)
     avatarManager.rebindToScene();
@@ -78,31 +88,50 @@ export function CanvasStage() {
 
     return () => {
         sceneManager.dispose();
+        live2dManager.dispose();
         // interactionManager.dispose(); // Don't fully dispose, just detach? 
         // Ideally SceneManager handles renderer disposal, InteractionManager handles its own listeners
     };
   }, []);
 
   useEffect(() => {
-    if (!currentUrl) return;
+    if (avatarType === 'none') {
+      avatarManager.clear();
+      live2dManager.dispose();
+      setAvatarReady(false);
+      useReactionStore.setState({ isAvatarReady: false });
+      return;
+    }
+    if (avatarType === 'vrm' && !currentUrl) return;
+    if (avatarType === 'live2d' && !live2dSource?.manifestUrl) return;
     let cancelled = false;
     
     // Start Loading
     setAvatarReady(false);
     setIsLoading(true);
     setErrorMessage(null);
-    console.log('[CanvasStage] Loading avatar from:', currentUrl);
+    console.log('[CanvasStage] Loading avatar from:', avatarType === 'vrm' ? currentUrl : live2dSource?.manifestUrl);
     
     const loadAvatar = async () => {
       try {
-        // Load via avatarManager (original system)
-        await avatarManager.load(currentUrl);
+        if (avatarType === 'live2d' && live2dSource) {
+          avatarManager.clear();
+          await live2dManager.load({
+            manifestUrl: live2dSource.manifestUrl,
+            manifestPath: live2dSource.manifestPath,
+            label: live2dSource.manifestPath,
+          });
+        } else if (avatarType === 'vrm' && currentUrl) {
+          live2dManager.dispose();
+          // Load via avatarManager (original system)
+          await avatarManager.load(currentUrl);
+        }
         
         if (cancelled) return;
         
         // If in multiplayer session, register with multiAvatarManager (don't re-load)
         const mpState = useMultiplayerStore.getState();
-        if (mpState.isConnected && mpState.localPeerId) {
+        if (avatarType === 'vrm' && mpState.isConnected && mpState.localPeerId) {
           const loadedVRM = avatarManager.getVRM();
           if (loadedVRM) {
             console.log('[CanvasStage] Registering avatar with multiplayer system');
@@ -134,24 +163,26 @@ export function CanvasStage() {
         setAvatarReady(true);
         useReactionStore.setState({ isAvatarReady: true });
         
-        // Trigger intro sequence (or apply default pose if disabled)
-        const introStore = useIntroStore.getState();
-        
-        if (introStore.enabled) {
-          console.log('[CanvasStage] Playing intro sequence:', introStore.sequenceId);
-          introStore.setPlaying(true);
-          introSequence.play(introStore.sequenceId).then(() => {
-            introStore.setPlaying(false);
-          });
-        } else {
-          // Just apply sunset-call as default
-          console.log('[CanvasStage] Intro disabled, applying default pose');
-          await introSequence.applyDefaultPose();
+        if (avatarType === 'vrm') {
+          // Trigger intro sequence (or apply default pose if disabled)
+          const introStore = useIntroStore.getState();
+          
+          if (introStore.enabled) {
+            console.log('[CanvasStage] Playing intro sequence:', introStore.sequenceId);
+            introStore.setPlaying(true);
+            introSequence.play(introStore.sequenceId).then(() => {
+              introStore.setPlaying(false);
+            });
+          } else {
+            // Just apply sunset-call as default
+            console.log('[CanvasStage] Intro disabled, applying default pose');
+            await introSequence.applyDefaultPose();
+          }
         }
       } catch (error) {
         if (cancelled) return;
-        console.error('[CanvasStage] Failed to load VRM:', error);
-        setErrorMessage(error instanceof Error ? error.message : 'Failed to load VRM file');
+        console.error('[CanvasStage] Failed to load avatar:', error);
+        setErrorMessage(error instanceof Error ? error.message : 'Failed to load avatar file');
         setAvatarReady(false);
         useReactionStore.setState({ isAvatarReady: false });
       } finally {
@@ -165,7 +196,7 @@ export function CanvasStage() {
       cancelled = true;
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentUrl]);
+  }, [avatarType, currentUrl, live2dSource?.manifestUrl]);
 
   useEffect(() => {
     if (!avatarReady) return;
@@ -176,6 +207,37 @@ export function CanvasStage() {
     console.log('[CanvasStage] Preset or animation mode changed, applying:', preset.id, animationMode);
     applyPreset(preset);
   }, [preset, avatarReady, animationMode]);
+
+  useEffect(() => {
+    if (!avatarReady || !liveControlsEnabled) return;
+
+    const hotkeyMap: Record<string, string> = {
+      ArrowUp: 'sunset-call',
+      ArrowDown: 'signal-reverie',
+      ArrowLeft: 'simple-wave',
+      ArrowRight: 'point',
+    };
+
+    const isEditableTarget = (target: EventTarget | null) => {
+      if (!(target instanceof HTMLElement)) return false;
+      const tag = target.tagName;
+      return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || target.isContentEditable;
+    };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.repeat) return;
+      if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
+      if (isEditableTarget(event.target)) return;
+
+      const presetId = hotkeyMap[event.key];
+      if (!presetId) return;
+      event.preventDefault();
+      setPresetById(presetId);
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [avatarReady, liveControlsEnabled, setPresetById]);
 
   // Random auto-snapshot timer
   const randomSnapshotInterval = useIntroStore((s) => s.randomSnapshotInterval);
@@ -201,8 +263,10 @@ export function CanvasStage() {
     const mode = currentPreset.animationMode ?? animationMode;
     console.log('[CanvasStage] Applying preset with animation:', { animated, mode });
     
-    avatarManager.applyPose(currentPreset.pose, animated, mode);
-    avatarManager.applyExpression(currentPreset.expression);
+    if (avatarType === 'vrm') {
+      avatarManager.applyPose(currentPreset.pose, animated, mode);
+      avatarManager.applyExpression(currentPreset.expression);
+    }
     
     // Only change background if not locked
     const { backgroundLocked } = useSceneSettingsStore.getState();
@@ -212,7 +276,12 @@ export function CanvasStage() {
   };
 
   return (
-    <div className="canvas-container" data-tutorial-id="canvas-stage" style={{ position: 'relative', overflow: 'hidden' }}>
+    <div
+      ref={containerRef}
+      className="canvas-container"
+      data-tutorial-id="canvas-stage"
+      style={{ position: 'relative', overflow: 'hidden' }}
+    >
       <OnboardingOverlay />
       
       {isLoading && (
@@ -254,4 +323,3 @@ export function CanvasStage() {
     </div>
   );
 }
-

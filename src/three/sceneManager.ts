@@ -8,6 +8,7 @@ import { useUIStore } from '../state/useUIStore';
 import { lightingManager } from './lightingManager';
 import { postProcessingManager } from './postProcessingManager';
 import { environmentManager } from './environmentManager';
+import { live2dManager } from '../live2d/live2dManager';
 
 type TickHandler = (delta: number) => void;
 
@@ -73,6 +74,7 @@ class SceneManager {
   init(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
     this.scene = new THREE.Scene();
+    this.currentAspectRatio = this.getInitialAspectRatio();
     this.camera = new THREE.PerspectiveCamera(
       CAMERA_CONFIG.FOV,
       canvas.clientWidth / canvas.clientHeight,
@@ -140,6 +142,24 @@ class SceneManager {
     setTimeout(() => {
         perfMonitor.start();
     }, TIMING.PERF_MONITOR_DELAY);
+  }
+
+  private getInitialAspectRatio(): AspectRatio {
+    const isCoarsePointer = window.matchMedia('(pointer: coarse)').matches;
+    if (!isCoarsePointer) {
+      return '16:9';
+    }
+
+    const minSide = Math.min(window.innerWidth, window.innerHeight);
+    if (minSide <= 640) {
+      return '9:16';
+    }
+
+    if (minSide <= 1024) {
+      return '1:1';
+    }
+
+    return '16:9';
   }
 
   private updateSettings(state: { quality: string; shadows: boolean }) {
@@ -578,6 +598,12 @@ class SceneManager {
     
     // Draw the WebGL canvas
     ctx.drawImage(sourceCanvas, 0, 0, width, height);
+
+    // Draw Live2D overlay canvas if present
+    const live2dCanvas = live2dManager.getCanvas();
+    if (live2dCanvas && live2dCanvas.width > 0 && live2dCanvas.height > 0) {
+      ctx.drawImage(live2dCanvas, 0, 0, width, height);
+    }
 
     // Apply CSS-based effects by drawing them manually onto the canvas
     if (cssOverlay) {

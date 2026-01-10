@@ -7,17 +7,18 @@ import { useToastStore } from '../../state/useToastStore';
 import { useUIStore } from '../../state/useUIStore';
 import { useSceneSettingsStore } from '../../state/useSceneSettingsStore';
 import { useIntroStore } from '../../state/useIntroStore';
+import { useAvatarSource } from '../../state/useAvatarSource';
+import { useOnboardingStore } from '../../state/useOnboardingStore';
 import { introSequence } from '../../intro/IntroSequence';
+import { getOnboardingPersona, ONBOARDING_PERSONAS } from '../../data/onboardingPaths';
 import { LIGHT_PRESETS } from '../../three/lightingManager';
 import { POST_PRESETS } from '../../three/postProcessingManager';
 import { HDRI_PRESETS, environmentManager } from '../../three/environmentManager';
 import { MATERIAL_PRESETS, materialManager } from '../../three/materialManager';
 import type { BackgroundId } from '../../types/reactions';
 import { MultiplayerPanel } from '../MultiplayerPanel';
-import { useMultiplayerStore } from '../../state/useMultiplayerStore';
-import { multiAvatarManager } from '../../three/multiAvatarManager';
-import { syncManager } from '../../multiplayer/syncManager';
 import { notifySceneChange } from '../../multiplayer/avatarBridge';
+import { live2dManager } from '../../live2d/live2dManager';
 import { 
   User, 
   Lightbulb, 
@@ -65,11 +66,11 @@ function Section({
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          background: 'rgba(17, 21, 32, 0.6)',
-          border: '1px solid rgba(255, 255, 255, 0.1)',
+          background: 'var(--glass-bg)',
+          border: '1px solid var(--glass-border)',
           borderRadius: '8px',
           padding: '0.75rem 1rem',
-          color: '#e6f3ff',
+          color: 'var(--text-primary)',
           cursor: 'pointer',
           fontSize: '0.95rem',
           fontWeight: 600,
@@ -91,12 +92,12 @@ function Section({
       {isOpen && (
         <div style={{ 
           padding: '1rem',
-          background: 'rgba(17, 21, 32, 0.3)',
+          background: 'var(--glass-bg)',
           borderRadius: '0 0 8px 8px',
           marginTop: '-4px',
-          borderLeft: '1px solid rgba(255, 255, 255, 0.1)',
-          borderRight: '1px solid rgba(255, 255, 255, 0.1)',
-          borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+          borderLeft: '1px solid var(--glass-border)',
+          borderRight: '1px solid var(--glass-border)',
+          borderBottom: '1px solid var(--glass-border)',
         }}>
           {children}
         </div>
@@ -128,7 +129,7 @@ function Slider({
         justifyContent: 'space-between', 
         marginBottom: '0.25rem',
         fontSize: '0.8rem',
-        color: 'rgba(230, 243, 255, 0.7)'
+        color: 'var(--text-secondary)'
       }}>
         <span>{label}</span>
         <span>{value.toFixed(2)}</span>
@@ -144,7 +145,7 @@ function Slider({
           width: '100%',
           height: '6px',
           borderRadius: '3px',
-          background: 'rgba(17, 21, 32, 0.8)',
+          background: 'var(--color-surface)',
           outline: 'none',
           cursor: 'pointer',
         }}
@@ -212,6 +213,7 @@ function PresetButtons({
 
 export function SceneTab() {
   const { isAvatarReady, setAvatarReady } = useReactionStore();
+  const { avatarType, sourceLabel, setFileSource, setLive2dSource } = useAvatarSource();
   const { addToast } = useToastStore();
   const { activeCssOverlay, setActiveCssOverlay } = useUIStore();
   const sceneSettings = useSceneSettingsStore();
@@ -232,8 +234,18 @@ export function SceneTab() {
   const [isLoadingHdri, setIsLoadingHdri] = useState(false);
   
   const vrmInputRef = useRef<HTMLInputElement>(null);
+  const live2dInputRef = useRef<HTMLInputElement>(null);
   const bgInputRef = useRef<HTMLInputElement>(null);
   const hdriInputRef = useRef<HTMLInputElement>(null);
+  const [live2dExpression, setLive2dExpression] = useState('');
+  const [live2dExpressionWeight, setLive2dExpressionWeight] = useState(0.8);
+  const [live2dPhysicsEnabled, setLive2dPhysicsEnabled] = useState(true);
+  const [live2dEyeTrackingEnabled, setLive2dEyeTrackingEnabled] = useState(true);
+  const { selectedPersonaId, completedSteps, setPersona, toggleStep, resetPersona } = useOnboardingStore();
+  const activePersona = getOnboardingPersona(selectedPersonaId) ?? ONBOARDING_PERSONAS[0];
+  const personaCompletedSteps = completedSteps[activePersona.id] ?? [];
+  const personaStepIds = new Set(activePersona.steps.map((step) => step.id));
+  const personaCompletedCount = personaCompletedSteps.filter((stepId) => personaStepIds.has(stepId)).length;
 
   // Restore custom background from store on mount
   useEffect(() => {
@@ -251,45 +263,46 @@ export function SceneTab() {
     setAspectRatio(currentRatio);
   }, []);
 
+  useEffect(() => {
+    if (!getOnboardingPersona(selectedPersonaId) && ONBOARDING_PERSONAS.length > 0) {
+      setPersona(ONBOARDING_PERSONAS[0].id);
+    }
+  }, [selectedPersonaId, setPersona]);
+
   const handleVRMUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    const url = URL.createObjectURL(file);
     setAvatarReady(false);
     try {
-      await avatarManager.load(url);
-      
-      // If in multiplayer, register with multiplayer system (don't re-load)
-      const mpState = useMultiplayerStore.getState();
-      if (mpState.isConnected && mpState.localPeerId) {
-        const loadedVRM = avatarManager.getVRM();
-        if (loadedVRM) {
-          multiAvatarManager.registerExistingAvatar(
-            mpState.localPeerId,
-            loadedVRM,
-            true,
-            mpState.localDisplayName
-          );
-          mpState.updatePeer(mpState.localPeerId, { hasAvatar: true });
-          syncManager.broadcastFullState();
-          
-          // Send VRM to peers
-          setTimeout(() => {
-            mpState.peers.forEach((peer) => {
-              if (!peer.isLocal) {
-                syncManager.sendVRMToPeer(peer.peerId);
-              }
-            });
-          }, 500);
-        }
-      }
-      
-      setAvatarReady(true);
-      addToast('Avatar loaded successfully', 'success');
+      setFileSource(file);
+      addToast('Loading VRM avatar...', 'info');
     } catch (error) {
       console.error('Failed to load VRM:', error);
       addToast('Failed to load VRM file', 'error');
+    }
+  };
+
+  const handleLive2DUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFiles = Array.from(event.target.files ?? []);
+    if (!selectedFiles.length) return;
+    event.target.value = '';
+
+    try {
+      const zipFile = selectedFiles.length === 1 && selectedFiles[0].name.toLowerCase().endsWith('.zip');
+      if (zipFile) {
+        addToast('ZIP bundles are not supported yet. Please select the .model3.json and texture files directly.', 'warning');
+        return;
+      }
+
+      setAvatarReady(false);
+      const files = selectedFiles;
+      const label = files.find((file) => file.name.toLowerCase().endsWith('.model3.json'))?.name ?? 'Live2D Avatar';
+      await setLive2dSource(files, label);
+      addToast('Live2D avatar loaded successfully', 'success');
+    } catch (error) {
+      console.error('Failed to load Live2D:', error);
+      addToast(error instanceof Error ? error.message : 'Failed to load Live2D assets', 'error');
     }
   };
 
@@ -388,19 +401,29 @@ export function SceneTab() {
     }
   };
 
+  const vrmReady = avatarType === 'vrm' && isAvatarReady;
+
   return (
     <div className="tab-content" style={{ gap: '0.5rem' }}>
       {/* Avatar Section */}
       <Section title="Avatar" icon={<User size={18} weight="duotone" />} defaultOpen={!isAvatarReady}>
-        <p className="muted small">Load or change the VRM avatar</p>
+        <p className="muted small">Load or change the VRM or Live2D avatar</p>
         <button
-          className={isAvatarReady ? 'secondary full-width' : 'primary full-width'}
+          className={vrmReady ? 'secondary full-width' : 'primary full-width'}
           onClick={() => vrmInputRef.current?.click()}
         >
-          {isAvatarReady ? <><ArrowsClockwise size={16} weight="duotone" /> Change Avatar</> : <><Package size={16} weight="duotone" /> Load VRM Avatar</>}
+          {vrmReady ? <><ArrowsClockwise size={16} weight="duotone" /> Change Avatar</> : <><Package size={16} weight="duotone" /> Load VRM Avatar</>}
+        </button>
+
+        <button
+          className="secondary full-width"
+          onClick={() => live2dInputRef.current?.click()}
+          style={{ marginTop: '0.5rem' }}
+        >
+          {avatarType === 'live2d' ? <><ArrowsClockwise size={16} weight="duotone" /> Change Live2D Avatar</> : <><UploadSimple size={16} weight="duotone" /> Load Live2D Avatar</>}
         </button>
         
-        {isAvatarReady && (
+        {vrmReady && (
           <>
             <button
               className="secondary full-width"
@@ -438,6 +461,60 @@ export function SceneTab() {
             </div>
           </>
         )}
+
+        {avatarType === 'live2d' && (
+          <div style={{ marginTop: '0.75rem', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '0.75rem' }}>
+            <p className="muted small" style={{ marginBottom: '0.5rem' }}>
+              Live2D Controls ({sourceLabel})
+            </p>
+            <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
+              <input
+                type="text"
+                value={live2dExpression}
+                onChange={(e) => setLive2dExpression(e.target.value)}
+                placeholder="Expression name"
+                style={{
+                  flex: 1,
+                  padding: '0.4rem 0.6rem',
+                  borderRadius: '6px',
+                  border: '1px solid var(--border-default)',
+                  background: 'var(--color-surface)',
+                  color: 'var(--text-primary)',
+                }}
+              />
+              <button
+                className="secondary small"
+                onClick={() => live2dManager.setExpression(live2dExpression || 'neutral', live2dExpressionWeight)}
+              >
+                Apply
+              </button>
+            </div>
+            <Slider
+              label="Expression Weight"
+              value={live2dExpressionWeight}
+              min={0}
+              max={1}
+              step={0.05}
+              onChange={(value) => setLive2dExpressionWeight(value)}
+            />
+            <Toggle
+              label="Physics Enabled"
+              checked={live2dPhysicsEnabled}
+              onChange={(enabled) => {
+                setLive2dPhysicsEnabled(enabled);
+                live2dManager.setPhysicsEnabled(enabled);
+              }}
+            />
+            <Toggle
+              label="Eye Tracking"
+              checked={live2dEyeTrackingEnabled}
+              onChange={(enabled) => {
+                setLive2dEyeTrackingEnabled(enabled);
+                live2dManager.setEyeTrackingEnabled(enabled);
+              }}
+            />
+          </div>
+        )}
         
         <input
           ref={vrmInputRef}
@@ -446,6 +523,98 @@ export function SceneTab() {
           onChange={handleVRMUpload}
           style={{ display: 'none' }}
         />
+        <input
+          ref={live2dInputRef}
+          type="file"
+          accept=".model3.json,.zip,.moc3,.json,image/*"
+          multiple
+          onChange={handleLive2DUpload}
+          style={{ display: 'none' }}
+        />
+      </Section>
+
+      <Section title="Creator Path" icon={<User size={18} weight="duotone" />} defaultOpen>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+            <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+              Choose a persona to get an evergreen checklist tailored to your workflow.
+            </span>
+            <select
+              value={activePersona.id}
+              onChange={(event) => setPersona(event.target.value)}
+              style={{
+                padding: '0.5rem 0.75rem',
+                borderRadius: '6px',
+                background: 'var(--color-surface)',
+                border: '1px solid var(--border-default)',
+                color: 'var(--text-primary)',
+                fontSize: '0.9rem',
+              }}
+            >
+              {ONBOARDING_PERSONAS.map((persona) => (
+                <option key={persona.id} value={persona.id}>
+                  {persona.label}
+                </option>
+              ))}
+            </select>
+            <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+              {activePersona.description}
+            </span>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <span style={{ fontSize: '0.85rem', color: 'var(--text-primary)' }}>
+              Progress: {personaCompletedCount}/{activePersona.steps.length}
+            </span>
+            <button
+              className="secondary"
+              onClick={() => resetPersona(activePersona.id)}
+              style={{ padding: '0.4rem 0.75rem', fontSize: '0.75rem' }}
+            >
+              Reset
+            </button>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+            {activePersona.steps.map((step) => {
+              const isComplete = personaCompletedSteps.includes(step.id);
+              return (
+                <label
+                  key={step.id}
+                  style={{
+                    display: 'flex',
+                    gap: '0.6rem',
+                    alignItems: 'flex-start',
+                    background: 'rgba(255,255,255,0.04)',
+                    border: '1px solid rgba(255,255,255,0.08)',
+                    borderRadius: '8px',
+                    padding: '0.6rem',
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={isComplete}
+                    onChange={() => toggleStep(activePersona.id, step.id)}
+                    style={{ marginTop: '0.2rem', accentColor: 'var(--accent)' }}
+                  />
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+                    <span style={{ fontSize: '0.85rem', color: 'var(--text-primary)', fontWeight: 600 }}>
+                      {step.title}
+                    </span>
+                    <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
+                      {step.description}
+                    </span>
+                    {step.cta && (
+                      <span style={{ fontSize: '0.75rem', color: 'rgba(0, 255, 214, 0.8)' }}>
+                        {step.cta}
+                      </span>
+                    )}
+                  </div>
+                </label>
+              );
+            })}
+          </div>
+        </div>
       </Section>
 
       {/* Lighting Section */}
@@ -864,16 +1033,16 @@ function IntroSection() {
             type="checkbox"
             checked={enabled}
             onChange={(e) => setEnabled(e.target.checked)}
-            style={{ width: '18px', height: '18px', accentColor: '#00ffd6' }}
+            style={{ width: '18px', height: '18px', accentColor: 'var(--accent)' }}
           />
-          <span style={{ color: '#e6f3ff', fontSize: '0.9rem' }}>
+          <span style={{ color: 'var(--text-primary)', fontSize: '0.9rem' }}>
             Play intro on avatar load
           </span>
         </label>
         
         {/* Sequence Selector */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-          <label style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.6)' }}>
+          <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
             Intro Style
           </label>
           <select
@@ -882,9 +1051,9 @@ function IntroSection() {
             style={{
               padding: '0.5rem 0.75rem',
               borderRadius: '6px',
-              background: 'rgba(17, 21, 32, 0.8)',
-              border: '1px solid rgba(255, 255, 255, 0.15)',
-              color: '#e6f3ff',
+              background: 'var(--color-surface)',
+              border: '1px solid var(--border-default)',
+              color: 'var(--text-primary)',
               fontSize: '0.9rem',
             }}
           >
@@ -910,16 +1079,16 @@ function IntroSection() {
             type="checkbox"
             checked={autoCapture}
             onChange={(e) => setAutoCapture(e.target.checked)}
-            style={{ width: '18px', height: '18px', accentColor: '#00ffd6' }}
+            style={{ width: '18px', height: '18px', accentColor: 'var(--accent)' }}
           />
-          <span style={{ color: '#e6f3ff', fontSize: '0.9rem' }}>
+          <span style={{ color: 'var(--text-primary)', fontSize: '0.9rem' }}>
             Auto-capture at key moments
           </span>
         </label>
         
         {/* Random Snapshot Interval */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-          <label style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.6)' }}>
+          <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
             Random Auto-Snapshot ({randomSnapshotInterval === 0 ? 'Off' : `Every ${randomSnapshotInterval}s`})
           </label>
           <input
@@ -929,7 +1098,7 @@ function IntroSection() {
             step={5}
             value={randomSnapshotInterval}
             onChange={(e) => setRandomSnapshotInterval(parseInt(e.target.value))}
-            style={{ accentColor: '#00ffd6' }}
+            style={{ accentColor: 'var(--accent)' }}
           />
         </div>
         

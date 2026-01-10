@@ -10,6 +10,7 @@ import {
   User, 
   Cube, 
   Eye, 
+  EyeSlash,
   ArrowSquareOut, 
   ArrowSquareIn,
   Play,
@@ -30,10 +31,19 @@ export function ViewportOverlay({ mode, isPlaying, onPlayPause, onStop }: Viewpo
   const { activeCssOverlay } = useUIStore();
   const { isPoppedOut, togglePopOut } = usePopOutViewport(activeCssOverlay);
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>('16:9');
+  const [showClock, setShowClock] = useState(true);
+  const [now, setNow] = useState(() => new Date());
 
   // Sync with sceneManager on mount
   useEffect(() => {
     setAspectRatio(sceneManager.getAspectRatio());
+  }, []);
+
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      setNow(new Date());
+    }, 1000);
+    return () => window.clearInterval(timer);
   }, []);
 
   const handleAspectRatioChange = (ratio: AspectRatio) => {
@@ -175,6 +185,23 @@ export function ViewportOverlay({ mode, isPlaying, onPlayPause, onStop }: Viewpo
         <MultiplayerPanel compact />
       </div>
 
+      {/* Clock widget - bottom left */}
+      <div className="viewport-overlay bottom-left">
+        <div className="clock-widget">
+          <span className={`clock-time ${showClock ? '' : 'is-hidden'}`} aria-live="polite">
+            {showClock ? now.toLocaleTimeString() : 'Clock off'}
+          </span>
+          <button
+            className={`icon-button clock-toggle ${showClock ? 'active' : ''}`}
+            onClick={() => setShowClock((prev) => !prev)}
+            title={showClock ? 'Hide clock' : 'Show clock'}
+            aria-label={showClock ? 'Hide clock' : 'Show clock'}
+          >
+            {showClock ? <EyeSlash size={18} weight="duotone" /> : <Eye size={18} weight="duotone" />}
+          </button>
+        </div>
+      </div>
+
       {/* Logo overlay - hidden but preserved for potential future use or reference */}
       {/* 
       <div className="viewport-overlay bottom-right">
@@ -188,4 +215,3 @@ export function ViewportOverlay({ mode, isPlaying, onPlayPause, onStop }: Viewpo
     </>
   );
 }
-

@@ -110,11 +110,35 @@ npm install
 npm run dev
 ```
 
+### Run Modes
+PoseLab has two primary routes:
+- **Main app** (default): `http://localhost:5173/`
+- **Pose Lab mode**: `http://localhost:5173/?mode=pose-lab`
+
 ### Environment Variables
 Create a `.env` file in the root for AI features:
 ```env
 VITE_GEMINI_API_KEY=your_api_key_here
 ```
+
+---
+
+## 🧭 Repository Overview
+
+### Core Entry Points
+- `src/main.tsx`: App bootstrap and mode routing.
+- `src/App.tsx`: Main PoseLab experience (reactions, exports, scene UI).
+- `src/pose-lab/PoseLab.tsx`: Dedicated Pose Lab and retargeting workflow.
+
+### Key Directories
+- `src/three/`: Three.js/VRM engine (scene, avatar, materials, lighting, post-processing).
+- `src/components/`: UI tabs, panels, modals, and shared widgets.
+- `src/state/`: Zustand stores for app, scene, AI, and multiplayer state.
+- `src/ai/` + `src/services/`: Gemini AI orchestration, prompt plumbing, and proxy calls.
+- `src/export/`: PNG/WebM export helpers and render capture.
+- `src/poses/`: Built-in pose JSON files and animation helpers.
+- `src/pose-lab/`: Mixamo retargeting and pose capture utilities.
+- `src/multiplayer/` + `src/bridge/`: Multiplayer sync and external avatar bridge.
 
 ---
 
