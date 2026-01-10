@@ -34,8 +34,6 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   const addToast = useToastStore((state) => state.addToast);
   const [autosaves, setAutosaves] = useState<AutosaveEntry[]>([]);
 
-  if (!isOpen) return null;
-
   const refreshAutosaves = () => {
     setAutosaves(autosaveManager.getAutosaves());
   };
@@ -45,6 +43,8 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
       refreshAutosaves();
     }
   }, [isOpen]);
+
+  if (!isOpen) return null;
 
   return (
     <div className="modal-overlay" onClick={onClose}>
