@@ -7,6 +7,7 @@ import { useToastStore } from '../../state/useToastStore';
 import { useUIStore } from '../../state/useUIStore';
 import { useSceneSettingsStore } from '../../state/useSceneSettingsStore';
 import { useIntroStore } from '../../state/useIntroStore';
+import { useAvatarSource } from '../../state/useAvatarSource';
 import { introSequence } from '../../intro/IntroSequence';
 import { LIGHT_PRESETS } from '../../three/lightingManager';
 import { POST_PRESETS } from '../../three/postProcessingManager';
@@ -14,10 +15,8 @@ import { HDRI_PRESETS, environmentManager } from '../../three/environmentManager
 import { MATERIAL_PRESETS, materialManager } from '../../three/materialManager';
 import type { BackgroundId } from '../../types/reactions';
 import { MultiplayerPanel } from '../MultiplayerPanel';
-import { useMultiplayerStore } from '../../state/useMultiplayerStore';
-import { multiAvatarManager } from '../../three/multiAvatarManager';
-import { syncManager } from '../../multiplayer/syncManager';
 import { notifySceneChange } from '../../multiplayer/avatarBridge';
+import { live2dManager } from '../../live2d/live2dManager';
 import { 
   User, 
   Lightbulb, 
@@ -212,6 +211,7 @@ function PresetButtons({
 
 export function SceneTab() {
   const { isAvatarReady, setAvatarReady } = useReactionStore();
+  const { avatarType, sourceLabel, setFileSource, setLive2dSource } = useAvatarSource();
   const { addToast } = useToastStore();
   const { activeCssOverlay, setActiveCssOverlay } = useUIStore();
   const sceneSettings = useSceneSettingsStore();
@@ -232,8 +232,13 @@ export function SceneTab() {
   const [isLoadingHdri, setIsLoadingHdri] = useState(false);
   
   const vrmInputRef = useRef<HTMLInputElement>(null);
+  const live2dInputRef = useRef<HTMLInputElement>(null);
   const bgInputRef = useRef<HTMLInputElement>(null);
   const hdriInputRef = useRef<HTMLInputElement>(null);
+  const [live2dExpression, setLive2dExpression] = useState('');
+  const [live2dExpressionWeight, setLive2dExpressionWeight] = useState(0.8);
+  const [live2dPhysicsEnabled, setLive2dPhysicsEnabled] = useState(true);
+  const [live2dEyeTrackingEnabled, setLive2dEyeTrackingEnabled] = useState(true);
 
   // Restore custom background from store on mount
   useEffect(() => {
@@ -255,41 +260,36 @@ export function SceneTab() {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    const url = URL.createObjectURL(file);
     setAvatarReady(false);
     try {
-      await avatarManager.load(url);
-      
-      // If in multiplayer, register with multiplayer system (don't re-load)
-      const mpState = useMultiplayerStore.getState();
-      if (mpState.isConnected && mpState.localPeerId) {
-        const loadedVRM = avatarManager.getVRM();
-        if (loadedVRM) {
-          multiAvatarManager.registerExistingAvatar(
-            mpState.localPeerId,
-            loadedVRM,
-            true,
-            mpState.localDisplayName
-          );
-          mpState.updatePeer(mpState.localPeerId, { hasAvatar: true });
-          syncManager.broadcastFullState();
-          
-          // Send VRM to peers
-          setTimeout(() => {
-            mpState.peers.forEach((peer) => {
-              if (!peer.isLocal) {
-                syncManager.sendVRMToPeer(peer.peerId);
-              }
-            });
-          }, 500);
-        }
-      }
-      
-      setAvatarReady(true);
-      addToast('Avatar loaded successfully', 'success');
+      setFileSource(file);
+      addToast('Loading VRM avatar...', 'info');
     } catch (error) {
       console.error('Failed to load VRM:', error);
       addToast('Failed to load VRM file', 'error');
+    }
+  };
+
+  const handleLive2DUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFiles = Array.from(event.target.files ?? []);
+    if (!selectedFiles.length) return;
+    event.target.value = '';
+
+    try {
+      const zipFile = selectedFiles.length === 1 && selectedFiles[0].name.toLowerCase().endsWith('.zip');
+      if (zipFile) {
+        addToast('ZIP bundles are not supported yet. Please select the .model3.json and texture files directly.', 'warning');
+        return;
+      }
+
+      setAvatarReady(false);
+      const files = selectedFiles;
+      const label = files.find((file) => file.name.toLowerCase().endsWith('.model3.json'))?.name ?? 'Live2D Avatar';
+      await setLive2dSource(files, label);
+      addToast('Live2D avatar loaded successfully', 'success');
+    } catch (error) {
+      console.error('Failed to load Live2D:', error);
+      addToast(error instanceof Error ? error.message : 'Failed to load Live2D assets', 'error');
     }
   };
 
@@ -388,19 +388,29 @@ export function SceneTab() {
     }
   };
 
+  const vrmReady = avatarType === 'vrm' && isAvatarReady;
+
   return (
     <div className="tab-content" style={{ gap: '0.5rem' }}>
       {/* Avatar Section */}
       <Section title="Avatar" icon={<User size={18} weight="duotone" />} defaultOpen={!isAvatarReady}>
-        <p className="muted small">Load or change the VRM avatar</p>
+        <p className="muted small">Load or change the VRM or Live2D avatar</p>
         <button
-          className={isAvatarReady ? 'secondary full-width' : 'primary full-width'}
+          className={vrmReady ? 'secondary full-width' : 'primary full-width'}
           onClick={() => vrmInputRef.current?.click()}
         >
-          {isAvatarReady ? <><ArrowsClockwise size={16} weight="duotone" /> Change Avatar</> : <><Package size={16} weight="duotone" /> Load VRM Avatar</>}
+          {vrmReady ? <><ArrowsClockwise size={16} weight="duotone" /> Change Avatar</> : <><Package size={16} weight="duotone" /> Load VRM Avatar</>}
+        </button>
+
+        <button
+          className="secondary full-width"
+          onClick={() => live2dInputRef.current?.click()}
+          style={{ marginTop: '0.5rem' }}
+        >
+          {avatarType === 'live2d' ? <><ArrowsClockwise size={16} weight="duotone" /> Change Live2D Avatar</> : <><UploadSimple size={16} weight="duotone" /> Load Live2D Avatar</>}
         </button>
         
-        {isAvatarReady && (
+        {vrmReady && (
           <>
             <button
               className="secondary full-width"
@@ -438,12 +448,74 @@ export function SceneTab() {
             </div>
           </>
         )}
+
+        {avatarType === 'live2d' && (
+          <div style={{ marginTop: '0.75rem', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '0.75rem' }}>
+            <p className="muted small" style={{ marginBottom: '0.5rem' }}>
+              Live2D Controls ({sourceLabel})
+            </p>
+            <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
+              <input
+                type="text"
+                value={live2dExpression}
+                onChange={(e) => setLive2dExpression(e.target.value)}
+                placeholder="Expression name"
+                style={{
+                  flex: 1,
+                  padding: '0.4rem 0.6rem',
+                  borderRadius: '6px',
+                  border: '1px solid rgba(255,255,255,0.1)',
+                  background: 'rgba(17, 21, 32, 0.6)',
+                  color: '#e6f3ff',
+                }}
+              />
+              <button
+                className="secondary small"
+                onClick={() => live2dManager.setExpression(live2dExpression || 'neutral', live2dExpressionWeight)}
+              >
+                Apply
+              </button>
+            </div>
+            <Slider
+              label="Expression Weight"
+              value={live2dExpressionWeight}
+              min={0}
+              max={1}
+              step={0.05}
+              onChange={(value) => setLive2dExpressionWeight(value)}
+            />
+            <Toggle
+              label="Physics Enabled"
+              checked={live2dPhysicsEnabled}
+              onChange={(enabled) => {
+                setLive2dPhysicsEnabled(enabled);
+                live2dManager.setPhysicsEnabled(enabled);
+              }}
+            />
+            <Toggle
+              label="Eye Tracking"
+              checked={live2dEyeTrackingEnabled}
+              onChange={(enabled) => {
+                setLive2dEyeTrackingEnabled(enabled);
+                live2dManager.setEyeTrackingEnabled(enabled);
+              }}
+            />
+          </div>
+        )}
         
         <input
           ref={vrmInputRef}
           type="file"
           accept=".vrm"
           onChange={handleVRMUpload}
+          style={{ display: 'none' }}
+        />
+        <input
+          ref={live2dInputRef}
+          type="file"
+          accept=".model3.json,.zip,.moc3,.json,image/*"
+          multiple
+          onChange={handleLive2DUpload}
           style={{ display: 'none' }}
         />
       </Section>
