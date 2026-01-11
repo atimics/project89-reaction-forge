@@ -270,7 +270,12 @@ export class MotionCaptureManager {
       this.targetBoneRotations.forEach((targetQ, boneName) => {
           // In Face mode, allow Head, Neck, Upper Body, and Hands for natural movement
           if (this.mode === 'face') {
-              const allowedBones = ['head', 'neck', 'chest', 'upperchest', 'spine', 'hand', 'thumb', 'index', 'middle', 'ring', 'little'];
+              const allowedBones = [
+                  'head', 'neck', 
+                  'chest', 'upperchest', 'spine', 
+                  'shoulder', 'arm', // Covers upperArm, lowerArm
+                  'hand', 'thumb', 'index', 'middle', 'ring', 'little'
+              ];
               if (!allowedBones.some(b => boneName.toLowerCase().includes(b))) return;
           }
 
@@ -434,8 +439,7 @@ export class MotionCaptureManager {
     if (!results.poseLandmarks && !results.faceLandmarks && !results.leftHandLandmarks && !results.rightHandLandmarks) return;
     
     // 3. Solve Pose using Kalidokit
-    // Only solve/apply pose if in full body mode
-    if (this.mode === 'full') {
+    // Always solve pose to get upper body data, even in Face mode
     const poseWorldLandmarks = (results as any).poseWorldLandmarks || (results as any).ea;
     
     if (results.poseLandmarks && results.poseLandmarks.length >= 33) {
@@ -449,7 +453,6 @@ export class MotionCaptureManager {
             }
         } catch (error) {
             console.warn("[MotionCapture] Pose solver error:", error);
-            }
         }
     }
 
@@ -712,8 +715,9 @@ export class MotionCaptureManager {
                 this.targetBoneRotations.set('head', headQ);
 
                 // --- Derived Upper Body Movement (Face Mode Only) ---
-                // If we are in Face mode, we want the body to subtly follow the head
-                // Increased coupling factors to make the body feel more connected to the head movement.
+                // DISABLED: We now use real upper body tracking from Pose Solver even in Face Mode.
+                // This ensures "Streamer Mode" includes real arm/shoulder movements.
+                /*
                 if (this.mode === 'face') {
                     // Neck follows head at 50%
                     const neckQ = new THREE.Quaternion().slerp(headQ, 0.5);
@@ -728,6 +732,7 @@ export class MotionCaptureManager {
                     const spineQ = new THREE.Quaternion().slerp(headQ, 0.15);
                     this.targetBoneRotations.set('spine', spineQ);
                 }
+                */
              }
       }
 
