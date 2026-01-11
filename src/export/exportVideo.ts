@@ -11,6 +11,7 @@ export interface ExportOptions {
   onProgress?: (progress: number) => void; // Progress callback (0-1)
   width?: number; // Target width (optional, uses canvas width if not provided)
   height?: number; // Target height (optional, uses canvas height if not provided)
+  includeLogo?: boolean;
 }
 
 /**
@@ -25,7 +26,13 @@ export async function exportCanvasAsGif(
   // Export as WebM (GIF libraries have compatibility issues)
   const webmFilename = filename.replace(/\.gif$/i, '.webm');
   console.log('[Exporter] Exporting as WebM (convert to GIF using ezgif.com for Twitter)');
-  return exportAsWebM(canvas, options.duration, webmFilename, options.onProgress);
+  return exportAsWebM(
+    canvas,
+    options.duration,
+    webmFilename,
+    options.onProgress,
+    { width: options.width, height: options.height, includeLogo: options.includeLogo }
+  );
 }
 
 /**
@@ -36,15 +43,17 @@ export async function exportAsWebM(
   duration: number,
   filename: string,
   onProgress?: (progress: number) => void,
-  options?: { width?: number; height?: number }
+  options?: { width?: number; height?: number; includeLogo?: boolean }
 ): Promise<void> {
   const targetWidth = options?.width || canvas.width;
   const targetHeight = options?.height || canvas.height;
+  const includeLogo = options?.includeLogo ?? true;
   const activeCssOverlay = useUIStore.getState().activeCssOverlay;
   
-  console.log('[VideoExporter] Starting WebM recording with logo...', {
+  console.log('[VideoExporter] Starting WebM recording...', {
     targetWidth,
     targetHeight,
+    includeLogo,
     activeCssOverlay,
     canvasSize: { width: canvas.width, height: canvas.height },
     canvasClientSize: { width: canvas.clientWidth, height: canvas.clientHeight }
@@ -73,7 +82,7 @@ export async function exportAsWebM(
   }
 
   // Load logo
-  const logo = await loadLogoImage();
+  const logo = includeLogo ? await loadLogoImage() : null;
   
   // Calculate logo dimensions (8% of composite canvas width)
   const logoWidth = compositeCanvas.width * 0.08;

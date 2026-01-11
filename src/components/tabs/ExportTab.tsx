@@ -225,7 +225,7 @@ export function ExportTab({ mode = 'reactions' }: ExportTabProps) {
           (progress) => {
             setExportProgress(Math.round(progress * 100));
           },
-          { width: dimensions.width, height: dimensions.height }
+          { width: dimensions.width, height: dimensions.height, includeLogo }
         );
         addToast('✅ WebM Exported Successfully!', 'success');
       } finally {
