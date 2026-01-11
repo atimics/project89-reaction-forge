@@ -347,7 +347,8 @@ export function MocapTab() {
       return;
     }
 
-    liveShutdownRef.current = wasLiveModeEnabled;
+    const exitingLiveMode = wasLiveModeEnabled;
+    liveShutdownRef.current = exitingLiveMode;
     if (previousMocapModeRef.current !== mocapMode) {
       if (!isActive && !previousMocapActiveRef.current) {
         setMocapModeOnly(previousMocapModeRef.current);
@@ -355,11 +356,11 @@ export function MocapTab() {
         handleModeChange(previousMocapModeRef.current);
       }
     }
-    if (!previousMocapActiveRef.current && isActive) {
+    if (exitingLiveMode && !previousMocapActiveRef.current && isActive) {
       liveShutdownRef.current = true;
       stopMocap();
     }
-    if (!previousVoiceActiveRef.current && isVoiceLipSyncActive) {
+    if (exitingLiveMode && !previousVoiceActiveRef.current && isVoiceLipSyncActive) {
       liveShutdownRef.current = true;
       stopVoiceLipSync();
     }
