@@ -4,6 +4,7 @@ import { animationManager } from '../../three/animationManager';
 import { serializeAnimationClip } from '../../poses/animationClipSerializer';
 import type { VRMPose } from '@pixiv/three-vrm';
 import { useToastStore } from '../../state/useToastStore';
+import { getPoseLabTimestamp } from '../../utils/exportNaming';
 import { 
   Camera, 
   Check, 
@@ -146,7 +147,8 @@ export function PosesTab() {
       const url = URL.createObjectURL(blob);
       const anchor = document.createElement('a');
       anchor.href = url;
-      anchor.download = `PoseLab_${pose.name.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.json`;
+      const timestamp = getPoseLabTimestamp();
+      anchor.download = `PoseLab_${timestamp}_${pose.name.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.json`;
       anchor.click();
       URL.revokeObjectURL(url);
 
@@ -161,7 +163,8 @@ export function PosesTab() {
         const animUrl = URL.createObjectURL(animBlob);
         const animAnchor = document.createElement('a');
         animAnchor.href = animUrl;
-        animAnchor.download = `PoseLab_${pose.name.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_animation.json`;
+        const animationTimestamp = getPoseLabTimestamp();
+        animAnchor.download = `PoseLab_${animationTimestamp}_${pose.name.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_animation.json`;
         animAnchor.click();
         URL.revokeObjectURL(animUrl);
         addToast(`✅ Exported 2 files for ${pose.name}`, 'success');
@@ -193,7 +196,8 @@ export function PosesTab() {
       const url = URL.createObjectURL(blob);
       const anchor = document.createElement('a');
       anchor.href = url;
-      anchor.download = 'all-poses.json';
+      const timestamp = getPoseLabTimestamp();
+      anchor.download = `PoseLab_${timestamp}_all-poses.json`;
       anchor.click();
       URL.revokeObjectURL(url);
       addToast(`✅ Exported ${savedPoses.length} pose(s) to all-poses.json`, 'success');
@@ -283,4 +287,3 @@ export function PosesTab() {
     </div>
   );
 }
-

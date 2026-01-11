@@ -5,6 +5,7 @@ import { timelineToAnimationClip } from '../../utils/timelineToAnimation';
 import * as THREE from 'three';
 import { useReactionStore } from '../../state/useReactionStore';
 import { Play, Pause, Stop, Plus, FloppyDisk, ArrowsClockwise } from '@phosphor-icons/react';
+import { getPoseLabTimestamp } from '../../utils/exportNaming';
 
 export function TimelineTab() {
   const { 
@@ -283,7 +284,8 @@ export function TimelineTab() {
                   const url = URL.createObjectURL(blob);
                   const a = document.createElement('a');
                   a.href = url;
-                  a.download = `PoseLab_Sequence_${Date.now()}.json`;
+                  const timestamp = getPoseLabTimestamp();
+                  a.download = `PoseLab_${timestamp}_sequence.json`;
                   a.click();
                   URL.revokeObjectURL(url);
                 }}

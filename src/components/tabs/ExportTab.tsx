@@ -7,6 +7,7 @@ import { exportAsWebM, canExportVideo } from '../../export/exportVideo';
 import { exportAsGLB } from '../../export/exportGLB';
 import { useToastStore } from '../../state/useToastStore';
 import { postProcessingManager } from '../../three/postProcessingManager';
+import { getPoseLabTimestamp } from '../../utils/exportNaming';
 import { 
   Image, 
   FilmStrip, 
@@ -97,11 +98,12 @@ export function ExportTab({ mode = 'reactions' }: ExportTabProps) {
     if (!dataUrl) return;
     
     // Generate filename with aspect ratio (unless it's the default 16:9 or square resolution)
-    // Format: PoseLab_{preset-id}_{resolution}_{aspect-ratio}.png
+    // Format: PoseLab_{timestamp}_{preset-id}_{resolution}_{aspect-ratio}.png
     const poseName = activePreset.label.replace(/[^a-z0-9]/gi, '_').toLowerCase();
     const aspectSuffix = resolution === 'square' ? '' : currentAspectRatio !== '16:9' ? `_${currentAspectRatio.replace(':', 'x')}` : '';
     const transparentSuffix = transparentBg ? '_transparent' : '';
-    const filename = `PoseLab_${poseName}_${resolution}${aspectSuffix}${transparentSuffix}.png`;
+    const timestamp = getPoseLabTimestamp();
+    const filename = `PoseLab_${timestamp}_${poseName}_${resolution}${aspectSuffix}${transparentSuffix}.png`;
     
     const link = document.createElement('a');
     link.href = dataUrl;
@@ -208,11 +210,12 @@ export function ExportTab({ mode = 'reactions' }: ExportTabProps) {
       try {
         // Generate filename with aspect ratio (unless it's the default 16:9 or square resolution)
         // Format: {preset-id|pose-lab}-{resolution}-{aspect-ratio}.webm
-        const aspectSuffix = resolution === 'square' ? '' : currentAspectRatio !== '16:9' ? `-${currentAspectRatio.replace(':', 'x')}` : '';
+        const aspectSuffix = resolution === 'square' ? '' : currentAspectRatio !== '16:9' ? `_${currentAspectRatio.replace(':', 'x')}` : '';
         const baseName = mode === 'poselab'
-          ? `pose-lab-${resolution}`
-          : `${activePreset.id}-${resolution}`;
-        const filename = `${baseName}${aspectSuffix}.webm`;
+          ? `poselab_${resolution}`
+          : `${activePreset.id}_${resolution}`;
+        const timestamp = getPoseLabTimestamp();
+        const filename = `PoseLab_${timestamp}_${baseName}${aspectSuffix}.webm`;
 
         // Export with target resolution
         await exportAsWebM(
@@ -222,7 +225,7 @@ export function ExportTab({ mode = 'reactions' }: ExportTabProps) {
           (progress) => {
             setExportProgress(Math.round(progress * 100));
           },
-          { width: dimensions.width, height: dimensions.height }
+          { width: dimensions.width, height: dimensions.height, includeLogo }
         );
         addToast('✅ WebM Exported Successfully!', 'success');
       } finally {
@@ -254,7 +257,8 @@ export function ExportTab({ mode = 'reactions' }: ExportTabProps) {
     try {
       setIsExporting(true);
       const poseName = activePreset.label.replace(/[^a-z0-9]/gi, '_').toLowerCase();
-      const filename = `PoseLab_${poseName}`;
+      const timestamp = getPoseLabTimestamp();
+      const filename = `PoseLab_${timestamp}_${poseName}`;
       await exportAsGLB(filename);
       addToast('✅ GLB Exported Successfully!', 'success');
     } catch (error) {

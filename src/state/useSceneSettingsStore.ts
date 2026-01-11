@@ -47,6 +47,7 @@ interface SceneSettingsState {
   currentBackground: string;  // Preset ID or 'custom'
   customBackgroundData: string | null;  // Base64 data for syncing custom backgrounds
   customBackgroundType: string | null;  // MIME type of custom background
+  customBackgroundUrl: string | null;   // Runtime blob/data URL for custom background preview
   
   // Avatar rotation lock (preserve rotation when animations play)
   rotationLocked: boolean;
@@ -68,6 +69,7 @@ interface SceneSettingsState {
   setBackgroundLocked: (locked: boolean) => void;
   setCurrentBackground: (id: string) => void;
   setCustomBackground: (data: string, mimeType: string) => void;
+  setCustomBackgroundUrl: (url: string) => void;
   clearCustomBackground: () => void;
   isBackgroundLocked: () => boolean;
   
@@ -106,6 +108,12 @@ function deepMerge<T extends object>(target: T, source: Partial<T>): T {
   return result;
 }
 
+function revokeBlobUrl(url: string | null) {
+  if (url && url.startsWith('blob:')) {
+    URL.revokeObjectURL(url);
+  }
+}
+
 export const useSceneSettingsStore = create<SceneSettingsState>()(
   persist(
     (set, get) => ({
@@ -127,6 +135,7 @@ export const useSceneSettingsStore = create<SceneSettingsState>()(
       currentBackground: 'midnight-circuit',
       customBackgroundData: null,
       customBackgroundType: null,
+      customBackgroundUrl: null,
       
       // Rotation lock (auto-enabled when user rotates via gizmo)
       rotationLocked: false,
@@ -205,24 +214,47 @@ export const useSceneSettingsStore = create<SceneSettingsState>()(
         set({ currentBackground: id });
         // If switching away from custom, clear the custom data
         if (id !== 'custom') {
-          set({ customBackgroundData: null, customBackgroundType: null });
+          const previousUrl = get().customBackgroundUrl;
+          set({ 
+            customBackgroundData: null,
+            customBackgroundType: null,
+            customBackgroundUrl: null,
+          });
+          revokeBlobUrl(previousUrl);
         }
       },
       
       setCustomBackground: (data, mimeType) => {
+        const dataUrl = `data:${mimeType};base64,${data}`;
+        const previousUrl = get().customBackgroundUrl;
         set({
           currentBackground: 'custom',
           customBackgroundData: data,
           customBackgroundType: mimeType,
+          customBackgroundUrl: dataUrl,
           backgroundLocked: true, // Auto-lock when custom background is set
         });
+        revokeBlobUrl(previousUrl);
+      },
+
+      setCustomBackgroundUrl: (url) => {
+        const previousUrl = get().customBackgroundUrl;
+        set({
+          currentBackground: 'custom',
+          customBackgroundUrl: url,
+          backgroundLocked: true,
+        });
+        revokeBlobUrl(previousUrl);
       },
       
       clearCustomBackground: () => {
+        const previousUrl = get().customBackgroundUrl;
         set({
           customBackgroundData: null,
           customBackgroundType: null,
+          customBackgroundUrl: null,
         });
+        revokeBlobUrl(previousUrl);
       },
       
       isBackgroundLocked: () => {
@@ -262,6 +294,7 @@ export const useSceneSettingsStore = create<SceneSettingsState>()(
           currentBackground: 'midnight-circuit',
           customBackgroundData: null,
           customBackgroundType: null,
+          customBackgroundUrl: null,
           rotationLocked: false,
         });
         lightingManager.applySettings(DEFAULT_LIGHT_SETTINGS);

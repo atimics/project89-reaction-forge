@@ -1,62 +1,84 @@
 # 🗺️ PoseLab Roadmap
 
-This document outlines the planned upgrades and feature requests for PoseLab, focusing on making the tool more robust, professional, and versatile for the VRM community.
+This document outlines the planned upgrades and feature requests for PoseLab, focusing on making the tool more robust, professional, and versatile for the VRM community. Priorities are reviewed as features ship and user workflows evolve.
 
 ---
 
-## 📅 Short-Term Goals (v1.2 - Completed ✅)
+## ✅ Shipped Milestones (v1.2)
 
-### 1. 🎞️ Animated Backgrounds (GIF & Video Support)
+### 🎞️ Animated Backgrounds (GIF & Video Support)
 **Goal:** Allow users to upload animated content for backgrounds to create dynamic scenes.
 - [x] **Video Support (.mp4, .webm):** Implement `THREE.VideoTexture` to handle video files natively.
 - [x] **GIF Support (.gif):** Integrate a GIF decoder to support animated GIF textures.
 - [x] **Export Logic:** Ensure `MediaRecorder` captures the animated background.
 
-### 2. 🎬 Timeline & Keyframing (Basic)
+### 🎬 Timeline & Keyframing (Basic)
 **Goal:** Move beyond static poses and simple loops to custom sequences.
 - [x] **Keyframe Editor:** A simple timeline interface to set poses at specific timestamps.
 - [x] **Interpolation Control:** Basic Linear interpolation between poses.
 - [x] **Sequence Export:** Export the full timeline as a `.json` animation clip or `.webm` video.
 
-### 3. 🕹️ Advanced IK Controls
+### 🕹️ Advanced IK Controls
 **Goal:** Provide more precise control over limbs without relying solely on presets.
 - [x] **Transform Gizmos:** Interactive Translate/Rotate gizmos attached to hands, feet, and hips.
 - [x] **Context-Aware:** Click bones to select, click background to deselect.
 - [x] **Rotation Mode:** Local/World space toggle.
 
-### 4. 📤 Advanced Export & Interop
+### 📤 Advanced Export & Interop
 **Goal:** Ensure assets created in PoseLab can be used in other tools (Blender, Unity).
 - [x] **GLB Export:** Export the VRM with baked animation data as a standard `.glb` file.
 - [x] **Asset Packs:** Shareable JSON libraries of custom poses.
 - [x] **Video Hardening:** Codec detection (VP9/VP8) for reliable WebM export.
 
-### 5. 📸 Webcam Motion Capture
+### 📸 Webcam Motion Capture
 **Goal:** Real-time pose tracking using MediaPipe.
 - [x] **Webcam Input:** Integrated MediaPipe Holistic.
 - [x] **Real-time Retargeting:** Map MediaPipe landmarks to VRM humanoid bones.
 - [x] **Recording:** Capture motion sessions to `AnimationClip` for playback/export.
 - [x] **Calibration:** T-Pose calibration for accurate retargeting.
 
-### 6. 💾 Project Persistence
+### 💾 Project Persistence
 **Goal:** Allow users to save their entire workspace state.
 - [x] **Project Files (.pose):** Save a JSON file containing the Avatar (ref), Scene Settings, Background, Timeline, and Presets.
 - [x] **Load/Save:** UI integration via Command Palette and Header.
 
-### 7. ⌨️ Productivity Tools
+### ⌨️ Productivity Tools
 **Goal:** Speed up power user workflows.
 - [x] **Command Palette:** `Cmd+K` interface for instant tool access.
 - [x] **Toast Notifications:** Accessible status updates.
 
 ---
 
-## 💎 Monetization & Ecosystem (v1.3 - Active Priority)
+## 🔥 Now (v1.3 - Highest Priority)
 
-### 8. 🔐 IP Protection & Gating
+### 1. 📺 Live Streaming & Capture
+**Goal:** Ship a creator-ready streaming pipeline.
+- [ ] **Virtual Camera Output:** Pipe the canvas into OBS as a virtual camera.
+- [ ] **Streaming Overlay Mode:** Full-screen overlay with transparent background options.
+- [ ] **Audio Sync:** Optionally capture mic audio with the render stream.
+
+### 2. ♾️ Evergreen Utility
+**Goal:** Make PoseLab a daily driver for creators.
+- [ ] **Preset Library Sync:** Save/share presets between devices.
+- [ ] **Batch Exporting:** Queue multiple poses/animations for overnight renders.
+- [ ] **Quickshot Templates:** Reusable layout presets for shorts, thumbnails, and panels.
+
+### 3. 🧩 Workflow Reliability
+**Goal:** Reduce friction in production workflows.
+- [ ] **State Recovery:** Autosave projects and recover after crashes.
+- [ ] **Asset Validation:** Detect missing textures, Mixamo mismatches, and invalid files.
+- [ ] **Performance Budgeting:** Clear warnings when scenes exceed real-time constraints.
+
+---
+
+## 💎 Next (v1.4 - Medium Priority)
+
+### 🔐 IP Protection & Gating
 **Goal:** Allow creators to own and monetize their work.
 - [ ] **Token Gating:** Logic to lock/unlock JSON exports based on subscription/token status.
 - [ ] **License Management:** Embed license data into exported files (Public/Private/Commercial).
 
-### 9. 🏪 Creator Marketplace
+### 🏪 Creator Marketplace
 **Goal:** A platform for users to share and sell poses.
 - [ ] **Database Integration:** User profiles, wallets, and asset registry.
 - [ ] **Auto-Marketplace:** Default flow for free users (uploads to public pool).
@@ -64,22 +86,20 @@ This document outlines the planned upgrades and feature requests for PoseLab, fo
 
 ---
 
-## 🚀 Mid-Term Goals (v1.4 - Completed ✅)
-
-### 8. 🛡️ Rendering & Visual Quality
+## 🎨 Rendering & Visual Quality (v1.4 - Planned)
 **Goal:** Professional rendering quality and style options.
-- [x] **Advanced Lighting:** 3-point lighting controls (Key, Fill, Rim) with 6 presets.
-- [x] **HDRI Support:** Upload `.hdr`/`.exr` environment maps with 5 built-in presets.
-- [x] **Post-Processing:** Bloom, Color Grading, Vignette, Film Grain with 6 cinematic presets.
-- [x] **Toon Shader Settings:** Customize outlines, rim lighting, and emissive glow (MToon VRMs only).
+- [ ] **Advanced Lighting:** 3-point lighting controls (Key, Fill, Rim) with presets.
+- [ ] **HDRI Support:** Upload `.hdr`/`.exr` environment maps with curated presets.
+- [ ] **Post-Processing:** Bloom, Color Grading, Vignette, Film Grain with cinematic presets.
+- [ ] **Toon Shader Settings:** Customize outlines, rim lighting, and emissive glow (MToon VRMs only).
 
-### 9. 👥 Multi-Avatar Composition
+### 👥 Multi-Avatar Composition
 **Goal:** Create interactions between multiple characters.
 - [ ] **Multiple Loaders:** Support loading and managing multiple VRM models in one scene.
 - [ ] **Interaction Poses:** Presets designed for two actors (e.g., high-five, hug, battle).
 - [ ] **Scene Graph:** Simple list to select active character.
 
-### 10. 🦾 IK Solver Upgrade
+### 🦾 IK Solver Upgrade
 **Goal:** Better biomechanical constraints.
 - [ ] **Full Body IK:** Drag a hand and have the arm/shoulder follow naturally (CCD or FABRIK).
 - [ ] **Floor Constraints:** Keep feet planted on the ground.
@@ -105,16 +125,18 @@ This document outlines the planned upgrades and feature requests for PoseLab, fo
 | Feature | Status | Priority |
 |---------|--------|----------|
 | **Core v1.0** | ✅ Done | - |
-| **Motion Capture (Basic)** | ✅ Done (v1.2) | High |
-| **Motion Capture (Recording)** | ✅ Done (v1.2) | High |
+| **Motion Capture (Basic + Recording)** | ✅ Done (v1.2) | High |
 | **Project Save/Load** | ✅ Done (v1.2) | High |
 | **Command Palette** | ✅ Done (v1.2) | High |
-| **Monetization / Gating** | 🚧 In Progress | **Critical** |
-| **Database Integration** | 🚧 In Progress | **Critical** |
 | **Video Export Hardening** | ✅ Done (v1.2) | High |
-| **Advanced Lighting** | ✅ Done (v1.4) | Medium |
-| **HDRI Environments** | ✅ Done (v1.4) | Medium |
-| **Post-Processing (Bloom, Color Grading)** | ✅ Done (v1.4) | Medium |
-| **Toon Shader Customization** | ✅ Done (v1.4) | Medium |
+| **Live Streaming & Virtual Camera** | 🚧 Planned | **Critical** |
+| **Evergreen Utility (Batch Export/Templates)** | 🚧 Planned | **High** |
+| **State Recovery & Validation** | 🚧 Planned | **High** |
+| **Monetization / Gating** | 🚧 Planned | Medium |
+| **Creator Marketplace** | 🚧 Planned | Medium |
+| **Advanced Lighting** | 🚧 Planned | Medium |
+| **HDRI Environments** | 🚧 Planned | Medium |
+| **Post-Processing** | 🚧 Planned | Medium |
+| **Toon Shader Customization** | 🚧 Planned | Medium |
 | **Full Body IK** | 🚧 Planned | Medium |
 | **Multi-Avatar** | 🚧 Planned | Medium |
