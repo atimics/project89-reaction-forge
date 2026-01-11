@@ -1084,6 +1084,47 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
+   CALIBRATION WIZARD
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.calibration-wizard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.calibration-wizard__meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: var(--text-tertiary);
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.calibration-wizard__eyebrow {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.calibration-wizard__title {
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.calibration-wizard__instruction {
+  margin: 0;
+  color: var(--text-secondary);
+  line-height: var(--leading-relaxed);
+}
+
+.calibration-wizard__tip {
+  margin: 0;
+  text-align: center;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
    POSELAB SPRINT
    ═══════════════════════════════════════════════════════════════════════════ */
 

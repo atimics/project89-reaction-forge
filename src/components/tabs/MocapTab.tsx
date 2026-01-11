@@ -95,34 +95,31 @@ export function MocapTab() {
       }
       
       if (mode === 'face') {
-          // In Face mode, we want the animation mixer to continue running
-          // so the body can play idle animations (like Sunset Call).
-          // However, we should NOT force a specific animation if the user
-          // has already chosen one.
-          
-          if (!avatarManager.isAnimationPlaying()) {
-             // Only apply default if nothing is playing
-             avatarManager.applyPose('sunset-call', true, 'loop');
-             addToast("Face Mode: Playing Default Idle (Sunset Call)", "info");
+          if (isActive) {
+              // Face + Upper Body tracking should take priority over any idle animation.
+              // Freeze current pose so mocap can drive the upper body without animation sway.
+              avatarManager.freezeCurrentPose();
+              avatarManager.setInteraction(true);
+              addToast("Upper Body Tracking: Animation paused for mocap control", "info");
           } else {
-             // Keep existing animation
-             addToast("Face Mode: Keeping Current Animation", "info");
+              avatarManager.setInteraction(false);
           }
-          
-          // Resume animation mixer for body movement
-          avatarManager.setInteraction(false);
           
       } else {
           // Switching back to Full Body
           // We MUST freeze the animation so the body doesn't fight the mocap.
           // The mixer would otherwise overwrite our arm/leg movements.
-          avatarManager.freezeCurrentPose();
-          
-          // Pause animation mixer so mocap has full control
-          avatarManager.setInteraction(true);
-          addToast("Full Body Mode: Animation Frozen for Tracking", "info");
+          if (isActive) {
+              avatarManager.freezeCurrentPose();
+              
+              // Pause animation mixer so mocap has full control
+              avatarManager.setInteraction(true);
+              addToast("Full Body Mode: Animation Frozen for Tracking", "info");
+          } else {
+              avatarManager.setInteraction(false);
+          }
       }
-  }, [addToast]);
+  }, [addToast, isActive]);
 
   const setMocapModeOnly = useCallback((mode: 'full' | 'face') => {
     setMocapMode(mode);
@@ -257,30 +254,15 @@ export function MocapTab() {
         throw new Error("Webcam access requires HTTPS (Secure Context).");
       }
 
-      const mode = modeOverride ?? mocapMode;
       if (modeOverride && modeOverride !== mocapMode) {
         setMocapMode(modeOverride);
         managerRef.current.setMode(modeOverride);
       }
 
-      // In Face Only mode, we WANT the animation to keep playing.
-      // In Full Body mode, we want to freeze so we can take over.
-      if (mode === 'full') {
-        // Freeze the current pose instead of resetting to T-pose
-        // This prevents the avatar from snapping to T-pose while the camera initializes
-        avatarManager.freezeCurrentPose();
-        // Flag interaction to pause mixer
-        avatarManager.setInteraction(true);
-      } else {
-        // Face Mode: Ensure interaction is OFF so mixer runs
-        avatarManager.setInteraction(false);
-        
-        // If no animation is playing, apply the default 'sunset-call'
-        // But only if we aren't already playing something
-        if (!avatarManager.isAnimationPlaying()) {
-          avatarManager.applyPose('sunset-call', true, 'loop');
-        }
-      }
+      // For both Full Body and Upper Body (Face) tracking, we pause animation so
+      // mocap has full control over tracked bones without animation sway.
+      avatarManager.freezeCurrentPose();
+      avatarManager.setInteraction(true);
       
       managerRef.current.setVRM(vrm);
       await managerRef.current.start();
@@ -382,7 +364,7 @@ export function MocapTab() {
       <div className="tab-section">
         <h3>LIVE Mode</h3>
         <p className="muted small">
-          LIVE turns on face-only mocap with voice sync. Arrow keys can trigger poses at any time.
+          LIVE turns on upper-body mocap with voice sync. Arrow keys can trigger poses at any time.
         </p>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
           <button
@@ -468,10 +450,10 @@ export function MocapTab() {
             <button
                 className={`secondary full-width ${mocapMode === 'face' ? 'active' : ''}`}
                 onClick={() => handleModeChange('face')}
-                title="Track face only (Body stays idle)"
+                title="Track face, hands, and upper body"
                 style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
             >
-                <UserFocus size={16} weight="duotone" /> Face Only
+                <UserFocus size={16} weight="duotone" /> Upper Body
             </button>
         </div>
 
@@ -550,7 +532,7 @@ export function MocapTab() {
       <div className="tab-section">
           <h3>Instructions</h3>
           <ul className="small muted" style={{ paddingLeft: '1.2rem' }}>
-              <li><strong>Face Only:</strong> Good for streaming/talking. Body stays on idle animation.</li>
+              <li><strong>Upper Body:</strong> Track face, hands, and arms without lower-body tracking.</li>
               <li><strong>Full Body:</strong> Stand back so your head, torso, legs, and hands are visible.</li>
               <li><strong>Calibration:</strong> Use the <strong>Wizard</strong> button to align your body and gaze.</li>
               <li>If the camera stops immediately, check browser camera permissions and close other apps using the camera.</li>
