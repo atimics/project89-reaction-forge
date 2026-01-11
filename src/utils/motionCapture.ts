@@ -5,7 +5,7 @@ import * as Kalidokit from 'kalidokit';
 import * as THREE from 'three';
 import { motionEngine } from '../poses/motionEngine';
 import { sceneManager } from '../three/sceneManager';
-import { avatarManager } from '../three/avatarManager';
+// import { avatarManager } from '../three/avatarManager';
 import { OneEuroFilter, OneEuroFilterQuat, OneEuroFilterVec3 } from './OneEuroFilter';
 
 // ======================
