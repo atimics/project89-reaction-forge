@@ -121,7 +121,7 @@ export class MotionCaptureManager {
     this.videoElement = videoElement;
     
     this.holistic = new Holistic({
-      locateFile: (file) => {
+      locateFile: (file: string) => {
         return `https://cdn.jsdelivr.net/npm/@mediapipe/holistic/${file}`;
       }
     });
@@ -243,7 +243,7 @@ export class MotionCaptureManager {
   }
 
   // --- Main Update Loop for Smoothing ---
-  private updateFrame(delta: number) {
+  private updateFrame(_delta: number) {
       if (!this.vrm || !this.vrm.humanoid || !this.vrm.expressionManager) return;
       
       const timestamp = performance.now() / 1000;

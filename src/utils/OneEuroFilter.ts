@@ -14,8 +14,10 @@
 class LowPassFilter {
   y: number | null = null;
   s: number | null = null;
+  readonly alpha: number;
   
-  constructor(readonly alpha: number, initVal: number = 0) {
+  constructor(alpha: number, initVal: number = 0) {
+    this.alpha = alpha;
     this.y = initVal;
     this.s = this.y;
   }
@@ -43,6 +45,10 @@ export class OneEuroFilter {
   private x: LowPassFilter;
   private dx: LowPassFilter;
   private lastTime: number | null = null;
+  
+  private minCutoff: number;
+  private beta: number;
+  private dCutoff: number;
 
   /**
    * @param minCutoff Minimum cutoff frequency (Hz). Lower = more smoothing when slow. (Default: 1.0)
@@ -50,10 +56,13 @@ export class OneEuroFilter {
    * @param dCutoff Cutoff for the derivative (Hz). (Default: 1.0)
    */
   constructor(
-      private minCutoff: number = 1.0, 
-      private beta: number = 0.0, 
-      private dCutoff: number = 1.0
+      minCutoff: number = 1.0, 
+      beta: number = 0.0, 
+      dCutoff: number = 1.0
   ) {
+    this.minCutoff = minCutoff;
+    this.beta = beta;
+    this.dCutoff = dCutoff;
     this.x = new LowPassFilter(this.alpha(minCutoff));
     this.dx = new LowPassFilter(this.alpha(dCutoff));
   }
