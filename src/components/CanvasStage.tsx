@@ -70,6 +70,15 @@ export function CanvasStage() {
     return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || target.isContentEditable;
   };
 
+  const isInteractiveTarget = (target: EventTarget | null) => {
+    if (!(target instanceof HTMLElement)) return false;
+    return Boolean(
+      target.closest(
+        'button, a, summary, label, input, textarea, select, option, [role="button"], [role="checkbox"], [role="switch"], [role="radio"], [role="slider"], [role="tab"], [role="menuitem"], [data-kbar-search]'
+      )
+    );
+  };
+
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -249,6 +258,7 @@ export function CanvasStage() {
       if (event.code !== 'Space') return;
       if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
       if (isEditableTarget(event.target)) return;
+      if (isInteractiveTarget(event.target)) return;
 
       event.preventDefault();
 
