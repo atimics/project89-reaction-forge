@@ -221,7 +221,9 @@ export class MotionCaptureManager {
       
       // Fixed time step for logic stability, but delta for visual smoothness
       // 1. Smooth Facial Expressions
-      const deltaFactor = Math.min(delta * 60, 3);
+      const safeDelta = Number.isFinite(delta) ? Math.max(delta, 0) : 0;
+      const clampedDelta = Math.min(safeDelta, 0.1);
+      const deltaFactor = Math.min(clampedDelta * 60, 3);
       this.targetFaceValues.forEach((targetVal, name) => {
           const currentVal = this.currentFaceValues.get(name) || 0;
           
