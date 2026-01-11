@@ -9,7 +9,8 @@ import { useReactionStore } from '../state/useReactionStore';
 import { useIntroStore } from '../state/useIntroStore';
 import { useToastStore } from '../state/useToastStore';
 import { useSceneSettingsStore } from '../state/useSceneSettingsStore';
-import { LIGHT_PRESETS } from '../three/lightingManager';
+import { reactionPresets } from '../data/reactions';
+import { DEFAULT_LIGHT_SETTINGS, lightingManager, type LightSettings } from '../three/lightingManager';
 import { 
   House, 
   User, 
@@ -35,7 +36,7 @@ interface ViewportOverlayProps {
 
 export function ViewportOverlay({ mode, isPlaying, onPlayPause, onStop }: ViewportOverlayProps) {
   const { activeCssOverlay, setFocusModeActive } = useUIStore();
-  const { randomize, isAvatarReady } = useReactionStore();
+  const { randomize, isAvatarReady, setPresetById } = useReactionStore();
   const { autoCaptures, addAutoCapture, clearAutoCaptures } = useIntroStore();
   const { addToast } = useToastStore();
   const { lightingPreset, setLightingPreset } = useSceneSettingsStore();
@@ -53,6 +54,7 @@ export function ViewportOverlay({ mode, isPlaying, onPlayPause, onStop }: Viewpo
   const countdownTimerRef = useRef<number | null>(null);
   const captureCountRef = useRef(0);
   const lightingPresetRef = useRef(lightingPreset);
+  const sprintPresets = reactionPresets.filter((preset) => preset.id !== 'point');
 
   // Sync with sceneManager on mount
   useEffect(() => {
@@ -136,8 +138,6 @@ export function ViewportOverlay({ mode, isPlaying, onPlayPause, onStop }: Viewpo
       'side',
       'fullbody',
     ];
-    const lightingPresets = Object.keys(LIGHT_PRESETS);
-
     clearAutoCaptures();
     captureCountRef.current = 0;
     setFocusShotsCaptured(0);
@@ -146,16 +146,26 @@ export function ViewportOverlay({ mode, isPlaying, onPlayPause, onStop }: Viewpo
     setIsFocusSprintActive(true);
     setFocusModeActive(true);
     lightingPresetRef.current = lightingPreset;
+    const studioSprintLighting: LightSettings = {
+      ...DEFAULT_LIGHT_SETTINGS,
+      keyLight: { ...DEFAULT_LIGHT_SETTINGS.keyLight, intensity: 3 },
+    };
+    lightingManager.applySettings(studioSprintLighting);
+    useSceneSettingsStore.setState({
+      lightingPreset: 'studio',
+      lighting: studioSprintLighting,
+    });
     addToast('PoseLab Sprint started — focus mode enabled.', 'info');
 
     const applyRandomPoseAndCamera = () => {
-      randomize();
+      const nextPreset = sprintPresets[Math.floor(Math.random() * sprintPresets.length)];
+      if (nextPreset) {
+        setPresetById(nextPreset.id);
+      } else {
+        randomize();
+      }
       const nextCamera = cameraPresets[Math.floor(Math.random() * cameraPresets.length)];
       sceneManager.setCameraPreset(nextCamera);
-      if (lightingPresets.length > 0) {
-        const nextLighting = lightingPresets[Math.floor(Math.random() * lightingPresets.length)];
-        setLightingPreset(nextLighting);
-      }
     };
 
     applyRandomPoseAndCamera();
