@@ -410,7 +410,7 @@ export class MotionCaptureManager {
     }
     
     // 2. Check for Landmarks
-    if (!results.poseLandmarks && !results.faceLandmarks) return;
+    if (!results.poseLandmarks && !results.faceLandmarks && !results.leftHandLandmarks && !results.rightHandLandmarks) return;
     
     // 3. Solve Pose using Kalidokit
     // Only solve/apply pose if in full body mode
