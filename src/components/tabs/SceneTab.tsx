@@ -222,8 +222,10 @@ export function SceneTab() {
     setBackgroundLocked,
     setCurrentBackground,
     setCustomBackground: setCustomBackgroundStore,
+    setCustomBackgroundUrl,
     currentBackground: storeBackground,
     customBackgroundData,
+    customBackgroundUrl,
     rotationLocked,
     setRotationLocked,
   } = useSceneSettingsStore();
@@ -249,14 +251,17 @@ export function SceneTab() {
 
   // Restore custom background from store on mount
   useEffect(() => {
-    if (customBackgroundData) {
-      const url = `data:${useSceneSettingsStore.getState().customBackgroundType || 'image/png'};base64,${customBackgroundData}`;
-      setCustomBackground(url);
+    const storedUrl = customBackgroundUrl
+      ?? (customBackgroundData
+        ? `data:${useSceneSettingsStore.getState().customBackgroundType || 'image/png'};base64,${customBackgroundData}`
+        : null);
+    if (storedUrl) {
+      setCustomBackground(storedUrl);
       if (storeBackground === 'custom') {
-        sceneManager.setBackground(url);
+        sceneManager.setBackground(storedUrl);
       }
     }
-  }, []);
+  }, [customBackgroundData, customBackgroundUrl, storeBackground]);
 
   useEffect(() => {
     const currentRatio = sceneManager.getAspectRatio();
@@ -321,6 +326,7 @@ export function SceneTab() {
     setCustomBackground(typeUrl);
     setSelectedBackground('custom');
     await sceneManager.setBackground(typeUrl);
+    setCustomBackgroundUrl(typeUrl);
     
     // Store base64 for persistence and multiplayer sync
     // Only for images that aren't too large (under 5MB)

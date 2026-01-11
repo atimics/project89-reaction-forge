@@ -5,6 +5,7 @@ import { avatarManager } from "../three/avatarManager";
 import { animationManager } from "../three/animationManager";
 import { interactionManager } from "../three/interactionManager";
 import { projectManager } from "../persistence/projectManager";
+import { getPoseLabTimestamp } from "../utils/exportNaming";
 
 // Helper to access store outside of component
 const getToast = () => useToast.getState();
@@ -68,7 +69,8 @@ export const commands: Action[] = [
           
           const link = document.createElement('a');
           link.href = dataUrl;
-          link.download = `PoseLab_Capture_${Date.now()}.png`;
+          const timestamp = getPoseLabTimestamp();
+          link.download = `PoseLab_${timestamp}_capture.png`;
           link.click();
           getToast().addToast('📸 PNG Saved (with Effects)', 'success');
       } 

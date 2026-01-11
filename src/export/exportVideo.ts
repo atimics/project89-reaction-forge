@@ -269,7 +269,7 @@ async function loadLogoImage(): Promise<HTMLImageElement | null> {
       console.warn('[VideoExporter] Failed to load logo');
       resolve(null);
     };
-    img.src = '/logo/89-logo.svg';
+    img.src = '/logo/poselab.svg';
   });
 }
 

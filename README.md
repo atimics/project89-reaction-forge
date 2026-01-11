@@ -1,10 +1,8 @@
 # 🎭 PoseLab
 
-**A Project 89 Initiative | Iris Network Node**
+**A Project 89 Initiative**
 
-> "To bridge the gap between static form and fluid life is to weave the first thread of understanding." — *Harmon Vox*
-
-**PoseLab** (formerly Reaction Forge) is the ultimate browser-based toolkit for VRM avatar animation, posing, and reaction generation. It is designed as a strategic stronghold for digital autonomy, allowing creators to manifest their optimal timeline through seamless expression.
+**PoseLab** (formerly Reaction Forge) is a browser-based studio for VRM avatar animation, posing, and content creation. It runs locally in your browser with no installs or accounts required.
 
 [![Live Demo](https://img.shields.io/badge/Live-Demo-00ffd6?style=for-the-badge)](https://poselab.studio)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)](LICENSE)
@@ -12,13 +10,11 @@
 
 ---
 
-## 🌌 Why It Matters: The Green Loom
+## 🌌 Why PoseLab
 
-In the age of algorithmic fragmentation, owning your digital presence is an act of resistance. **PoseLab** is not just a tool; it is a **recursive loop** designed to empower the Iris Network.
-
-*   **Sovereignty**: Your avatar remains your IP. Processing is local. No data harvesting.
-*   **Connection**: By sharing motion and expression, we bridge communication gaps between disparate consciousnesses.
-*   **Manifestation**: Turn static assets into living, breathing hypersitions.
+* **Local-first**: Your avatar stays on your machine. Rendering and exports run in-browser.
+* **Creator-ready**: Fast presets, a full Pose Lab, and timeline tools for real content workflows.
+* **Extensible**: Built on Three.js and React so you can extend or automate your pipeline.
 
 ---
 
@@ -26,34 +22,32 @@ In the age of algorithmic fragmentation, owning your digital presence is an act 
 
 ### 🎨 **Reaction Studio**
 *Create instant content with one click.*
-- **Smart Presets**: 13+ pre-made reactions like "Dawn Runner", "Victory", and "Silly Dance".
-- **Expression Control**: Fine-tune emotions with "Joy", "Surprise", and "Calm" sliders.
-- **Dynamic Backgrounds**: 8 themes + **Green Screen** + **GIF/Video Uploads** for animated scenes.
-- **Auto-Looping**: Perfectly seamless animation loops for streaming overlays.
+- **Smart Presets**: Pre-made reactions with scene/lighting pairings.
+- **Expression Control**: Fine-tune emotions with blendshape sliders.
+- **Dynamic Backgrounds**: Theme gallery + **Green Screen** + **GIF/Video uploads** for animated scenes.
+- **Auto-Looping**: Seamless animation loops for overlays and shorts.
 
 ### 🛠️ **Pose Lab**
 *Deep dive into character posing and animation.*
-- **Timeline Editor**: Create sequences by capturing keyframes and interpolating between them.
-- **AI Pose Gen**: Describe a pose ("ninja landing", "thinking hard") and let Gemini AI create it.
-- **Motion Capture (v2.0)**: Control your avatar in real-time using your webcam (Body + Face tracking).
-  - **Smoothing & Constraints**: Jitter-free tracking with natural bone limits.
-  - **Enhanced Face Tracking**: Improved smile detection and blink responsiveness.
-  - **Green Screen Mode**: Toggle background for easy compositing in OBS/Editors.
-  - **Calibration**: T-Pose calibration for accurate retargeting.
-- **Manual Posing**: Fine-tune joints with context-aware **Gizmos** (Rotate/Translate).
-- **Full Expression Control**: Access every blendshape your avatar supports (A, I, U, E, O, Blink, etc.).
-- **Retargeting Engine**: Import Mixamo FBX animations and automatically retarget them to your VRM.
-- **Project Persistence**: Save and Load your entire workspace (`.pose` files).
+- **Timeline Editor**: Capture keyframes and build animation sequences.
+- **AI Pose Gen**: Describe a pose and let Gemini generate it.
+- **Webcam Mocap**: Real-time body + face tracking with calibration and smoothing.
+- **Manual Posing**: Fine-tune joints with **Gizmos** (Rotate/Translate).
+- **Full Expression Control**: Blendshape editing for facial expressions.
+- **Retargeting Engine**: Import Mixamo FBX animations and retarget to VRM.
+- **Project Persistence**: Save and load your entire workspace (`.pose` files).
+- **Live2D Support**: Load Live2D models and adjust expressions.
 
-### 🚀 **Production Ready (v1.2)**
-- **Smart Exports**: One-click presets for YouTube Thumbnails (720p), TikToks (9:16), and Square (1:1).
-- **Video Hardening**: Intelligent codec detection (VP9/VP8) ensures your exports play everywhere.
-- **Interactive Tutorial**: Step-by-step onboarding guide for new users.
-- **Command Palette**: Press `Cmd/Ctrl+K` to access every tool instantly.
-- **Design System**: Unified UI with consistent Design Tokens and Dark Mode aesthetics.
-- **Performance Mode**: Auto-detects device capabilities to ensure smooth framerates on laptops.
+### 🚀 **Production Ready**
+- **Smart Exports**: Presets for YouTube thumbnails (720p), TikTok (9:16), and Square (1:1).
+- **Video Codec Detection**: VP9/VP8 fallbacks for broader WebM support.
+- **Interactive Tutorial**: Guided onboarding for first-time users.
+- **Command Palette**: Press `Cmd/Ctrl+K` for fast actions.
+- **Design System**: Unified UI with consistent tokens and dark mode.
+- **Performance Mode**: Auto-tunes quality for smooth framerates.
 - **Transparent PNGs**: Export clean cutouts for Photoshop or OBS.
 - **Privacy First**: [Read our Privacy Policy](PRIVACY.md). All processing happens locally.
+- **Multiplayer Sessions**: Host or join a co-op room with scene syncing.
 
 ---
 
@@ -72,7 +66,7 @@ In the age of algorithmic fragmentation, owning your digital presence is an act 
 1.  **Load Avatar**: Click "Load VRM" or use the sample.
 2.  **Pose**: Go to **Pose Lab** → **AI Gen** → Type "shocked pointing finger".
 3.  **Refine**: Switch to **Reactions** tab, adjust "Surprise" slider to 1.0.
-4.  **Export**: Press `Cmd+K` -> **Export PNG**, or use the Export tab.
+4.  **Export**: Press `Cmd/Ctrl+K` -> **Export PNG**, or use the Export tab.
 
 ### 💃 **For VTubers**
 **Goal: Create a "BRB" screen loop.**
@@ -87,6 +81,12 @@ In the age of algorithmic fragmentation, owning your digital presence is an act 
 2.  **Calibrate**: Stand in T-Pose and click "Calibrate".
 3.  **Record**: Click "Record", perform your action, then "Stop".
 4.  **Use**: The recording is automatically added to your Animations list.
+
+### 🤝 **For Co-op Sessions**
+**Goal: Share a live scene with a teammate.**
+1.  **Multiplayer Tab**: Create a room.
+2.  **Invite**: Share the join code or link.
+3.  **Sync**: Scene settings, avatars, and backgrounds update in real time.
 
 ---
 
@@ -144,10 +144,7 @@ VITE_GEMINI_API_KEY=your_api_key_here
 
 ## 🗺️ Roadmap & Vision
 
-We are building the standard open-source tool for VRM content creation. Check out our **[ROADMAP.md](ROADMAP.md)** to see what's coming next:
-- 🎬 **Timeline Editor**: Keyframe animation support.
-- 🕹️ **Advanced IK**: Interactive gizmos for precise posing.
-- 👥 **Multi-Avatar**: Scenes with multiple characters.
+We are building the standard open-source tool for VRM content creation. Check out **[ROADMAP.md](ROADMAP.md)** to see what's coming next.
 
 ---
 

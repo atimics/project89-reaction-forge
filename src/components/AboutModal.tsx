@@ -69,7 +69,7 @@ export function AboutModal({ isOpen, onClose }: AboutModalProps) {
             </li>
             <li style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <Brain size={18} weight="duotone" style={{ color: 'var(--accent)' }} />
-              <span><strong>Motion Engine:</strong> Procedural animation with biomechanics</span>
+              <span><strong>Pose Lab:</strong> Timeline keyframes, gizmos, and expression editing</span>
             </li>
           </ul>
 
@@ -105,11 +105,10 @@ export function AboutModal({ isOpen, onClose }: AboutModalProps) {
           </div>
           
           <div className="version-info" style={{ marginTop: '1.5rem', opacity: 0.6 }}>
-            <small>Version 1.3.0 • Phosphor Icons • Orbitron Typography</small>
+            <small>Version 1.2.0 • Phosphor Icons • Orbitron Typography</small>
           </div>
         </div>
       </div>
     </div>
   );
 }
-
