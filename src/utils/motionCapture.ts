@@ -4,7 +4,6 @@ import { VRM, VRMHumanBoneName } from '@pixiv/three-vrm';
 import * as Kalidokit from 'kalidokit';
 import * as THREE from 'three';
 import { motionEngine } from '../poses/motionEngine';
-import {BVH} from 'three-stdlib'; // Import merely to ensure types if needed, but actually we need sceneManager
 import { sceneManager } from '../three/sceneManager';
 
 // ======================
@@ -222,6 +221,7 @@ export class MotionCaptureManager {
       
       // Fixed time step for logic stability, but delta for visual smoothness
       // 1. Smooth Facial Expressions
+      const deltaFactor = Math.min(delta * 60, 3);
       this.targetFaceValues.forEach((targetVal, name) => {
           const currentVal = this.currentFaceValues.get(name) || 0;
           
@@ -240,7 +240,8 @@ export class MotionCaptureManager {
               localLerp = SMOOTHING.EYE_LERP;
           }
           
-          const newVal = THREE.MathUtils.lerp(currentVal, targetVal, localLerp);
+          const adjustedLerp = 1 - Math.pow(1 - localLerp, deltaFactor);
+          const newVal = THREE.MathUtils.lerp(currentVal, targetVal, adjustedLerp);
           this.currentFaceValues.set(name, newVal);
           
           if (Math.abs(newVal - currentVal) > 0.0001) {
@@ -288,7 +289,8 @@ export class MotionCaptureManager {
               }
               
               // Apply Slerp
-              currentQ.slerp(targetQ, adaptiveLerp);
+              const adjustedLerp = 1 - Math.pow(1 - adaptiveLerp, deltaFactor);
+              currentQ.slerp(targetQ, adjustedLerp);
               
               // 3. Apply to Scene Node (Overwriting animation mixer for this frame)
               node.quaternion.copy(currentQ);
@@ -304,7 +306,8 @@ export class MotionCaptureManager {
               let posLerp = THREE.MathUtils.mapLinear(dist, 0.01, 0.5, SMOOTHING.MIN_LERP, SMOOTHING.MAX_LERP);
               posLerp = THREE.MathUtils.clamp(posLerp, SMOOTHING.MIN_LERP, SMOOTHING.MAX_LERP);
               
-              this.currentRootPosition.lerp(this.targetRootPosition, posLerp);
+              const adjustedLerp = 1 - Math.pow(1 - posLerp, deltaFactor);
+              this.currentRootPosition.lerp(this.targetRootPosition, adjustedLerp);
               hips.position.copy(this.currentRootPosition);
           }
       }
