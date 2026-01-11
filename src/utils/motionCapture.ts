@@ -71,7 +71,7 @@ interface RecordedFrame {
     bones: Record<string, { rotation: THREE.Quaternion, position?: THREE.Vector3 }>;
 }
 
-type HandLandmarks2D = Results['leftHandLandmarks'];
+type HandLandmarks2D = Results['leftHandLandmarks'] | null;
 
 export class MotionCaptureManager {
   private holistic: Holistic;
@@ -447,15 +447,14 @@ export class MotionCaptureManager {
             // @ts-ignore - Injecting custom property
             faceRig.smile = smile;
 
-            if (faceRig.eye && faceRig.head) {
-                const stabilized = Kalidokit.Face.stabilizeBlink(faceRig.eye, faceRig.head.y, {
-                    noWink: false,
-                    maxRot: 0.5,
-                });
-                faceRig.eye = stabilized;
-            }
-            
             if (faceRig) {
+                if (faceRig.eye && faceRig.head) {
+                    const stabilized = Kalidokit.Face.stabilizeBlink(faceRig.eye, faceRig.head.y, {
+                        enableWink: false,
+                        maxRot: 0.5,
+                    });
+                    faceRig.eye = stabilized;
+                }
                 this.applyFaceRig(faceRig);
             }
         } catch (error) {
