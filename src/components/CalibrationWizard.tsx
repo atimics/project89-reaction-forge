@@ -64,8 +64,8 @@ export function CalibrationWizard({ manager }: CalibrationWizardProps) {
   };
 
   return (
-    <div className="onboarding-overlay" style={{ background: 'rgba(0,0,0,0.85)', zIndex: 1100, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh' }}>
-      <div className="onboarding-card" style={{ width: '450px', border: '1px solid #00ffd6', background: 'var(--bg-panel)', padding: '2rem', borderRadius: '8px', boxShadow: '0 8px 32px rgba(0,0,0,0.5)' }}>
+    <div className="calibration-wizard-overlay" style={{ background: 'rgba(0,0,0,0.85)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh' }}>
+      <div className="calibration-card" style={{ width: '450px', border: '1px solid #00ffd6', background: '#1a1a1a', padding: '2rem', borderRadius: '8px', boxShadow: '0 8px 32px rgba(0,0,0,0.5)', zIndex: 10000 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
           <span style={{ color: '#00ffd6', fontWeight: 'bold', fontSize: '0.8rem', textTransform: 'uppercase' }}>
             Tracking Calibration: Step {calibrationStep + 1}/3
