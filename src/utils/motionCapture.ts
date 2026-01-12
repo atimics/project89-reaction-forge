@@ -272,8 +272,8 @@ export class MotionCaptureManager {
           // In Face mode, allow Head, Neck, Upper Body, and Hands for natural movement
           if (this.mode === 'face') {
               const allowedBones = [
-                  'head', 'neck', 
-                  'chest', 'upperchest', 'spine', 
+                  'head', 'neck',
+                  'hips', 'chest', 'upperchest', 'spine',
                   'shoulder', 'arm', // Covers upperArm, lowerArm
                   'hand', 'thumb', 'index', 'middle', 'ring', 'little'
               ];

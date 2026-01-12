@@ -67,6 +67,11 @@ class SceneManager {
   private readonly box = new THREE.Box3();
   private readonly size = new THREE.Vector3();
   private readonly center = new THREE.Vector3();
+  private readonly followTargetPosition = new THREE.Vector3();
+  private readonly followTargetLookAt = new THREE.Vector3();
+  private followTarget?: THREE.Object3D;
+  private followOffset = new THREE.Vector3();
+  private followControlsEnabled = true;
   private currentAspectRatio: AspectRatio = '16:9';
   private overlayMesh?: THREE.Mesh;
   private animatedBackground?: AnimatedBackground;
@@ -201,6 +206,16 @@ class SceneManager {
       const delta = this.clock.getDelta();
       this.controls?.update();
       this.tickHandlers.forEach((handler) => handler(delta));
+
+      if (this.followTarget && this.camera) {
+        this.followTarget.getWorldPosition(this.followTargetPosition);
+        this.followTargetLookAt.copy(this.followTargetPosition);
+        this.camera.position.copy(this.followTargetPosition).add(this.followOffset);
+        this.camera.lookAt(this.followTargetLookAt);
+        if (this.controls) {
+          this.controls.target.copy(this.followTargetLookAt);
+        }
+      }
 
       if (this.animatedBackground) {
         this.animatedBackground.update(delta);
@@ -385,6 +400,21 @@ class SceneManager {
 
   getControls() {
     return this.controls;
+  }
+
+  setSelfieTarget(target: THREE.Object3D | null) {
+    if (!this.camera || !this.controls) return;
+    if (!target) {
+      this.followTarget = undefined;
+      this.controls.enabled = this.followControlsEnabled;
+      return;
+    }
+
+    this.followTarget = target;
+    this.followControlsEnabled = this.controls.enabled;
+    this.controls.enabled = false;
+    target.getWorldPosition(this.followTargetPosition);
+    this.followOffset.copy(this.camera.position).sub(this.followTargetPosition);
   }
 
   frameObject(object: THREE.Object3D, padding = 1.2) {

@@ -34,6 +34,7 @@ export function CalibrationWizard({ manager }: CalibrationWizardProps) {
   if (!isCalibrationActive) return null;
 
   const currentStep = STEPS[calibrationStep] || STEPS[0];
+  const progress = Math.min((calibrationStep + 1) / STEPS.length, 1);
 
   const handleAction = () => {
     if (!manager) {
@@ -46,12 +47,12 @@ export function CalibrationWizard({ manager }: CalibrationWizardProps) {
         console.log('[CalibrationWizard] Triggering Body Calibration');
         manager.calibrateBody();
         addToast("Body offsets captured!", "success");
-        setCalibrationStep(calibrationStep + 1);
+        setCalibrationStep(Math.min(calibrationStep + 1, STEPS.length - 1));
       } else if (currentStep.type === 'face') {
         console.log('[CalibrationWizard] Triggering Face Calibration');
         manager.calibrateFace();
         addToast("Face/Gaze center captured!", "success");
-        setCalibrationStep(calibrationStep + 1);
+        setCalibrationStep(Math.min(calibrationStep + 1, STEPS.length - 1));
       } else {
         console.log('[CalibrationWizard] Finishing Calibration');
         endCalibration();
@@ -64,35 +65,40 @@ export function CalibrationWizard({ manager }: CalibrationWizardProps) {
   };
 
   return (
-    <div className="calibration-wizard-overlay" style={{ background: 'rgba(0,0,0,0.85)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh' }}>
-      <div className="calibration-card" style={{ width: '450px', border: '1px solid #00ffd6', background: '#1a1a1a', padding: '2rem', borderRadius: '8px', boxShadow: '0 8px 32px rgba(0,0,0,0.5)', zIndex: 10000 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
-          <span style={{ color: '#00ffd6', fontWeight: 'bold', fontSize: '0.8rem', textTransform: 'uppercase' }}>
-            Tracking Calibration: Step {calibrationStep + 1}/3
+    <div className="modal-overlay" onClick={endCalibration}>
+      <div className="modal-content calibration-wizard" onClick={(event) => event.stopPropagation()}>
+        <button className="modal-close" onClick={endCalibration} aria-label="Close calibration wizard">
+          &times;
+        </button>
+
+        <div className="calibration-wizard__meta">
+          <span className="calibration-wizard__eyebrow">
+            Tracking Calibration
           </span>
-          <button onClick={endCalibration} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', cursor: 'pointer' }}>
-            Cancel
-          </button>
+          <span className="calibration-wizard__step">
+            Step {Math.min(calibrationStep + 1, STEPS.length)}/{STEPS.length}
+          </span>
         </div>
 
-        <h2 style={{ margin: '0 0 1rem 0', color: 'var(--text-main)' }}>{currentStep.title}</h2>
-        <p style={{ color: 'var(--text-muted)', lineHeight: '1.6', marginBottom: '2rem' }}>
-          {currentStep.instruction}
-        </p>
+        <div className="progress-bar" aria-hidden="true">
+          <div className="progress-bar__fill" style={{ width: `${progress * 100}%` }} />
+        </div>
+
+        <h2 className="calibration-wizard__title">{currentStep.title}</h2>
+        <p className="calibration-wizard__instruction">{currentStep.instruction}</p>
 
         <div className="onboarding-actions">
-          <button 
-            className="primary large full-width" 
+          <button
+            className="primary large full-width"
             onClick={handleAction}
             disabled={!manager}
-            style={{ opacity: manager ? 1 : 0.5, cursor: manager ? 'pointer' : 'not-allowed' }}
           >
             {manager ? currentStep.actionLabel : "Camera Not Active"}
           </button>
         </div>
 
         {calibrationStep === 0 && (
-          <p className="muted small" style={{ marginTop: '1rem', textAlign: 'center', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+          <p className="muted small calibration-wizard__tip">
             Tip: Lighting is key. Ensure your environment is well-lit.
           </p>
         )}
