@@ -7,6 +7,9 @@
   # Use esbuild for TypeScript functions
   node_bundler = "esbuild"
 
-# Remove or comment out the extensions block if it exists
-# [[extensions]]
-#   package = "netlify-plugin-..." 
+# Headers removed to fix resource blocking
+# [[headers]]
+#   for = "/*"
+#   [headers.values]
+#     Cross-Origin-Opener-Policy = "same-origin"
+#     Cross-Origin-Embedder-Policy = "require-corp"

@@ -10,6 +10,19 @@ const poseOutputDir = path.resolve(__dirname, 'src/poses')
 
 // https://vite.dev/config/
 export default defineConfig({
+  // Security headers removed to fix black screen issue (blocks external resources)
+  // server: {
+  //   headers: {
+  //     'Cross-Origin-Opener-Policy': 'same-origin',
+  //     'Cross-Origin-Embedder-Policy': 'require-corp',
+  //   },
+  // },
+  preview: {
+    // headers removed
+  },
+  optimizeDeps: {
+    exclude: ['@ffmpeg/ffmpeg', '@ffmpeg/util'],
+  },
   plugins: [
     react(),
     {
