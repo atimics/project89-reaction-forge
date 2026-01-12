@@ -398,6 +398,7 @@ export function SceneTab() {
     setSelectedBackground(envId);
     setCurrentBackground(envId);
     setIsLoadingHdri(true);
+    addToast('Downloading 360° Environment...', 'info');
     
     try {
       // Enable environment and set preset
