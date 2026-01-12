@@ -46,6 +46,7 @@ export function MocapTab() {
   
   const [isGreenScreen, setIsGreenScreen] = useState(false);
   const [mocapMode, setMocapMode] = useState<'full' | 'face'>('full');
+  const [isSelfieMode, setIsSelfieMode] = useState(false);
   
   // Voice Lip Sync state
   const [isVoiceLipSyncActive, setIsVoiceLipSyncActive] = useState(false);
@@ -237,8 +238,12 @@ export function MocapTab() {
     setIsActive(false);
     // Resume normal behavior when stopping camera
     avatarManager.setInteraction(false);
+    if (isSelfieMode) {
+      sceneManager.setSelfieTarget(null);
+      setIsSelfieMode(false);
+    }
     mocapStartingRef.current = false;
-  }, [isActive]);
+  }, [isActive, isSelfieMode]);
 
   const startMocap = useCallback(async (modeOverride?: 'full' | 'face') => {
     if (!managerRef.current || isActive || mocapStartingRef.current) return;
@@ -296,6 +301,23 @@ export function MocapTab() {
         stopMocap();
     } else {
         await startMocap();
+    }
+  };
+
+  const toggleSelfieMode = () => {
+    const next = !isSelfieMode;
+    if (next) {
+      const vrm = avatarManager.getVRM();
+      const head = vrm?.humanoid?.getNormalizedBoneNode('head');
+      if (!head) {
+        addToast("Load an avatar to enable Selfie Mode.", "warning");
+        return;
+      }
+      sceneManager.setSelfieTarget(head);
+      setIsSelfieMode(true);
+    } else {
+      sceneManager.setSelfieTarget(null);
+      setIsSelfieMode(false);
     }
   };
 
@@ -500,6 +522,17 @@ export function MocapTab() {
                         <Rectangle size={16} weight="fill" style={{ color: '#00ff00' }} /> Green Screen
                     </button>
                 </div>
+            )}
+
+            {isActive && (
+                <button
+                    className={`secondary full-width ${isSelfieMode ? 'active' : ''}`}
+                    onClick={toggleSelfieMode}
+                    style={{ flex: '1 1 100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+                    title="Follow head motion with the camera"
+                >
+                    <UserFocus size={16} weight="duotone" /> Selfie Mode
+                </button>
             )}
 
             {!isActive && (
