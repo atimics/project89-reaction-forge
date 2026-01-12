@@ -279,7 +279,7 @@ export class MotionCaptureManager {
           if (this.mode === 'face') {
               const allowedBones = [
                   'head', 'neck',
-                  'hips', 'chest', 'upperchest', 'spine',
+                  'chest', 'upperchest', 'spine', // Hips removed to prevent full body rotation
                   'shoulder', 'arm', // Covers upperArm, lowerArm
                   'hand', 'thumb', 'index', 'middle', 'ring', 'little'
               ];
@@ -307,8 +307,9 @@ export class MotionCaptureManager {
           }
       });
 
-      // 3. Smooth Root Position (Full Body Only)
-      if (this.mode === 'full' && this.targetRootPosition) {
+      // 3. Smooth Root Position (Full Body & Face Mode)
+      // We allow position updates in Face mode to support leaning/ducking
+      if (this.targetRootPosition) {
           const hips = this.vrm.humanoid.getNormalizedBoneNode('hips');
           if (hips) {
              const smoothedPos = this.rootPositionFilter.filter(
@@ -449,7 +450,9 @@ export class MotionCaptureManager {
     // Always solve pose to get upper body data, even in Face mode
     const poseWorldLandmarks = (results as any).poseWorldLandmarks || (results as any).ea;
     
-    if (results.poseLandmarks && results.poseLandmarks.length >= 33) {
+    // Check if both pose landmarks and world landmarks are available and valid
+    if (results.poseLandmarks && results.poseLandmarks.length >= 33 && 
+        poseWorldLandmarks && poseWorldLandmarks.length >= 33) {
         try {
             const poseRig = Kalidokit.Pose.solve(results.poseLandmarks, poseWorldLandmarks, {
                 runtime: 'mediapipe',

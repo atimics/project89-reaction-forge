@@ -68,6 +68,7 @@ class SceneManager {
   private readonly size = new THREE.Vector3();
   private readonly center = new THREE.Vector3();
   private readonly followTargetPosition = new THREE.Vector3();
+  private readonly followTargetQuaternion = new THREE.Quaternion();
   private readonly followTargetLookAt = new THREE.Vector3();
   private followTarget?: THREE.Object3D;
   private followOffset = new THREE.Vector3();
@@ -209,8 +210,13 @@ class SceneManager {
 
       if (this.followTarget && this.camera) {
         this.followTarget.getWorldPosition(this.followTargetPosition);
+        this.followTarget.getWorldQuaternion(this.followTargetQuaternion);
+        
+        // Calculate world position based on local offset rotated by target
+        const worldOffset = this.followOffset.clone().applyQuaternion(this.followTargetQuaternion);
+        
         this.followTargetLookAt.copy(this.followTargetPosition);
-        this.camera.position.copy(this.followTargetPosition).add(this.followOffset);
+        this.camera.position.copy(this.followTargetPosition).add(worldOffset);
         this.camera.lookAt(this.followTargetLookAt);
         if (this.controls) {
           this.controls.target.copy(this.followTargetLookAt);
@@ -413,8 +419,18 @@ class SceneManager {
     this.followTarget = target;
     this.followControlsEnabled = this.controls.enabled;
     this.controls.enabled = false;
+    
+    // Capture initial state
     target.getWorldPosition(this.followTargetPosition);
-    this.followOffset.copy(this.camera.position).sub(this.followTargetPosition);
+    target.getWorldQuaternion(this.followTargetQuaternion);
+    
+    // Calculate offset in target's local rotation space (so camera rotates with target)
+    // 1. Get vector from target to camera in world space
+    const worldOffset = new THREE.Vector3().subVectors(this.camera.position, this.followTargetPosition);
+    
+    // 2. Un-rotate this vector by the target's rotation to get local offset
+    // We clone/invert the quaternion so we don't mutate the captured one, although invert() mutates
+    this.followOffset.copy(worldOffset).applyQuaternion(this.followTargetQuaternion.clone().invert());
   }
 
   frameObject(object: THREE.Object3D, padding = 1.2) {
