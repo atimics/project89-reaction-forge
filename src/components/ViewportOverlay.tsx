@@ -16,14 +16,19 @@ import {
   User, 
   Cube, 
   Eye, 
-  EyeSlash,
+  EyeSlash, 
   ArrowSquareOut, 
-  ArrowSquareIn,
-  Play,
-  Pause,
-  Stop,
-  Sparkle
+  ArrowSquareIn, 
+  Play, 
+  Pause, 
+  Stop, 
+  Sparkle,
+  VideoCamera,
+  StopCircle
 } from '@phosphor-icons/react';
+import { useAvatarSource } from '../state/useAvatarSource';
+import { live2dManager } from '../live2d/live2dManager';
+import { getPoseLabTimestamp } from '../utils/exportNaming';
 
 type AspectRatio = '16:9' | '1:1' | '9:16';
 
@@ -41,6 +46,7 @@ export function ViewportOverlay({ mode, isPlaying, onPlayPause, onStop }: Viewpo
   const { addToast } = useToastStore();
   const { lightingPreset, setLightingPreset } = useSceneSettingsStore();
   const { isPoppedOut, togglePopOut } = usePopOutViewport(activeCssOverlay);
+  const { avatarType } = useAvatarSource();
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>('16:9');
   const [showClock, setShowClock] = useState(true);
   const [now, setNow] = useState(() => new Date());
@@ -55,6 +61,94 @@ export function ViewportOverlay({ mode, isPlaying, onPlayPause, onStop }: Viewpo
   const captureCountRef = useRef(0);
   const lightingPresetRef = useRef(lightingPreset);
   const sprintPresets = reactionPresets.filter((preset) => preset.id !== 'point');
+  
+  // Recording State
+  const [isRecording, setIsRecording] = useState(false);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const chunksRef = useRef<Blob[]>([]);
+  const recordingStreamRef = useRef<MediaStream | null>(null);
+
+  const handleToggleRecording = async () => {
+    if (isRecording) {
+      // Stop Recording
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+        mediaRecorderRef.current.stop();
+      }
+      
+      // Stop audio tracks we requested
+      if (recordingStreamRef.current) {
+        recordingStreamRef.current.getAudioTracks().forEach(track => track.stop());
+        recordingStreamRef.current = null;
+      }
+      
+      setIsRecording(false);
+    } else {
+      // Start Recording
+      const canvas = avatarType === 'live2d' ? live2dManager.getCanvas() : sceneManager.getCanvas();
+      if (!canvas) {
+        addToast('No canvas available to record', 'error');
+        return;
+      }
+
+      try {
+        const stream = canvas.captureStream(30); // 30 FPS
+        
+        // Request Microphone access
+        let audioStream: MediaStream | null = null;
+        try {
+          audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          recordingStreamRef.current = audioStream;
+          console.log('[ViewportOverlay] Microphone access granted for recording');
+        } catch (err) {
+          console.warn('[ViewportOverlay] Microphone access denied or failed, recording video only.', err);
+          addToast('Microphone access denied. Recording video only.', 'warning');
+        }
+
+        // Combine video and audio tracks if available
+        const tracks = [...stream.getVideoTracks()];
+        if (audioStream) {
+          tracks.push(...audioStream.getAudioTracks());
+        }
+        const combinedStream = new MediaStream(tracks);
+        
+        const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9') 
+          ? 'video/webm;codecs=vp9' 
+          : 'video/webm';
+
+        const recorder = new MediaRecorder(combinedStream, { mimeType });
+        
+        chunksRef.current = [];
+        recorder.ondataavailable = (e) => {
+          if (e.data.size > 0) chunksRef.current.push(e.data);
+        };
+
+        recorder.onstop = () => {
+          const blob = new Blob(chunksRef.current, { type: mimeType });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `PoseLab_Recording_${getPoseLabTimestamp()}.webm`;
+          a.click();
+          URL.revokeObjectURL(url);
+          addToast('🎬 Video saved!', 'success');
+        };
+
+        recorder.start();
+        mediaRecorderRef.current = recorder;
+        setIsRecording(true);
+        addToast('🔴 Recording started...', 'success');
+      } catch (e) {
+        console.error('Recording failed:', e);
+        addToast('Failed to start recording', 'error');
+        setIsRecording(false);
+        // Clean up stream if failed
+        if (recordingStreamRef.current) {
+           recordingStreamRef.current.getAudioTracks().forEach(track => track.stop());
+           recordingStreamRef.current = null;
+        }
+      }
+    }
+  };
 
   // Sync with sceneManager on mount
   useEffect(() => {
@@ -367,6 +461,48 @@ export function ViewportOverlay({ mode, isPlaying, onPlayPause, onStop }: Viewpo
         />
       </div>
       */}
+
+      {/* Recording Button - Bottom Right */}
+      <div className="viewport-overlay bottom-right" style={{ pointerEvents: 'auto' }}>
+        <button
+          className={`recording-button ${isRecording ? 'recording' : ''}`}
+          onClick={handleToggleRecording}
+          title={isRecording ? "Stop Recording" : "Record Video"}
+          aria-label={isRecording ? "Stop Recording" : "Record Video"}
+          style={{
+            width: '50px',
+            height: '50px',
+            borderRadius: '50%',
+            border: 'none',
+            background: isRecording ? 'rgba(255, 68, 68, 0.8)' : 'rgba(0, 0, 0, 0.5)',
+            backdropFilter: 'blur(5px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            cursor: 'pointer',
+            color: 'white',
+            boxShadow: isRecording 
+              ? '0 0 15px #ff4444, 0 0 5px #ff4444' 
+              : '0 4px 6px rgba(0,0,0,0.3)',
+            transition: 'all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+            transform: isRecording ? 'scale(1.1)' : 'scale(1)',
+          }}
+          onMouseEnter={(e) => {
+            if (!isRecording) {
+              e.currentTarget.style.transform = 'scale(1.1) rotate(5deg)';
+              e.currentTarget.style.background = 'rgba(255, 68, 68, 0.6)';
+            }
+          }}
+          onMouseLeave={(e) => {
+            if (!isRecording) {
+              e.currentTarget.style.transform = 'scale(1) rotate(0deg)';
+              e.currentTarget.style.background = 'rgba(0, 0, 0, 0.5)';
+            }
+          }}
+        >
+          {isRecording ? <StopCircle size={32} weight="fill" /> : <VideoCamera size={28} weight="fill" />}
+        </button>
+      </div>
 
       {showFocusGallery && (
         <div className="modal-overlay" onClick={() => setShowFocusGallery(false)}>
