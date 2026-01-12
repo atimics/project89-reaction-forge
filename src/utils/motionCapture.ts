@@ -7,6 +7,8 @@ import { motionEngine } from '../poses/motionEngine';
 import { sceneManager } from '../three/sceneManager';
 import { OneEuroFilter, OneEuroFilterQuat, OneEuroFilterVec3 } from './OneEuroFilter';
 
+import { live2dManager } from '../live2d/live2dManager';
+
 // ======================
 // Configuration Constants
 // ======================
@@ -683,6 +685,14 @@ export class MotionCaptureManager {
   }
 
   private applyFaceRig(rig: any) {
+      // Data container for Live2D
+      const live2dData = {
+          head: { x: 0, y: 0, z: 0 },
+          eye: { l: 1, r: 1 },
+          pupil: { x: 0, y: 0 },
+          mouth: { open: 0 }
+      };
+
       // Calibration Step for Face/Eyes
       if (this.shouldCalibrateFace) {
           if (rig.pupil) {
@@ -725,25 +735,15 @@ export class MotionCaptureManager {
                 // Apply to target map for smoothing
                 this.targetBoneRotations.set('head', headQ);
 
-                // --- Derived Upper Body Movement (Face Mode Only) ---
-                // DISABLED: We now use real upper body tracking from Pose Solver even in Face Mode.
-                // This ensures "Streamer Mode" includes real arm/shoulder movements.
-                /*
-                if (this.mode === 'face') {
-                    // Neck follows head at 50%
-                    const neckQ = new THREE.Quaternion().slerp(headQ, 0.5);
-                    this.targetBoneRotations.set('neck', neckQ);
-
-                    // Chest follows head at 30% (was 20%)
-                    const chestQ = new THREE.Quaternion().slerp(headQ, 0.3);
-                    this.targetBoneRotations.set('chest', chestQ);
-                    this.targetBoneRotations.set('upperChest', chestQ);
-                    
-                    // Spine follows head at 15% (was 10%)
-                    const spineQ = new THREE.Quaternion().slerp(headQ, 0.15);
-                    this.targetBoneRotations.set('spine', spineQ);
-                }
-                */
+                // --- Live2D Head ---
+                // Convert dampened quaternion to Euler for Live2D
+                // Order YXZ (Yaw, Pitch, Roll) is usually stable for head
+                const euler = new THREE.Euler().setFromQuaternion(headQ, 'YXZ');
+                live2dData.head = {
+                    x: THREE.MathUtils.radToDeg(euler.x),
+                    y: THREE.MathUtils.radToDeg(euler.y),
+                    z: THREE.MathUtils.radToDeg(euler.z)
+                };
              }
       }
 
@@ -757,6 +757,9 @@ export class MotionCaptureManager {
           
           const blinkMax = Math.max(blinkL, blinkR);
           setExpressionTarget(['Blink', 'blink', 'eyeBlink'], blinkMax);
+
+          // Live2D
+          live2dData.eye = { l: rig.eye.l, r: rig.eye.r };
       }
 
           // 3. Pupils (LookAt)
@@ -772,6 +775,9 @@ export class MotionCaptureManager {
           // ... (comments retained/abbreviated)
           // FIX: Invert Y axis to match user expectation (Look Up = Look Up)
           const y = THREE.MathUtils.clamp(-rawY * GAZE_SENSITIVITY, -1, 1);
+
+          // Live2D Pupil (Use processed X/Y)
+          live2dData.pupil = { x, y };
 
           const stabilizedX = Math.abs(x) < GAZE_DEADZONE ? 0 : x;
           const stabilizedY = Math.abs(y) < GAZE_DEADZONE ? 0 : y;
@@ -824,6 +830,8 @@ export class MotionCaptureManager {
           
           if (rig.mouth.open !== undefined) {
               setExpressionTarget(['jawOpen', 'mouthOpen', 'A'], rig.mouth.open);
+              // Live2D
+              live2dData.mouth.open = rig.mouth.open;
           }
       }
       
@@ -841,6 +849,9 @@ export class MotionCaptureManager {
           const browValue = rig.brow;
           setExpressionTarget(['browInnerUp', 'BrowsUp', 'browOuterUpLeft', 'browOuterUpRight', 'Surprised', 'surprise'], browValue);
       }
+
+      // Apply to Live2D
+      live2dManager.updateFaceModel(live2dData);
   }
 
   private applyHandRig(rig: Record<string, { x: number, y: number, z: number }>, side: 'Left' | 'Right') {

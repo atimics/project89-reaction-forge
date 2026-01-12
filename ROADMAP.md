@@ -48,6 +48,13 @@ This document outlines the planned upgrades and feature requests for PoseLab, fo
 - [x] **Command Palette:** `Cmd+K` interface for instant tool access.
 - [x] **Toast Notifications:** Accessible status updates.
 
+### 🖼️ Live2D Support (v1.3)
+**Goal:** Expand avatar support beyond 3D VRM to include 2D Cubism models.
+- [x] **PixiJS Integration:** Integrated PixiJS v7 and `pixi-live2d-display`.
+- [x] **Cubism Core:** Runtime loading of Cubism 4 SDK.
+- [x] **Hybrid Rendering:** Transparent overlay allowing 2D avatars on 3D backgrounds.
+- [x] **Expressions/Physics:** Basic support for model settings.
+
 ---
 
 ## 🔥 Now (v1.3 - Highest Priority)

@@ -63,8 +63,8 @@ export class OneEuroFilter {
     this.minCutoff = minCutoff;
     this.beta = beta;
     this.dCutoff = dCutoff;
-    this.x = new LowPassFilter(this.alpha(minCutoff));
-    this.dx = new LowPassFilter(this.alpha(dCutoff));
+    this.x = new LowPassFilter(this.alpha(minCutoff, 1/60));
+    this.dx = new LowPassFilter(this.alpha(dCutoff, 1/60));
   }
 
   private alpha(cutoff: number, te: number): number {

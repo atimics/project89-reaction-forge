@@ -9,7 +9,12 @@ We have just deployed a massive update (**v3.0**) to the Motion Capture system, 
 - **Physics Rails**: Hair and clothing now flow naturally, perfectly synced with your movement.
 - **AR Mode**: Use your phone to place your avatar in the real world.
 
-### 2. 🖼️ Custom Background Images
+### 2. 🖼️ Live2D Support
+- **Cubism 2/3/4 Models**: Load `.model3.json` files alongside 3D avatars.
+- **Transparent Overlay**: Hybrid 2D/3D rendering.
+- **Physics**: Built-in Live2D physics enabled.
+
+### 3. 🖼️ Custom Background Images
 - Upload SVG, PNG, JPG, or WebP backgrounds
 - Automatic fallback to solid colors if images fail
 - Texture caching for performance
