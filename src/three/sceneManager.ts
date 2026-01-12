@@ -72,7 +72,6 @@ class SceneManager {
   private readonly followTargetLookAt = new THREE.Vector3();
   private followTarget?: THREE.Object3D;
   private followOffset = new THREE.Vector3();
-  private followControlsEnabled = true;
   private currentAspectRatio: AspectRatio = '16:9';
   private overlayMesh?: THREE.Mesh;
   private animatedBackground?: AnimatedBackground;
@@ -412,12 +411,11 @@ class SceneManager {
     if (!this.camera || !this.controls) return;
     if (!target) {
       this.followTarget = undefined;
-      this.controls.enabled = this.followControlsEnabled;
+      this.controls.enabled = true;
       return;
     }
 
     this.followTarget = target;
-    this.followControlsEnabled = this.controls.enabled;
     this.controls.enabled = false;
     
     // Capture initial state
