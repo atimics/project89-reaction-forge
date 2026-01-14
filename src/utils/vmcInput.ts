@@ -76,7 +76,14 @@ class VmcInputManager {
       this.disconnect();
     }
     this.setStatus('connecting');
-    const socket = new WebSocket(url);
+    let socket: WebSocket;
+    try {
+      socket = new WebSocket(url);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Invalid WebSocket URL.';
+      this.setStatus('error', message);
+      return;
+    }
     this.socket = socket;
 
     socket.onopen = () => {
