@@ -207,7 +207,7 @@ export interface ChatMessage extends BaseMessage {
 }
 
 /** Quick reaction types */
-export type ReactionType = 'wave' | 'thumbsUp' | 'nod' | 'celebrate';
+export type ReactionType = 'wave' | 'thumbsUp' | 'nod' | 'celebrate' | 'heart' | 'laugh' | 'surprised' | 'dance';
 
 /** Reaction message - triggers avatar animation */
 export interface ReactionMessage extends BaseMessage {

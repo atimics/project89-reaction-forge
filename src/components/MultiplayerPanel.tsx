@@ -17,7 +17,8 @@ import {
   Pencil,
   Check,
   Warning,
-  Person
+  Person,
+  ArrowsClockwise
 } from '@phosphor-icons/react';
 
 interface MultiplayerPanelProps {
@@ -241,7 +242,17 @@ export function MultiplayerPanel({ compact = false }: MultiplayerPanelProps) {
         // In session - show session info and peers
         <>
           <div className="mp-section">
-            <label className="mp-label">Room ID</label>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <label className="mp-label">Room ID</label>
+              <button 
+                className="mp-btn secondary small" 
+                onClick={() => syncManager.broadcastFullState()}
+                title="Sync state with all peers"
+                style={{ padding: '4px 8px', fontSize: '0.7rem' }}
+              >
+                <ArrowsClockwise size={12} weight="bold" /> Sync Now
+              </button>
+            </div>
             <div className="mp-room-info">
               <code className="mp-room-id">{roomId}</code>
               <span className="mp-role">{role === 'host' ? <><Crown size={14} weight="fill" /> Host</> : <><User size={14} weight="duotone" /> Guest</>}</span>

@@ -5,6 +5,12 @@ import type { VRMPose } from '@pixiv/three-vrm';
 import { sceneManager } from './sceneManager';
 import { materialManager } from './materialManager';
 import type { PeerId, AvatarState } from '../types/multiplayer';
+import { 
+  GESTURE_LIBRARY, 
+  EXPRESSION_PRESETS, 
+  Easing, 
+  type EmotionState 
+} from '../data/gestures';
 
 /** Position offset for multiple avatars (arranged in a line) */
 const AVATAR_SPACING = 1.2; // meters between avatars
@@ -34,6 +40,12 @@ class MultiAvatarManager {
   private tickDispose?: () => void;
   private isInteracting = false;
   private isManualPosing = false;
+  private gestureAnimations = new Map<PeerId, { 
+    gesture: string; 
+    startTime: number; 
+    duration: number;
+    initialRotations: Map<string, THREE.Quaternion>;
+  }>();
 
   constructor() {
     this.loader.register((parser) => new VRMLoaderPlugin(parser));
@@ -511,6 +523,54 @@ class MultiAvatarManager {
   }
 
   /**
+   * Perform a gesture on an avatar (procedural animation)
+   */
+  async performGesture(peerId: PeerId, gesture: string, _intensity = 1.0) {
+    const instance = this.avatars.get(peerId);
+    if (!instance || !instance.vrm.humanoid) return;
+
+    const gestureData = GESTURE_LIBRARY[gesture];
+    if (!gestureData) return;
+
+    // Capture initial rotations for all bones in the gesture
+    const initialRotations = new Map<string, THREE.Quaternion>();
+    const boneNames = new Set<string>();
+    gestureData.keyframes.forEach(kf => {
+      Object.keys(kf.bones).forEach(b => boneNames.add(b));
+    });
+
+    boneNames.forEach(name => {
+      const node = instance.vrm.humanoid!.getNormalizedBoneNode(name as any);
+      if (node) initialRotations.set(name, node.quaternion.clone());
+    });
+
+    this.gestureAnimations.set(peerId, {
+      gesture,
+      startTime: performance.now(),
+      duration: gestureData.duration * 1000,
+      initialRotations
+    });
+
+    console.log(`[MultiAvatarManager] Started gesture ${gesture} for peer ${peerId}`);
+  }
+
+  /**
+   * Set emotional expression on an avatar
+   */
+  setEmotion(peerId: PeerId, emotion: EmotionState) {
+    const instance = this.avatars.get(peerId);
+    if (!instance || !instance.vrm.expressionManager) return;
+
+    const expressions = EXPRESSION_PRESETS[emotion];
+    if (!expressions) return;
+
+    Object.entries(expressions).forEach(([name, value]) => {
+      instance.vrm.expressionManager!.setValue(name, value);
+    });
+    instance.vrm.expressionManager.update();
+  }
+
+  /**
    * Stop animation on an avatar
    */
   stopAnimation(peerId: PeerId, immediate = true) {
@@ -731,7 +791,68 @@ class MultiAvatarManager {
     if (this.tickDispose) return;
 
     this.tickDispose = sceneManager.registerTick((delta) => {
+      const now = performance.now();
+
       this.avatars.forEach(instance => {
+        const peerId = instance.peerId;
+
+        // Process procedural gestures
+        const anim = this.gestureAnimations.get(peerId);
+        if (anim) {
+          const elapsed = now - anim.startTime;
+          const normalizedTime = Math.min(elapsed / anim.duration, 1);
+          const gestureData = GESTURE_LIBRARY[anim.gesture];
+
+          if (gestureData) {
+            const keyframes = gestureData.keyframes;
+            let prevKf = keyframes[0];
+            let nextKf = keyframes[keyframes.length - 1];
+
+            for (let i = 0; i < keyframes.length - 1; i++) {
+              if (normalizedTime >= keyframes[i].time && normalizedTime <= keyframes[i + 1].time) {
+                prevKf = keyframes[i];
+                nextKf = keyframes[i + 1];
+                break;
+              }
+            }
+
+            const kfDuration = nextKf.time - prevKf.time;
+            const kfProgress = kfDuration > 0 ? (normalizedTime - prevKf.time) / kfDuration : 1;
+            const easingFn = nextKf.easing ? Easing[nextKf.easing] : Easing.easeInOut;
+            const easedProgress = easingFn(kfProgress);
+
+            Object.keys(anim.initialRotations).forEach(boneName => {
+              const node = instance.vrm.humanoid!.getNormalizedBoneNode(boneName as any);
+              if (!node) return;
+
+              const prevRot = (prevKf.bones as any)[boneName] || { x: 0, y: 0, z: 0 };
+              const nextRot = (nextKf.bones as any)[boneName] || { x: 0, y: 0, z: 0 };
+
+              const fromQuat = new THREE.Quaternion().setFromEuler(new THREE.Euler(
+                THREE.MathUtils.degToRad(prevRot.x),
+                THREE.MathUtils.degToRad(prevRot.y),
+                THREE.MathUtils.degToRad(prevRot.z),
+                'XYZ'
+              ));
+              const toQuat = new THREE.Quaternion().setFromEuler(new THREE.Euler(
+                THREE.MathUtils.degToRad(nextRot.x),
+                THREE.MathUtils.degToRad(nextRot.y),
+                THREE.MathUtils.degToRad(nextRot.z),
+                'XYZ'
+              ));
+
+              node.quaternion.slerpQuaternions(fromQuat, toQuat, easedProgress);
+            });
+
+            instance.vrm.humanoid!.update();
+          }
+
+          if (normalizedTime >= 1) {
+            this.gestureAnimations.delete(peerId);
+            console.log(`[MultiAvatarManager] Gesture ${anim.gesture} complete for ${peerId}`);
+          }
+        }
+
         // Update VRM
         instance.vrm.update(delta);
 

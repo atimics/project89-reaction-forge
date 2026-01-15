@@ -10,6 +10,8 @@ import type {
   VRMChunkMessage,
   VRMCompleteMessage,
   VRMRequestMessage,
+  BackgroundChunkMessage,
+  BackgroundCompleteMessage,
 } from '../types/multiplayer';
 import { DEFAULT_MULTIPLAYER_CONFIG } from '../types/multiplayer';
 import { peerManager } from './peerManager';
@@ -34,8 +36,11 @@ class SyncManager {
   private expressionSyncInterval = 100; // Sync expressions at 10Hz for smoother mocap
   private isActive = false;
   private vrmTransferBuffers = new Map<PeerId, { chunks: string[]; receivedCount: number; totalChunks: number; fileName: string }>();
+  private backgroundTransferBuffers = new Map<PeerId, { chunks: string[]; receivedCount: number; totalChunks: number; fileName: string; fileType: string }>();
   private pendingVRMRequests = new Set<PeerId>(); // Track pending requests to avoid duplicates
+  private pendingBackgroundRequests = new Set<PeerId>(); // Track pending background requests
   private activeVRMSends = new Set<PeerId>(); // Track VRM sends in progress to avoid duplicates
+  private activeBackgroundSends = new Set<PeerId>(); // Track background sends in progress
 
   /**
    * Initialize the sync manager and start listening for messages
@@ -351,6 +356,103 @@ class SyncManager {
     console.log(`[SyncManager] Requesting VRM from peer ${peerId}`);
   }
 
+  /**
+   * Send the current custom background to a specific peer
+   */
+  async sendBackgroundToPeer(peerId: PeerId) {
+    if (this.activeBackgroundSends.has(peerId)) return;
+
+    const { customBackgroundData, customBackgroundType } = useSceneSettingsStore.getState();
+    if (!customBackgroundData) return;
+
+    this.activeBackgroundSends.add(peerId);
+
+    const store = useMultiplayerStore.getState();
+    const peerInfo = store.peers.get(peerId);
+    const peerDisplayName = peerInfo?.displayName ?? `Peer-${peerId.slice(-4)}`;
+    
+    // Convert base64 to chunks (it's already base64 in store)
+    const chunkSize = 16 * 1024; // 16KB chunks for background
+    const totalChunks = Math.ceil(customBackgroundData.length / chunkSize);
+    const fileName = 'custom-background';
+
+    notifyTransferProgress({
+      peerId,
+      displayName: peerDisplayName,
+      direction: 'sending',
+      chunksComplete: 0,
+      totalChunks,
+      status: 'transferring',
+    });
+
+    for (let i = 0; i < totalChunks; i++) {
+      const chunk = customBackgroundData.substring(i * chunkSize, (i + 1) * chunkSize);
+      
+      const message: BackgroundChunkMessage = {
+        type: 'background-chunk',
+        peerId: store.localPeerId!,
+        targetPeerId: peerId,
+        timestamp: Date.now(),
+        chunkIndex: i,
+        totalChunks,
+        data: chunk,
+        fileName,
+        fileType: customBackgroundType || 'image/png'
+      };
+
+      try {
+        peerManager.send(peerId, message);
+        notifyTransferProgress({
+          peerId,
+          displayName: peerDisplayName,
+          direction: 'sending',
+          chunksComplete: i + 1,
+          totalChunks,
+          status: 'transferring',
+        });
+      } catch (error) {
+        console.error(`[SyncManager] Background chunk ${i} error:`, error);
+      }
+
+      if (i < totalChunks - 1) {
+        await new Promise(resolve => setTimeout(resolve, 30));
+      }
+    }
+
+    const completeMessage: BackgroundCompleteMessage = {
+      type: 'background-complete',
+      peerId: store.localPeerId!,
+      targetPeerId: peerId,
+      timestamp: Date.now(),
+      fileName,
+      fileType: customBackgroundType || 'image/png',
+      totalSize: customBackgroundData.length
+    };
+
+    peerManager.send(peerId, completeMessage);
+    this.activeBackgroundSends.delete(peerId);
+    setTimeout(() => clearTransferProgress(peerId), 3000);
+  }
+
+  /**
+   * Request background from a specific peer
+   */
+  requestBackgroundFromPeer(peerId: PeerId) {
+    if (this.pendingBackgroundRequests.has(peerId)) return;
+    this.pendingBackgroundRequests.add(peerId);
+
+    const store = useMultiplayerStore.getState();
+    const message: any = {
+      type: 'background-request',
+      peerId: store.localPeerId!,
+      targetPeerId: peerId,
+      timestamp: Date.now(),
+    };
+
+    peerManager.send(peerId, message);
+    console.log(`[SyncManager] Requested background from ${peerId}`);
+  }
+
   // ==================
   // Incoming Sync
   // ==================
@@ -392,6 +494,18 @@ class SyncManager {
 
       case 'vrm-complete':
         this.handleVRMComplete(message as VRMCompleteMessage);
+        break;
+
+      case 'background-request':
+        this.handleBackgroundRequest(peerId);
+        break;
+
+      case 'background-chunk':
+        this.handleBackgroundChunk(message as BackgroundChunkMessage);
+        break;
+
+      case 'background-complete':
+        this.handleBackgroundComplete(message as BackgroundCompleteMessage);
         break;
 
       case 'peer-join':
@@ -476,6 +590,55 @@ class SyncManager {
   private handleVRMRequest(peerId: PeerId) {
     console.log(`[SyncManager] VRM requested by peer: ${peerId}`);
     this.sendVRMToPeer(peerId);
+  }
+
+  private handleBackgroundRequest(peerId: PeerId) {
+    console.log(`[SyncManager] Background requested by peer: ${peerId}`);
+    this.sendBackgroundToPeer(peerId);
+  }
+
+  private handleBackgroundChunk(message: BackgroundChunkMessage) {
+    const { peerId, chunkIndex, totalChunks, data, fileType } = message;
+    
+    let buffer = this.backgroundTransferBuffers.get(peerId);
+    if (!buffer || buffer.totalChunks !== totalChunks) {
+      buffer = {
+        chunks: new Array(totalChunks).fill(''),
+        receivedCount: 0,
+        totalChunks,
+        fileName: message.fileName,
+        fileType
+      };
+      this.backgroundTransferBuffers.set(peerId, buffer);
+    }
+
+    if (!buffer.chunks[chunkIndex]) {
+      buffer.chunks[chunkIndex] = data;
+      buffer.receivedCount++;
+    }
+  }
+
+  private async handleBackgroundComplete(message: BackgroundCompleteMessage) {
+    const { peerId, fileType } = message;
+    const buffer = this.backgroundTransferBuffers.get(peerId);
+    if (!buffer) return;
+
+    if (buffer.receivedCount === buffer.totalChunks) {
+      const fullData = buffer.chunks.join('');
+      const dataUrl = `data:${fileType};base64,${fullData}`;
+      
+      // Apply background
+      sceneManager.setBackground(dataUrl);
+      
+      // Store in scene settings
+      const sceneState = useSceneSettingsStore.getState();
+      sceneState.setCustomBackground(fullData, fileType);
+      
+      console.log(`[SyncManager] Background transfer complete from ${peerId}`);
+    }
+
+    this.backgroundTransferBuffers.delete(peerId);
+    this.pendingBackgroundRequests.delete(peerId);
   }
 
   private handleAvatarState(peerId: PeerId, message: AvatarStateMessage) {

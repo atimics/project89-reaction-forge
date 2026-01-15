@@ -23,6 +23,8 @@ import { peerManager } from './peerManager';
 import { useMultiplayerStore } from '../state/useMultiplayerStore';
 import { sceneManager } from '../three/sceneManager';
 import { avatarController } from '../ai/AvatarController';
+import { multiAvatarManager } from '../three/multiAvatarManager';
+import type { EmotionState } from '../data/gestures';
 
 /** Chat message for display */
 export interface DisplayChatMessage {
@@ -55,14 +57,22 @@ const REACTION_TO_GESTURE: Record<ReactionType, string> = {
   thumbsUp: 'thumbsUp',
   nod: 'nod',
   celebrate: 'celebrate',
+  heart: 'celebrate', // Use celebrate for heart for now
+  laugh: 'laugh',
+  surprised: 'surprised',
+  dance: 'dance',
 };
 
 /** Maps reactions to expressions */
-const REACTION_TO_EXPRESSION: Record<ReactionType, string> = {
+const REACTION_TO_EXPRESSION: Record<ReactionType, EmotionState> = {
   wave: 'happy',
   thumbsUp: 'happy',
   nod: 'happy',
-  celebrate: 'happy',
+  celebrate: 'excited',
+  heart: 'happy',
+  laugh: 'happy',
+  surprised: 'surprised',
+  dance: 'excited',
 };
 
 class SocialManager {
@@ -244,8 +254,12 @@ class SocialManager {
     const emojis: Record<ReactionType, string> = {
       wave: '👋',
       thumbsUp: '👍',
-      nod: ' nodding_head::skin-tone-3',
+      nod: '👌',
       celebrate: '🎉',
+      heart: '❤️',
+      laugh: '😂',
+      surprised: '😲',
+      dance: '💃',
     };
     return emojis[reaction] || '✨';
   }
@@ -399,8 +413,15 @@ class SocialManager {
     this.notifyReactionListeners(displayReaction);
 
     // Trigger animation on the remote avatar
-    // Note: multiAvatarManager would handle this if we implement per-avatar reactions
-    // For now, we just show the reaction UI
+    const gesture = REACTION_TO_GESTURE[message.reaction];
+    const expression = REACTION_TO_EXPRESSION[message.reaction];
+
+    if (gesture) {
+      multiAvatarManager.performGesture(peerId, gesture);
+    }
+    if (expression) {
+      multiAvatarManager.setEmotion(peerId, expression);
+    }
   }
 
   private handlePresenceMessage(peerId: PeerId, message: PresenceMessage) {
