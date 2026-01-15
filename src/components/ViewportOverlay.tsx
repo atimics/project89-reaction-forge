@@ -327,7 +327,7 @@ export function ViewportOverlay({ mode, isPlaying, onPlayPause, onStop }: Viewpo
     <>
       {/* Camera controls - top left */}
       <div className="viewport-overlay top-left">
-        <div className="camera-controls">
+        <div className="camera-controls" style={{ alignItems: 'center' }}>
           <button
             className="icon-button"
             onClick={handleRandomAvatar}
@@ -338,7 +338,7 @@ export function ViewportOverlay({ mode, isPlaying, onPlayPause, onStop }: Viewpo
             <DiceFive size={18} weight="duotone" className={isAvatarListLoading ? "spin" : ""} />
           </button>
           
-          <div style={{ width: '1px', height: '20px', background: 'rgba(255,255,255,0.1)', margin: '0 4px' }}></div>
+          <div style={{ width: '1px', height: '24px', background: 'rgba(255,255,255,0.1)', margin: '0 8px' }}></div>
 
           <button
             className="icon-button"
