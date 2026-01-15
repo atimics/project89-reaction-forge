@@ -21,8 +21,8 @@ export const ONBOARDING_PERSONAS: OnboardingPersona[] = [
       {
         id: 'vtuber-load-avatar',
         title: 'Load your VRM avatar',
-        description: 'Import a VRM to see PoseLab tools light up for your model.',
-        cta: 'Use “Load VRM Avatar” in the Avatar panel.',
+        description: 'Import a VRM or use the Random Dice to find a character.',
+        cta: 'Use “Load VRM Avatar” or the Dice icon.',
       },
       {
         id: 'vtuber-expressions',

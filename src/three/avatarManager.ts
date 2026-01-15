@@ -88,6 +88,16 @@ class AvatarManager {
   private isInteracting = false; 
   private isManualPosing = false;
   private defaultHipsPosition: THREE.Vector3 = new THREE.Vector3(0, 1.0, 0);
+  
+  // Blink state
+  private blinkState = {
+    nextBlinkTime: 0,
+    isBlinking: false,
+    blinkDuration: 0.15, // seconds
+    blinkStartTime: 0,
+    minInterval: 2.0,
+    maxInterval: 6.0,
+  };
 
   constructor() {
     this.loader.register((parser) => new VRMLoaderPlugin(parser));
@@ -98,11 +108,86 @@ class AvatarManager {
   setManualPosing(enabled: boolean) { this.isManualPosing = enabled; }
   setInteraction(interacting: boolean) { this.isInteracting = interacting; }
 
+  private updateBlink(delta: number) {
+    if (!this.vrm?.expressionManager) return;
+    
+    // Check for Blink expression or split blink expressions using case-insensitive search
+    const available = this.getAvailableExpressions();
+    const blinkKey = available.find(k => k.toLowerCase() === 'blink');
+    const blinkLeftKey = available.find(k => k.toLowerCase() === 'blinkleft');
+    const blinkRightKey = available.find(k => k.toLowerCase() === 'blinkright');
+    
+    // We can blink if we have a main 'Blink' expression OR both Left/Right blink expressions
+    const hasBlink = !!blinkKey;
+    const hasBlinkLeft = !!blinkLeftKey;
+    const hasBlinkRight = !!blinkRightKey;
+    
+    const canBlink = hasBlink || (hasBlinkLeft && hasBlinkRight);
+    
+    if (!canBlink) {
+      // console.log('[AvatarManager] No blink expressions found:', { hasBlink, hasBlinkLeft, hasBlinkRight });
+      return;
+    }
+
+    const now = performance.now() / 1000;
+
+    if (this.blinkState.isBlinking) {
+      // Currently blinking
+      const elapsed = now - this.blinkState.blinkStartTime;
+      const progress = elapsed / this.blinkState.blinkDuration;
+
+      if (progress >= 1) {
+        // Blink finished
+        this.blinkState.isBlinking = false;
+        
+        if (hasBlink && blinkKey) {
+          this.vrm.expressionManager.setValue(blinkKey, 0);
+        } else {
+          // Reset split blinks
+          if (hasBlinkLeft && blinkLeftKey) this.vrm.expressionManager.setValue(blinkLeftKey, 0);
+          if (hasBlinkRight && blinkRightKey) this.vrm.expressionManager.setValue(blinkRightKey, 0);
+        }
+        
+        // Schedule next blink
+        const interval = this.blinkState.minInterval + Math.random() * (this.blinkState.maxInterval - this.blinkState.minInterval);
+        this.blinkState.nextBlinkTime = now + interval;
+        // console.log(`[AvatarManager] Blink finished. Next blink in ${interval.toFixed(2)}s`);
+      } else {
+        // Calculate blink value (sine wave for closing and opening)
+        // 0 -> 1 -> 0
+        const value = Math.sin(progress * Math.PI);
+        
+        if (hasBlink && blinkKey) {
+          this.vrm.expressionManager.setValue(blinkKey, value);
+        } else {
+          // Apply to split blinks
+          if (hasBlinkLeft && blinkLeftKey) this.vrm.expressionManager.setValue(blinkLeftKey, value);
+          if (hasBlinkRight && blinkRightKey) this.vrm.expressionManager.setValue(blinkRightKey, value);
+        }
+      }
+      this.vrm.expressionManager.update();
+    } else {
+      // Waiting to blink
+      if (now >= this.blinkState.nextBlinkTime) {
+        this.blinkState.isBlinking = true;
+        this.blinkState.blinkStartTime = now;
+        // console.log('[AvatarManager] Starting blink');
+      }
+    }
+  }
+
   private startTickLoop() {
     this.tickDispose?.();
     this.tickDispose = sceneManager.registerTick((delta) => {
       if (this.vrm) {
+        // Update blink state first
+        this.updateBlink(delta);
+        
+        // Update VRM (this applies expression updates if we called update() in updateBlink)
+        // Note: VRM.update() also updates the expression manager internally if using the standard one.
+        // However, if we manually set values, we need to ensure they persist.
         this.vrm.update(delta);
+        
         // ALWAYS update the animation mixer if an animation is playing
         // The isInteracting flag should only pause, not block entirely
         if (this.isAnimated) {
@@ -168,6 +253,10 @@ class AvatarManager {
 
     this.startTickLoop();
     
+    // Initialize next blink time
+    this.blinkState.nextBlinkTime = (performance.now() / 1000) + 2.0;
+    console.log('[AvatarManager] Blink initialized. First blink scheduled.');
+
     // Apply material settings to the newly loaded VRM
     materialManager.onVRMLoaded();
     

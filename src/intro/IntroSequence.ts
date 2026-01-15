@@ -662,15 +662,20 @@ class IntroSequenceManager {
     this.capturedMoments.clear();
     this.pendingPoses.clear();
     
-    // Reset camera to front view (default position)
-    const camera = sceneManager.getCamera();
-    const controls = sceneManager.getControls();
-    if (camera && controls) {
-      // Front view: position at z=1.6, looking at avatar center
-      camera.position.set(0, 1.4, 1.6);
-      controls.target.set(0, 1.3, 0);
-      controls.update();
-      console.log('[IntroSequence] Camera reset to front view');
+    // Reset camera to fit avatar (consistent with UI "Fit to Screen" button)
+    const vrm = avatarManager.getVRM();
+    if (vrm) {
+      sceneManager.frameObject(vrm.scene);
+      console.log('[IntroSequence] Camera reset to fit avatar');
+    } else {
+      // Fallback if VRM reference missing
+      const camera = sceneManager.getCamera();
+      const controls = sceneManager.getControls();
+      if (camera && controls) {
+        camera.position.set(0, 1.4, 1.6);
+        controls.target.set(0, 1.3, 0);
+        controls.update();
+      }
     }
     
     // Notify store

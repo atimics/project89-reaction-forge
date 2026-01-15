@@ -16,7 +16,7 @@ const TUTORIAL_STEPS = [
   {
     id: 'upload',
     title: '1. Load Your Avatar',
-    description: 'Upload your own VRM file or try our sample avatar. This is your digital canvas.',
+    description: 'Upload your own VRM file or click the Dice 🎲 button for a random character. This is your digital canvas.',
     targetId: 'canvas-stage',
     highlight: true
   },
@@ -53,12 +53,12 @@ const TUTORIAL_STEPS = [
   },
   {
     id: 'camera',
-    title: '6. Camera Controls',
+    title: '6. Camera & Scene Controls',
     description: (
       <span>
-        Use hotkeys <span className="hotkey-hint">1</span> <span className="hotkey-hint">3</span> <span className="hotkey-hint">5</span> <span className="hotkey-hint">7</span> for quick camera views: Headshot, 3/4, Side, and Home. 
-        Press <span className="hotkey-hint">Space</span> to save a snapshot PNG, or <span className="hotkey-hint">P</span> to export a PNG with effects. 
-        Scroll to zoom, drag to orbit.
+        Use hotkeys <span className="hotkey-hint">1</span> <span className="hotkey-hint">3</span> <span className="hotkey-hint">5</span> <span className="hotkey-hint">7</span> for quick views. 
+        Press <span className="hotkey-hint">Space</span> for snapshot. 
+        Click <DiceFive size={16} weight="duotone" /> to randomize avatar, or the PoseLab logo to reset the scene.
       </span>
     ),
     targetId: 'canvas-stage',

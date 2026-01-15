@@ -2,6 +2,9 @@ import { useRef, useState } from 'react';
 import { useAvatarSource } from '../state/useAvatarSource';
 import { useReactionStore } from '../state/useReactionStore';
 import { useToastStore } from '../state/useToastStore';
+import { useSceneSettingsStore } from '../state/useSceneSettingsStore';
+import { sceneManager } from '../three/sceneManager';
+import { avatarManager } from '../three/avatarManager';
 import { AboutModal } from './AboutModal';
 import { SettingsModal } from './SettingsModal';
 import { projectManager } from '../persistence/projectManager';
@@ -28,6 +31,19 @@ export function AppHeader({ mode, onModeChange }: AppHeaderProps) {
   const { avatarType, setFileSource, setLive2dSource, sourceLabel } = useAvatarSource();
   const isAvatarReady = useReactionStore((state) => state.isAvatarReady);
   const { addToast } = useToastStore();
+  const resetSceneSettings = useSceneSettingsStore((state) => state.resetAll);
+
+  const handleResetScene = () => {
+    if (confirm('Reset scene settings to default? This will clear lighting, effects, and background settings.')) {
+      resetSceneSettings();
+      // Also reset camera
+      sceneManager.resetCamera();
+      // And reset avatar pose if loaded
+      avatarManager.resetPose();
+      
+      addToast('Scene reset to default', 'info');
+    }
+  };
 
   const handleVRMUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -88,7 +104,12 @@ export function AppHeader({ mode, onModeChange }: AppHeaderProps) {
     <>
       <header className="app-header">
         <div className="app-header__left">
-          <div className="app-header__logo">
+          <div 
+            className="app-header__logo" 
+            onClick={handleResetScene} 
+            title="Reset Scene Settings"
+            style={{ cursor: 'pointer' }}
+          >
             <img src="/logo/poselab.svg" alt="PoseLab" />
             <span>PoseLab</span>
           </div>
