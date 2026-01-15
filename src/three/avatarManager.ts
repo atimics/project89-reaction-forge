@@ -108,7 +108,7 @@ class AvatarManager {
   setManualPosing(enabled: boolean) { this.isManualPosing = enabled; }
   setInteraction(interacting: boolean) { this.isInteracting = interacting; }
 
-  private updateBlink(delta: number) {
+  private updateBlink(_delta: number) {
     if (!this.vrm?.expressionManager) return;
     
     // Check for Blink expression or split blink expressions using case-insensitive search
