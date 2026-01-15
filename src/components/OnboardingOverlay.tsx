@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect } from 'react';
 import { useAvatarSource } from '../state/useAvatarSource';
 import { useAvatarListStore } from '../state/useAvatarListStore';
 import { useToastStore } from '../state/useToastStore';
