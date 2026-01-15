@@ -22,9 +22,10 @@ import {
   Play, 
   Pause, 
   Stop, 
-  Sparkle,
   VideoCamera,
-  StopCircle
+  StopCircle,
+  Clock,
+  Dna
 } from '@phosphor-icons/react';
 import { useAvatarSource } from '../state/useAvatarSource';
 import { live2dManager } from '../live2d/live2dManager';
@@ -53,7 +54,7 @@ export function ViewportOverlay({ mode, isPlaying, onPlayPause, onStop }: Viewpo
   const [isFocusSprintActive, setIsFocusSprintActive] = useState(false);
   const [showFocusGallery, setShowFocusGallery] = useState(false);
   const [focusSecondsLeft, setFocusSecondsLeft] = useState(30);
-  const [focusShotsCaptured, setFocusShotsCaptured] = useState(0);
+  // const [focusShotsCaptured, setFocusShotsCaptured] = useState(0); // Removing unused state to fix lint error
   const poseTimerRef = useRef<number | null>(null);
   const captureTimerRef = useRef<number | null>(null);
   const endTimerRef = useRef<number | null>(null);
@@ -234,7 +235,7 @@ export function ViewportOverlay({ mode, isPlaying, onPlayPause, onStop }: Viewpo
     ];
     clearAutoCaptures();
     captureCountRef.current = 0;
-    setFocusShotsCaptured(0);
+    // setFocusShotsCaptured(0);
     setFocusSecondsLeft(Math.ceil(focusDurationMs / 1000));
     setShowFocusGallery(false);
     setIsFocusSprintActive(true);
@@ -274,7 +275,6 @@ export function ViewportOverlay({ mode, isPlaying, onPlayPause, onStop }: Viewpo
       if (dataUrl) {
         addAutoCapture(dataUrl);
         captureCountRef.current += 1;
-        setFocusShotsCaptured(captureCountRef.current);
       }
     };
 
@@ -389,42 +389,36 @@ export function ViewportOverlay({ mode, isPlaying, onPlayPause, onStop }: Viewpo
         </div>
       </div>
 
-      {/* Playback controls - bottom center */}
-      {mode === 'poselab' && onPlayPause && onStop && (
-        <div className="viewport-overlay bottom-center">
-          <div className="playback-controls">
-            <button
-              className="icon-button"
-              onClick={onPlayPause}
-              title={isPlaying ? 'Pause' : 'Play'}
-              aria-label={isPlaying ? 'Pause animation' : 'Play animation'}
-            >
-              {isPlaying ? <Pause size={18} weight="fill" /> : <Play size={18} weight="fill" />}
-            </button>
-            <button
-              className="icon-button"
-              onClick={onStop}
-              title="Stop"
-              aria-label="Stop animation"
-            >
-              <Stop size={18} weight="fill" />
-            </button>
-          </div>
-        </div>
-      )}
-
       {mode === 'poselab' && (
-        <div className="viewport-overlay focus-sprint">
+        <div className="viewport-overlay bottom-center" style={{ pointerEvents: 'auto', display: 'flex', gap: '8px', alignItems: 'center' }}>
+          {onPlayPause && onStop && (
+            <div className="playback-controls">
+              <button
+                className="icon-button"
+                onClick={onPlayPause}
+                title={isPlaying ? 'Pause' : 'Play'}
+                aria-label={isPlaying ? 'Pause animation' : 'Play animation'}
+              >
+                {isPlaying ? <Pause size={18} weight="fill" /> : <Play size={18} weight="fill" />}
+              </button>
+              <button
+                className="icon-button"
+                onClick={onStop}
+                title="Stop"
+                aria-label="Stop animation"
+              >
+                <Stop size={18} weight="fill" />
+              </button>
+            </div>
+          )}
+
           <button
-            className={`pose-lab-sprint-btn ${isFocusSprintActive ? 'active' : ''}`}
+            className={`sprint-button-glow ${isFocusSprintActive ? 'active' : ''}`}
             onClick={isFocusSprintActive ? () => stopFocusSprint(true) : startFocusSprint}
-            title={isFocusSprintActive ? 'End PoseLab Sprint' : 'Start PoseLab Sprint'}
+            title={isFocusSprintActive ? `End PoseLab Sprint (${focusSecondsLeft}s left)` : 'Start PoseLab Sprint'}
             aria-label={isFocusSprintActive ? 'End PoseLab Sprint' : 'Start PoseLab Sprint'}
           >
-            <Sparkle size={16} weight="duotone" />
-            {isFocusSprintActive
-              ? `End Sprint • ${focusSecondsLeft}s • ${focusShotsCaptured}/6`
-              : 'PoseLab Sprint'}
+            <Dna size={24} weight="duotone" />
           </button>
         </div>
       )}
@@ -437,9 +431,15 @@ export function ViewportOverlay({ mode, isPlaying, onPlayPause, onStop }: Viewpo
       {/* Clock widget - bottom left */}
       <div className="viewport-overlay bottom-left">
         <div className="clock-widget">
-          <span className={`clock-time ${showClock ? '' : 'is-hidden'}`} aria-live="polite">
-            {showClock ? now.toLocaleTimeString() : 'Clock off'}
-          </span>
+          {showClock ? (
+            <span className="clock-time" aria-live="polite">
+              {now.toLocaleTimeString()}
+            </span>
+          ) : (
+            <div className="clock-placeholder" title="Clock hidden">
+              <Clock size={20} weight="duotone" style={{ opacity: 0.5 }} />
+            </div>
+          )}
           <button
             className={`icon-button clock-toggle ${showClock ? 'active' : ''}`}
             onClick={() => setShowClock((prev) => !prev)}

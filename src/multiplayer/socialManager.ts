@@ -22,9 +22,7 @@ import type {
 import { peerManager } from './peerManager';
 import { useMultiplayerStore } from '../state/useMultiplayerStore';
 import { sceneManager } from '../three/sceneManager';
-import { avatarController } from '../ai/AvatarController';
 import { multiAvatarManager } from '../three/multiAvatarManager';
-import type { EmotionState } from '../data/gestures';
 
 /** Chat message for display */
 export interface DisplayChatMessage {
@@ -53,14 +51,11 @@ type PhotoCapturedListener = (photoId: string, dataUrl: string) => void;
 
 /** Maps reactions to avatar gestures or presets */
 const REACTION_TO_POSE: Record<ReactionType, string> = {
-  wave: 'wave',
-  thumbsUp: 'thumbsUp',
-  nod: 'nod',
-  celebrate: 'celebrate',
-  heart: 'cheering',
-  laugh: 'laugh',
-  surprised: 'surprised',
-  dance: 'dance',
+  wave: 'simple-wave',
+  thumbsUp: 'thumbs-up',
+  point: 'point',
+  clap: 'agent-clapping',
+  dance: 'agent-dance',
 };
 
 class SocialManager {
@@ -242,11 +237,8 @@ class SocialManager {
     const emojis: Record<ReactionType, string> = {
       wave: '👋',
       thumbsUp: '👍',
-      nod: '👌',
-      celebrate: '🎉',
-      heart: '❤️',
-      laugh: '😂',
-      surprised: '😲',
+      point: '👉',
+      clap: '👏',
       dance: '💃',
     };
     return emojis[reaction] || '✨';
@@ -404,28 +396,8 @@ class SocialManager {
     const target = REACTION_TO_POSE[message.reaction];
     if (!target) return;
 
-    // Check if it's a known preset or a procedural gesture
-    if (['wave', 'nod', 'shake', 'shrug', 'point', 'thumbsUp', 'clap', 'bow', 'celebrate', 'think', 'listen', 'acknowledge', 'dance', 'laugh', 'surprised'].includes(target)) {
-      multiAvatarManager.performGesture(peerId, target);
-      
-      // Also set a matching expression
-      const exprMap: Record<string, EmotionState> = {
-        wave: 'happy',
-        thumbsUp: 'happy',
-        nod: 'happy',
-        acknowledge: 'happy',
-        celebrate: 'excited',
-        dance: 'excited',
-        laugh: 'happy',
-        surprised: 'surprised'
-      };
-      if (exprMap[target]) {
-        multiAvatarManager.setEmotion(peerId, exprMap[target]);
-      }
-    } else {
-      // It's a preset ID
-      multiAvatarManager.applyPreset(peerId, target, true);
-    }
+    // Use preset ID for all utility emotes
+    multiAvatarManager.applyPreset(peerId, target, true);
   }
 
   private handlePresenceMessage(peerId: PeerId, message: PresenceMessage) {
@@ -469,31 +441,8 @@ class SocialManager {
     const target = REACTION_TO_POSE[reaction];
     if (!target) return;
 
-    // Trigger on multiAvatarManager which handles both local (delegated) and remote
-    if (['wave', 'nod', 'shake', 'shrug', 'point', 'thumbsUp', 'clap', 'bow', 'celebrate', 'think', 'listen', 'acknowledge', 'dance', 'laugh', 'surprised'].includes(target)) {
-      // Use procedural gesture for the local avatar as well for these specific ones
-      // This ensures we see what others see
-      if (avatarController) {
-        avatarController.performGesture(target as any);
-        
-        const exprMap: Record<string, any> = {
-          wave: 'happy',
-          thumbsUp: 'happy',
-          nod: 'happy',
-          acknowledge: 'happy',
-          celebrate: 'excited',
-          dance: 'excited',
-          laugh: 'happy',
-          surprised: 'surprised'
-        };
-        if (exprMap[target]) {
-          avatarController.setEmotion(exprMap[target]);
-        }
-      }
-    } else {
-      // Use preset ID
-      multiAvatarManager.applyPreset(store.localPeerId, target, true);
-    }
+    // Use preset ID for all utility emotes
+    multiAvatarManager.applyPreset(store.localPeerId, target, true);
   }
 
   private broadcastPresence(state: PresenceState) {

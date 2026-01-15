@@ -14,6 +14,7 @@ import { useMultiplayerStore } from '../state/useMultiplayerStore';
 import { useSessionStore } from '../state/useSessionStore';
 import { socialManager } from '../multiplayer/socialManager';
 import type { ReactionType } from '../types/multiplayer';
+import { Draggable } from './Draggable';
 import './SessionHUD.css';
 import { 
   Users, 
@@ -25,23 +26,17 @@ import {
   FloppyDisk,
   HandWaving,
   ThumbsUp,
-  Check,
-  Heart,
-  Confetti,
-  MaskHappy,
-  WarningCircle,
+  HandPointing,
+  HandsClapping,
   MusicNotes
 } from '@phosphor-icons/react';
 
 const REACTIONS: { type: ReactionType; icon: React.ReactNode; label: string; emoji: string }[] = [
-  { type: 'wave', icon: <HandWaving size={18} weight="duotone" />, label: 'Wave', emoji: '👋' },
-  { type: 'thumbsUp', icon: <ThumbsUp size={18} weight="duotone" />, label: 'Like', emoji: '👍' },
-  { type: 'nod', icon: <Check size={18} weight="duotone" />, label: 'Nod', emoji: '👌' },
-  { type: 'heart', icon: <Heart size={18} weight="duotone" />, label: 'Heart', emoji: '❤️' },
-  { type: 'celebrate', icon: <Confetti size={18} weight="duotone" />, label: 'Party', emoji: '🎉' },
-  { type: 'laugh', icon: <MaskHappy size={18} weight="duotone" />, label: 'Laugh', emoji: '😂' },
-  { type: 'surprised', icon: <WarningCircle size={18} weight="duotone" />, label: 'Wow', emoji: '😲' },
-  { type: 'dance', icon: <MusicNotes size={18} weight="duotone" />, label: 'Dance', emoji: '💃' },
+  { type: 'wave', icon: <HandWaving size={24} weight="duotone" />, label: 'Wave', emoji: '👋' },
+  { type: 'thumbsUp', icon: <ThumbsUp size={24} weight="duotone" />, label: 'Like', emoji: '👍' },
+  { type: 'point', icon: <HandPointing size={24} weight="duotone" />, label: 'Point', emoji: '👉' },
+  { type: 'clap', icon: <HandsClapping size={24} weight="duotone" />, label: 'Clap', emoji: '👏' },
+  { type: 'dance', icon: <MusicNotes size={24} weight="duotone" />, label: 'Dance', emoji: '💃' },
 ];
 
 export function SessionHUD() {
@@ -92,9 +87,7 @@ export function SessionHUD() {
         peerId: reaction.peerId,
         displayName: reaction.displayName,
         reaction: reaction.reaction,
-        emoji: socialManager.constructor.prototype.constructor.name === 'SocialManager' 
-          ? REACTIONS.find(r => r.type === reaction.reaction)?.emoji || '✨'
-          : '✨',
+        emoji: REACTIONS.find(r => r.type === reaction.reaction)?.emoji || '✨',
         timestamp: reaction.timestamp,
       });
     });
@@ -258,47 +251,62 @@ export function SessionHUD() {
         </button>
       </div>
 
-      {/* Chat Panel */}
+      {/* Chat Panel - Now Draggable */}
       {isChatOpen && (
-        <div className="chat-panel">
-          <div className="chat-header">
-            <span>Session Chat</span>
-            <button onClick={() => setChatOpen(false)}><X size={16} weight="bold" /></button>
-          </div>
-          
-          <div className="chat-messages">
-            {chatMessages.length === 0 ? (
-              <div className="chat-empty">
-                No messages yet. Say hi! 👋
+        <Draggable 
+          initialX={window.innerWidth - 340} // Default position (right side)
+          initialY={window.innerHeight - 480} // Default position (bottom)
+          handleSelector=".chat-header"
+          className="chat-draggable"
+        >
+          <div className="chat-panel">
+            <div className="chat-header">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <ChatCircle size={18} weight="duotone" />
+                <span>Session Chat</span>
               </div>
-            ) : (
-              chatMessages.map((msg) => (
-                <div 
-                  key={msg.id} 
-                  className={`chat-message ${msg.isLocal ? 'local' : 'remote'}`}
-                >
-                  <span className="chat-name">{msg.displayName}</span>
-                  <span className="chat-text">{msg.text}</span>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button onClick={() => setChatOpen(false)} title="Close">
+                  <X size={16} weight="bold" />
+                </button>
+              </div>
+            </div>
+            
+            <div className="chat-messages">
+              {chatMessages.length === 0 ? (
+                <div className="chat-empty">
+                  No messages yet. Say hi! 👋
                 </div>
-              ))
-            )}
-            <div ref={chatEndRef} />
-          </div>
+              ) : (
+                chatMessages.map((msg) => (
+                  <div 
+                    key={msg.id} 
+                    className={`chat-message ${msg.isLocal ? 'local' : 'remote'}`}
+                  >
+                    <span className="chat-name">{msg.displayName}</span>
+                    <span className="chat-text">{msg.text}</span>
+                  </div>
+                ))
+              )}
+              <div ref={chatEndRef} />
+            </div>
 
-          <form className="chat-input-form" onSubmit={handleSendChat}>
-            <input
-              ref={chatInputRef}
-              type="text"
-              value={chatInput}
-              onChange={(e) => setChatInput(e.target.value)}
-              placeholder="Type a message..."
-              maxLength={200}
-            />
-            <button type="submit" disabled={!chatInput.trim()}>
-              <PaperPlaneTilt size={16} weight="fill" />
-            </button>
-          </form>
-        </div>
+            <form className="chat-input-form" onSubmit={handleSendChat}>
+              <input
+                ref={chatInputRef}
+                type="text"
+                value={chatInput}
+                onChange={(e) => setChatInput(e.target.value)}
+                placeholder="Type a message..."
+                maxLength={200}
+                onPointerDown={(e) => e.stopPropagation()} // Prevent dragging when clicking input
+              />
+              <button type="submit" disabled={!chatInput.trim()}>
+                <PaperPlaneTilt size={16} weight="fill" />
+              </button>
+            </form>
+          </div>
+        </Draggable>
       )}
     </div>
   );

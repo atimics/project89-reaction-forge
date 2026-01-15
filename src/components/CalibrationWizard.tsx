@@ -73,14 +73,14 @@ export function CalibrationWizard({ manager }: CalibrationWizardProps) {
 
         <div className="calibration-wizard__meta">
           <span className="calibration-wizard__eyebrow">
-            Tracking Calibration
+            Mocap Setup
           </span>
           <span className="calibration-wizard__step">
-            Step {Math.min(calibrationStep + 1, STEPS.length)}/{STEPS.length}
+            Step {Math.min(calibrationStep + 1, STEPS.length)} of {STEPS.length}
           </span>
         </div>
 
-        <div className="progress-bar" aria-hidden="true">
+        <div className="progress-bar" aria-hidden="true" style={{ marginTop: '0.5rem', marginBottom: '1.5rem' }}>
           <div className="progress-bar__fill" style={{ width: `${progress * 100}%` }} />
         </div>
 
@@ -99,7 +99,7 @@ export function CalibrationWizard({ manager }: CalibrationWizardProps) {
 
         {calibrationStep === 0 && (
           <p className="muted small calibration-wizard__tip">
-            Tip: Lighting is key. Ensure your environment is well-lit.
+            Tip: Ensure your webcam has a clear view of your upper body and good lighting.
           </p>
         )}
       </div>

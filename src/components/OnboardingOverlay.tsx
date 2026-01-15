@@ -53,7 +53,13 @@ const TUTORIAL_STEPS = [
   {
     id: 'camera',
     title: '6. Camera Controls',
-    description: 'Use hotkeys 1, 3, 5, 7 for quick camera views: Headshot, 3/4, Side, and Home. Press Space to save a snapshot PNG, or P to export a PNG with effects. Scroll to zoom, drag to orbit.',
+    description: (
+      <span>
+        Use hotkeys <span className="hotkey-hint">1</span> <span className="hotkey-hint">3</span> <span className="hotkey-hint">5</span> <span className="hotkey-hint">7</span> for quick camera views: Headshot, 3/4, Side, and Home. 
+        Press <span className="hotkey-hint">Space</span> to save a snapshot PNG, or <span className="hotkey-hint">P</span> to export a PNG with effects. 
+        Scroll to zoom, drag to orbit.
+      </span>
+    ),
     targetId: 'canvas-stage',
     highlight: true
   },
@@ -260,7 +266,7 @@ export function OnboardingOverlay() {
                 onClick={handleNext}
                 style={{ padding: '0.6rem 2rem' }}
             >
-                {currentTutorialStep === TUTORIAL_STEPS.length - 1 ? 'Awaken' : 'Proceed ⇢'}
+                {currentTutorialStep === TUTORIAL_STEPS.length - 1 ? 'Start Creating ⇢' : 'Next Step ⇢'}
             </button>
         </div>
       </div>

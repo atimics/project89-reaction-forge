@@ -30,7 +30,7 @@
   top: 0;
   left: 0;
   right: 0;
-  height: 100px;
+  height: 80px;
   background: linear-gradient(
     180deg,
     rgba(124, 58, 237, 0.04) 0%,
@@ -97,6 +97,11 @@
   animation: slideDown var(--duration-normal) var(--ease-spring);
 }
 
+@keyframes slideDown {
+  0% { opacity: 0; transform: translateY(-10px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
 /* ═══════════════════════════════════════════════════════════════════════════
    SECTIONS & LABELS
    ═══════════════════════════════════════════════════════════════════════════ */
@@ -113,7 +118,7 @@
   font-size: var(--text-xs);
   text-transform: uppercase;
   letter-spacing: var(--tracking-widest);
-  color: var(--text-muted);
+  color: var(--text-tertiary);
   font-weight: var(--weight-medium);
   margin-left: var(--space-1);
 }
@@ -378,6 +383,9 @@
 .mp-peer-avatar {
   font-size: 1.1rem;
   opacity: 0.9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .mp-peer-name {
