@@ -505,7 +505,7 @@ class AvatarManager {
   }
 }
 
-function buildVRMPose(definition: PoseDefinition): VRMPose {
+export function buildVRMPose(definition: PoseDefinition): VRMPose {
   if (definition.vrmPose) return JSON.parse(JSON.stringify(definition.vrmPose));
   const pose: VRMPose = {};
   if (!definition.boneRotations) return pose;

@@ -51,28 +51,16 @@ type PresenceListener = (peerId: PeerId, state: PresenceState) => void;
 type CountdownListener = (count: number, photoId: string) => void;
 type PhotoCapturedListener = (photoId: string, dataUrl: string) => void;
 
-/** Maps reactions to avatar gestures */
-const REACTION_TO_GESTURE: Record<ReactionType, string> = {
+/** Maps reactions to avatar gestures or presets */
+const REACTION_TO_POSE: Record<ReactionType, string> = {
   wave: 'wave',
   thumbsUp: 'thumbsUp',
   nod: 'nod',
   celebrate: 'celebrate',
-  heart: 'celebrate', // Use celebrate for heart for now
+  heart: 'cheering',
   laugh: 'laugh',
   surprised: 'surprised',
   dance: 'dance',
-};
-
-/** Maps reactions to expressions */
-const REACTION_TO_EXPRESSION: Record<ReactionType, EmotionState> = {
-  wave: 'happy',
-  thumbsUp: 'happy',
-  nod: 'happy',
-  celebrate: 'excited',
-  heart: 'happy',
-  laugh: 'happy',
-  surprised: 'surprised',
-  dance: 'excited',
 };
 
 class SocialManager {
@@ -413,14 +401,30 @@ class SocialManager {
     this.notifyReactionListeners(displayReaction);
 
     // Trigger animation on the remote avatar
-    const gesture = REACTION_TO_GESTURE[message.reaction];
-    const expression = REACTION_TO_EXPRESSION[message.reaction];
+    const target = REACTION_TO_POSE[message.reaction];
+    if (!target) return;
 
-    if (gesture) {
-      multiAvatarManager.performGesture(peerId, gesture);
-    }
-    if (expression) {
-      multiAvatarManager.setEmotion(peerId, expression);
+    // Check if it's a known preset or a procedural gesture
+    if (['wave', 'nod', 'shake', 'shrug', 'point', 'thumbsUp', 'clap', 'bow', 'celebrate', 'think', 'listen', 'acknowledge', 'dance', 'laugh', 'surprised'].includes(target)) {
+      multiAvatarManager.performGesture(peerId, target);
+      
+      // Also set a matching expression
+      const exprMap: Record<string, EmotionState> = {
+        wave: 'happy',
+        thumbsUp: 'happy',
+        nod: 'happy',
+        acknowledge: 'happy',
+        celebrate: 'excited',
+        dance: 'excited',
+        laugh: 'happy',
+        surprised: 'surprised'
+      };
+      if (exprMap[target]) {
+        multiAvatarManager.setEmotion(peerId, exprMap[target]);
+      }
+    } else {
+      // It's a preset ID
+      multiAvatarManager.applyPreset(peerId, target, true);
     }
   }
 
@@ -459,23 +463,36 @@ class SocialManager {
   }
 
   private triggerReactionAnimation(reaction: ReactionType) {
-    const gesture = REACTION_TO_GESTURE[reaction];
-    const expression = REACTION_TO_EXPRESSION[reaction];
+    const store = useMultiplayerStore.getState();
+    if (!store.localPeerId) return;
 
-    if (gesture && avatarController) {
-      try {
-        avatarController.performGesture(gesture as any);
-      } catch (e) {
-        console.warn('[SocialManager] Could not trigger gesture:', e);
-      }
-    }
+    const target = REACTION_TO_POSE[reaction];
+    if (!target) return;
 
-    if (expression && avatarController) {
-      try {
-        avatarController.setEmotion(expression as any);
-      } catch (e) {
-        console.warn('[SocialManager] Could not set expression:', e);
+    // Trigger on multiAvatarManager which handles both local (delegated) and remote
+    if (['wave', 'nod', 'shake', 'shrug', 'point', 'thumbsUp', 'clap', 'bow', 'celebrate', 'think', 'listen', 'acknowledge', 'dance', 'laugh', 'surprised'].includes(target)) {
+      // Use procedural gesture for the local avatar as well for these specific ones
+      // This ensures we see what others see
+      if (avatarController) {
+        avatarController.performGesture(target as any);
+        
+        const exprMap: Record<string, any> = {
+          wave: 'happy',
+          thumbsUp: 'happy',
+          nod: 'happy',
+          acknowledge: 'happy',
+          celebrate: 'excited',
+          dance: 'excited',
+          laugh: 'happy',
+          surprised: 'surprised'
+        };
+        if (exprMap[target]) {
+          avatarController.setEmotion(exprMap[target]);
+        }
       }
+    } else {
+      // Use preset ID
+      multiAvatarManager.applyPreset(store.localPeerId, target, true);
     }
   }
 

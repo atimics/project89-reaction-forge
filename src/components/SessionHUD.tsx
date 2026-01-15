@@ -22,18 +22,26 @@ import {
   ChatCircle, 
   X, 
   PaperPlaneTilt,
-  FloppyDisk
+  FloppyDisk,
+  HandWaving,
+  ThumbsUp,
+  Check,
+  Heart,
+  Confetti,
+  MaskHappy,
+  WarningCircle,
+  MusicNotes
 } from '@phosphor-icons/react';
 
-const REACTIONS: { type: ReactionType; emoji: string; label: string }[] = [
-  { type: 'wave', emoji: '👋', label: 'Wave' },
-  { type: 'thumbsUp', emoji: '👍', label: 'Like' },
-  { type: 'nod', emoji: '👌', label: 'Nod' },
-  { type: 'heart', emoji: '❤️', label: 'Heart' },
-  { type: 'celebrate', emoji: '🎉', label: 'Party' },
-  { type: 'laugh', emoji: '😂', label: 'Laugh' },
-  { type: 'surprised', emoji: '😲', label: 'Wow' },
-  { type: 'dance', emoji: '💃', label: 'Dance' },
+const REACTIONS: { type: ReactionType; icon: React.ReactNode; label: string; emoji: string }[] = [
+  { type: 'wave', icon: <HandWaving size={18} weight="duotone" />, label: 'Wave', emoji: '👋' },
+  { type: 'thumbsUp', icon: <ThumbsUp size={18} weight="duotone" />, label: 'Like', emoji: '👍' },
+  { type: 'nod', icon: <Check size={18} weight="duotone" />, label: 'Nod', emoji: '👌' },
+  { type: 'heart', icon: <Heart size={18} weight="duotone" />, label: 'Heart', emoji: '❤️' },
+  { type: 'celebrate', icon: <Confetti size={18} weight="duotone" />, label: 'Party', emoji: '🎉' },
+  { type: 'laugh', icon: <MaskHappy size={18} weight="duotone" />, label: 'Laugh', emoji: '😂' },
+  { type: 'surprised', icon: <WarningCircle size={18} weight="duotone" />, label: 'Wow', emoji: '😲' },
+  { type: 'dance', icon: <MusicNotes size={18} weight="duotone" />, label: 'Dance', emoji: '💃' },
 ];
 
 export function SessionHUD() {
@@ -160,7 +168,9 @@ export function SessionHUD() {
       <div className="reaction-bubbles">
         {reactionBubbles.map((bubble) => (
           <div key={bubble.id} className="reaction-bubble">
-            <span className="reaction-emoji">{bubble.emoji}</span>
+            <span className="reaction-icon-small">
+              {REACTIONS.find(r => r.type === bubble.reaction)?.icon || bubble.emoji}
+            </span>
             <span className="reaction-name">{bubble.displayName}</span>
           </div>
         ))}
@@ -215,8 +225,10 @@ export function SessionHUD() {
                   key={r.type}
                   onClick={() => handleReaction(r.type)}
                   title={r.label}
+                  className="reaction-item"
                 >
-                  {r.emoji}
+                  <span className="reaction-icon">{r.icon}</span>
+                  <span className="reaction-label">{r.label}</span>
                 </button>
               ))}
             </div>

@@ -4,6 +4,7 @@ import { VRM, VRMLoaderPlugin, VRMUtils, VRMHumanBoneName } from '@pixiv/three-v
 import type { VRMPose } from '@pixiv/three-vrm';
 import { sceneManager } from './sceneManager';
 import { materialManager } from './materialManager';
+import { avatarManager } from './avatarManager';
 import type { PeerId, AvatarState } from '../types/multiplayer';
 import { 
   GESTURE_LIBRARY, 
@@ -11,6 +12,8 @@ import {
   Easing, 
   type EmotionState 
 } from '../data/gestures';
+import { getPoseDefinitionWithAnimation, getPoseDefinition } from '../poses';
+import { buildVRMPose } from './avatarManager';
 
 /** Position offset for multiple avatars (arranged in a line) */
 const AVATAR_SPACING = 1.2; // meters between avatars
@@ -520,6 +523,37 @@ class MultiAvatarManager {
 
     instance.currentAction = action;
     instance.isAnimated = true;
+  }
+
+  /**
+   * Apply a preset pose to an avatar
+   */
+  async applyPreset(peerId: PeerId, poseId: string, animated = true) {
+    const instance = this.avatars.get(peerId);
+    if (!instance) return;
+
+    // For local avatar, delegate to avatarManager
+    if (instance.isLocal) {
+      avatarManager.applyPose(poseId as any, animated, animated ? 'once' : 'static');
+      return;
+    }
+
+    try {
+      const def = animated 
+        ? await getPoseDefinitionWithAnimation(poseId as any, instance.vrm) 
+        : getPoseDefinition(poseId as any);
+        
+      if (!def) return;
+
+      if (animated && def.animationClip) {
+        this.playAnimationClip(peerId, def.animationClip, false);
+      } else {
+        const vrmPose = buildVRMPose(def);
+        this.applyPose(peerId, vrmPose);
+      }
+    } catch (e) {
+      console.warn(`[MultiAvatarManager] Failed to apply preset ${poseId} to ${peerId}:`, e);
+    }
   }
 
   /**
