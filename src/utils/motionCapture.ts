@@ -12,9 +12,6 @@ import { live2dManager } from '../live2d/live2dManager';
 // Configuration Constants
 // ======================
 
-// Public path to WASM files (relative to public/ or root)
-const WASM_PATH = null;
-
 // MediaPipe Configuration (Moved from worker)
 const HOLISTIC_CONFIG = {
   modelComplexity: 1 as const,
@@ -102,7 +99,6 @@ interface RecordedFrame {
 type HandLandmarks2D = any; 
 
 export class MotionCaptureManager {
-  private worker: Worker | null = null;
   private holistic: Holistic | null = null; // Main thread holistic instance
   private camera?: Camera;
   private vrm?: VRM;
@@ -283,8 +279,6 @@ export class MotionCaptureManager {
         if (this.vrm?.lookAt) {
             this.vrm.lookAt.target = undefined; 
         }
-
-        // if (!this.worker) this.initWorker();
 
         this.camera = new Camera(this.videoElement, {
             onFrame: async () => {

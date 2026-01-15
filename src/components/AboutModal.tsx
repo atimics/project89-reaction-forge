@@ -8,7 +8,8 @@ import {
   FilmSlate,
   Cube,
   Brain,
-  GithubLogo
+  GithubLogo,
+  TwitterLogo
 } from '@phosphor-icons/react';
 
 interface AboutModalProps {
@@ -110,6 +111,31 @@ export function AboutModal({ isOpen, onClose }: AboutModalProps) {
             >
               <GithubLogo size={20} weight="duotone" />
               Contribute on GitHub
+            </a>
+          </div>
+
+          <div style={{ 
+            marginTop: '0.75rem', 
+            padding: '1rem', 
+            background: 'rgba(124, 58, 237, 0.05)', 
+            borderRadius: '8px',
+            border: '1px solid rgba(124, 58, 237, 0.15)'
+          }}>
+            <a 
+              href="https://x.com/poselabstudio" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              style={{ 
+                color: 'var(--violet)', 
+                textDecoration: 'none',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                fontWeight: 600
+              }}
+            >
+              <TwitterLogo size={20} weight="duotone" />
+              Follow @poselabstudio
             </a>
           </div>
           
