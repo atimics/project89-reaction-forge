@@ -25,9 +25,11 @@ import {
   VideoCamera,
   StopCircle,
   Clock,
-  Dna
+  Dna,
+  DiceFive
 } from '@phosphor-icons/react';
 import { useAvatarSource } from '../state/useAvatarSource';
+import { useAvatarListStore } from '../state/useAvatarListStore';
 import { live2dManager } from '../live2d/live2dManager';
 import { getPoseLabTimestamp } from '../utils/exportNaming';
 
@@ -47,7 +49,8 @@ export function ViewportOverlay({ mode, isPlaying, onPlayPause, onStop }: Viewpo
   const { addToast } = useToastStore();
   const { lightingPreset, setLightingPreset } = useSceneSettingsStore();
   const { isPoppedOut, togglePopOut } = usePopOutViewport(activeCssOverlay);
-  const { avatarType } = useAvatarSource();
+  const { avatarType, setRemoteUrl } = useAvatarSource();
+  const { fetchAvatars, getRandomAvatar, isLoading: isAvatarListLoading } = useAvatarListStore();
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>('16:9');
   const [showClock, setShowClock] = useState(true);
   const [now, setNow] = useState(() => new Date());
@@ -68,6 +71,11 @@ export function ViewportOverlay({ mode, isPlaying, onPlayPause, onStop }: Viewpo
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const recordingStreamRef = useRef<MediaStream | null>(null);
+
+  useEffect(() => {
+    // Ensure avatar list is loaded
+    fetchAvatars();
+  }, [fetchAvatars]);
 
   const handleToggleRecording = async () => {
     if (isRecording) {
@@ -171,6 +179,20 @@ export function ViewportOverlay({ mode, isPlaying, onPlayPause, onStop }: Viewpo
 
   const handleResetCamera = () => {
     sceneManager.resetCamera();
+  };
+
+  const handleRandomAvatar = () => {
+    if (isAvatarListLoading) {
+      addToast('Loading avatar matrix...', 'info');
+      return;
+    }
+    const randomAvatar = getRandomAvatar();
+    if (randomAvatar) {
+      setRemoteUrl(randomAvatar.model_file_url, randomAvatar.name);
+      addToast(`${randomAvatar.name} materialized.`, 'success');
+    } else {
+      addToast('Failed to find an avatar signal.', 'error');
+    }
   };
 
   const handleHeadshotView = () => {
@@ -306,6 +328,18 @@ export function ViewportOverlay({ mode, isPlaying, onPlayPause, onStop }: Viewpo
       {/* Camera controls - top left */}
       <div className="viewport-overlay top-left">
         <div className="camera-controls">
+          <button
+            className="icon-button"
+            onClick={handleRandomAvatar}
+            title={isAvatarListLoading ? "Loading avatars..." : "Load Random Avatar"}
+            aria-label="Load Random Avatar"
+            disabled={isAvatarListLoading}
+          >
+            <DiceFive size={18} weight="duotone" className={isAvatarListLoading ? "spin" : ""} />
+          </button>
+          
+          <div style={{ width: '1px', height: '20px', background: 'rgba(255,255,255,0.1)', margin: '0 4px' }}></div>
+
           <button
             className="icon-button"
             onClick={handleHeadshotView}

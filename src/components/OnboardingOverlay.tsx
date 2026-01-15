@@ -1,8 +1,9 @@
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import { useAvatarSource } from '../state/useAvatarSource';
+import { useAvatarListStore } from '../state/useAvatarListStore';
 import { useToastStore } from '../state/useToastStore';
 import { useUIStore } from '../state/useUIStore';
-import { Eye, FolderOpen, Robot } from '@phosphor-icons/react';
+import { Eye, FolderOpen, DiceFive } from '@phosphor-icons/react';
 
 const TUTORIAL_STEPS = [
   {
@@ -73,7 +74,8 @@ const TUTORIAL_STEPS = [
 ];
 
 export function OnboardingOverlay() {
-  const { avatarType, setFileSource } = useAvatarSource();
+  const { avatarType, setFileSource, setRemoteUrl } = useAvatarSource();
+  const { fetchAvatars, getRandomAvatar, isLoading: isAvatarListLoading } = useAvatarListStore();
   const { addToast } = useToastStore();
   const { 
     isTutorialActive, 
@@ -90,10 +92,13 @@ export function OnboardingOverlay() {
 
   // Auto-start tutorial if no avatar is loaded
   useEffect(() => {
+    // Pre-fetch avatar list on mount
+    fetchAvatars();
+    
     if (avatarType === 'none' && !isTutorialActive) {
       startTutorial();
     }
-  }, [avatarType, isTutorialActive, startTutorial]);
+  }, [avatarType, isTutorialActive, startTutorial, fetchAvatars]);
 
   // Handle step actions
   useEffect(() => {
@@ -144,11 +149,24 @@ export function OnboardingOverlay() {
 
   const loadSampleAvatar = async () => {
     try {
-      const response = await fetch('/vrm/VIPE_Hero_2851-default.vrm');
-      const blob = await response.blob();
-      const file = new File([blob], 'VIPE_Hero_2851-default.vrm', { type: 'model/gltf-binary' });
-      setFileSource(file);
-      addToast('Agent VIPE Hero materialized.', 'success');
+      if (isAvatarListLoading) {
+        addToast('Establishing connection to avatar matrix...', 'info');
+        return;
+      }
+      
+      const randomAvatar = getRandomAvatar();
+      
+      if (randomAvatar) {
+        setRemoteUrl(randomAvatar.model_file_url, randomAvatar.name);
+        addToast(`${randomAvatar.name} materialized.`, 'success');
+      } else {
+        // Fallback to local default if API fails
+        const response = await fetch('/vrm/VIPE_Hero_2851-default.vrm');
+        const blob = await response.blob();
+        const file = new File([blob], 'VIPE_Hero_2851-default.vrm', { type: 'model/gltf-binary' });
+        setFileSource(file);
+        addToast('Agent VIPE Hero materialized (Offline Mode).', 'success');
+      }
     } catch (error) {
       console.error('Failed to load sample avatar:', error);
       addToast('Transmission failed. Please upload your own avatar.', 'error');
@@ -199,14 +217,15 @@ export function OnboardingOverlay() {
                 <button 
                     className="secondary full-width"
                     onClick={loadSampleAvatar}
+                    disabled={isAvatarListLoading}
                 >
-                    <Robot size={18} weight="duotone" /> Try Sample Avatar
+                    <DiceFive size={18} weight="duotone" /> {isAvatarListLoading ? 'Connecting...' : 'Try Random Avatar'}
                 </button>
 
                 <div className="divider" style={{ margin: '1.5rem 0', borderTop: '1px solid var(--border-color)' }}></div>
                 
                 <p className="muted small" style={{ marginBottom: 0 }}>
-                    New here? Try the sample avatar to explore all features.
+                    New here? Try a random avatar to explore all features.
                 </p>
               </div>
 

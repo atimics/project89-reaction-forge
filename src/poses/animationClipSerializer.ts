@@ -117,6 +117,17 @@ const VRM_BONE_MAP: Record<string, VRMHumanBoneName> = {
   'Normalized_rightLittleProximal': 'rightLittleProximal' as VRMHumanBoneName,
   'Normalized_rightLittleIntermediate': 'rightLittleIntermediate' as VRMHumanBoneName,
   'Normalized_rightLittleDistal': 'rightLittleDistal' as VRMHumanBoneName,
+
+  // ============================================
+  // Common Typos & Alternate Names found in wild animations
+  // ============================================
+  // Typo in some animation files
+  'Normalized_rightLoweArm': 'rightLowerArm' as VRMHumanBoneName,
+  'Normalized_leftLoweArm': 'leftLowerArm' as VRMHumanBoneName,
+  
+  // Thumb Metacarpals (often map to Proximal in VRM if not explicit)
+  'Normalized_leftThumbMetacarpal': 'leftThumbProximal' as VRMHumanBoneName,
+  'Normalized_rightThumbMetacarpal': 'rightThumbProximal' as VRMHumanBoneName,
   
   // ============================================
   // Direct VRM bone names (from MotionEngine)
@@ -177,6 +188,28 @@ const VRM_BONE_MAP: Record<string, VRMHumanBoneName> = {
   'rightLittleIntermediate': 'rightLittleIntermediate' as VRMHumanBoneName,
   'rightLittleDistal': 'rightLittleDistal' as VRMHumanBoneName,
 };
+
+/**
+ * Bones that are optional in VRM and should not cause retargeting failure if missing
+ */
+const OPTIONAL_BONES = new Set<string>([
+  'leftToes', 'rightToes',
+  'leftEye', 'rightEye',
+  'jaw',
+  'upperChest',
+  // Fingers are also optional but usually we want to know if they fail. 
+  // Adding them here to reduce noise for simple avatars.
+  'leftThumbProximal', 'leftThumbIntermediate', 'leftThumbDistal',
+  'leftIndexProximal', 'leftIndexIntermediate', 'leftIndexDistal',
+  'leftMiddleProximal', 'leftMiddleIntermediate', 'leftMiddleDistal',
+  'leftRingProximal', 'leftRingIntermediate', 'leftRingDistal',
+  'leftLittleProximal', 'leftLittleIntermediate', 'leftLittleDistal',
+  'rightThumbProximal', 'rightThumbIntermediate', 'rightThumbDistal',
+  'rightIndexProximal', 'rightIndexIntermediate', 'rightIndexDistal',
+  'rightMiddleProximal', 'rightMiddleIntermediate', 'rightMiddleDistal',
+  'rightRingProximal', 'rightRingIntermediate', 'rightRingDistal',
+  'rightLittleProximal', 'rightLittleIntermediate', 'rightLittleDistal',
+]);
 
 /**
  * Convert THREE.AnimationClip to JSON-serializable format
@@ -323,6 +356,12 @@ export function retargetAnimationClip(clip: THREE.AnimationClip, vrm: VRM, optio
     // Get the actual bone node from VRM humanoid
     const boneNode = vrm.humanoid?.getNormalizedBoneNode(boneName);
     if (!boneNode) {
+      // If it's an optional bone (like toes), just log info and skip without error
+      if (OPTIONAL_BONES.has(boneName)) {
+        console.debug(`[retargetAnimationClip] Skipping optional bone: ${boneName}`);
+        return;
+      }
+      
       failCount++;
       failedTracks.push(`${track.name} (bone not found: ${boneName})`);
       return;

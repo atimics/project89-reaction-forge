@@ -19,6 +19,7 @@ import type { BackgroundId } from '../../types/reactions';
 import { MultiplayerPanel } from '../MultiplayerPanel';
 import { notifySceneChange } from '../../multiplayer/avatarBridge';
 import { live2dManager } from '../../live2d/live2dManager';
+import { AvatarLibraryModal } from '../AvatarLibraryModal';
 import { 
   User, 
   Lightbulb, 
@@ -234,6 +235,7 @@ export function SceneTab() {
   const [customBackground, setCustomBackground] = useState<string | null>(null);
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>('16:9');
   const [isLoadingHdri, setIsLoadingHdri] = useState(false);
+  const [isAvatarLibraryOpen, setIsAvatarLibraryOpen] = useState(false);
   
   // Filter presets into Default (Old) and Custom (New)
   const defaultEnvKeys = ['none', 'studio', 'outdoor', 'sunset', 'night', 'urban'];
@@ -451,6 +453,14 @@ export function SceneTab() {
           onClick={() => vrmInputRef.current?.click()}
         >
           {vrmReady ? <><ArrowsClockwise size={16} weight="duotone" /> Change Avatar</> : <><Package size={16} weight="duotone" /> Load VRM Avatar</>}
+        </button>
+
+        <button
+          className="secondary full-width"
+          onClick={() => setIsAvatarLibraryOpen(true)}
+          style={{ marginTop: '0.5rem' }}
+        >
+          <Globe size={16} weight="duotone" /> Browse Avatar Library
         </button>
 
         <button
@@ -1094,6 +1104,8 @@ export function SceneTab() {
       <Section title="Co-op Session" icon={<Globe size={18} weight="duotone" />} defaultOpen={false}>
         <MultiplayerPanel />
       </Section>
+
+      {isAvatarLibraryOpen && <AvatarLibraryModal onClose={() => setIsAvatarLibraryOpen(false)} />}
     </div>
   );
 }
