@@ -1,5 +1,7 @@
 # Technical Breakdown: Reaction Forge
 
+> **Audit Report:** For a detailed analysis of system limitations, architectural risks, and performance bottlenecks, please see [TECHNICAL-AUDIT.md](./docs/TECHNICAL-AUDIT.md).
+
 This document provides a technical overview of the Reaction Forge application, including its architecture, dependencies, and key features.
 
 ## Project Overview
@@ -14,10 +16,13 @@ Reaction Forge is a web-based tool for creating and exporting VRM avatar reactio
 *   **Frontend Framework**: React 19
 *   **3D Rendering**: Three.js
 *   **VRM Support**: `@pixiv/three-vrm` and `@pixiv/three-vrm-animation`
+*   **Live2D Support**: `pixi.js` + `pixi-live2d-display`
 *   **State Management**: Zustand
 *   **Build Tool**: Vite
 *   **Language**: TypeScript
 *   **Styling**: CSS Modules
+*   **Networking**: PeerJS (WebRTC) + PubNub
+*   **AI**: Google Gemini API
 
 ## Project Structure
 
