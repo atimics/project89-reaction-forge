@@ -216,6 +216,8 @@ class EnvironmentManager {
    * Apply a preset HDRI
    */
   async applyPreset(presetId: string): Promise<void> {
+    if (presetId === 'custom') return;
+
     const preset = HDRI_PRESETS[presetId];
     if (!preset) {
       console.warn('[EnvironmentManager] Unknown preset:', presetId);

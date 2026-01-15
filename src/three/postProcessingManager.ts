@@ -314,6 +314,8 @@ class PostProcessingManager {
    * Apply a preset
    */
   applyPreset(presetId: string) {
+    if (presetId === 'custom') return;
+
     const preset = POST_PRESETS[presetId];
     if (!preset) {
       console.warn('[PostProcessingManager] Unknown preset:', presetId);

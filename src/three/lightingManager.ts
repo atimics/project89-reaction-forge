@@ -234,6 +234,8 @@ class LightingManager {
    * Apply a preset by name
    */
   applyPreset(presetId: string) {
+    if (presetId === 'custom') return;
+
     const preset = LIGHT_PRESETS[presetId];
     if (!preset) {
       console.warn('[LightingManager] Unknown preset:', presetId);

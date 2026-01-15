@@ -298,6 +298,8 @@ class MaterialManager {
    * Apply a preset
    */
   applyPreset(presetId: string) {
+    if (presetId === 'custom') return;
+
     const preset = MATERIAL_PRESETS[presetId];
     if (!preset) {
       console.warn('[MaterialManager] Unknown preset:', presetId);
