@@ -1,6 +1,7 @@
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv, type PluginOption, type ViteDevServer } from 'vite'
 import react from '@vitejs/plugin-react'
 import fs from 'node:fs'
+import type { IncomingMessage, ServerResponse } from 'node:http'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { WebSocketServer } from 'ws'
@@ -11,34 +12,21 @@ const __dirname = path.dirname(__filename)
 const poseOutputDir = path.resolve(__dirname, 'src/poses')
 
 // https://vite.dev/config/
-export default defineConfig({
-  // Security headers removed to fix black screen issue (blocks external resources)
-  // server: {
-  //   headers: {
-  //     'Cross-Origin-Opener-Policy': 'same-origin',
-  //     'Cross-Origin-Embedder-Policy': 'require-corp',
-  //   },
-  // },
-  preview: {
-    // headers removed
-  },
-  optimizeDeps: {
-    exclude: ['@ffmpeg/ffmpeg', '@ffmpeg/util'],
-  },
-  worker: {
-    format: 'iife'
-  },
-  plugins: [
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), 'VITE_')
+  const enableVmcBridge = env.VITE_ENABLE_VMC_BRIDGE === 'true'
+  const enablePoseExport = env.VITE_ENABLE_POSE_EXPORT === 'true'
+  const plugins: PluginOption[] = [
     react(),
-    {
+    enableVmcBridge && {
       name: 'vmc-bridge',
-      configureServer(server) {
+      configureServer(server: ViteDevServer) {
         try {
           console.log('[vmc-bridge] Starting WebSocket server on port 39540...')
-          const wss = new WebSocketServer({ port: 39540 })
+          const wss = new WebSocketServer({ port: 39540, host: '127.0.0.1' })
           
           console.log('[vmc-bridge] Starting UDP listener on port 39539...')
-          const oscServer = new OscServer(39539, '0.0.0.0', () => {
+          const oscServer = new OscServer(39539, '127.0.0.1', () => {
              console.log('[vmc-bridge] UDP listener active on 39539')
           })
 
@@ -81,10 +69,10 @@ export default defineConfig({
         }
       }
     },
-    {
+    enablePoseExport && {
       name: 'pose-export-endpoint',
-      configureServer(server) {
-        server.middlewares.use('/__pose-export', (req, res) => {
+      configureServer(server: ViteDevServer) {
+        server.middlewares.use('/__pose-export', (req: IncomingMessage, res: ServerResponse) => {
           if (req.method !== 'POST') {
             res.writeHead(405)
             res.end('Method not allowed')
@@ -92,7 +80,7 @@ export default defineConfig({
           }
 
           let raw = ''
-          req.on('data', (chunk) => {
+          req.on('data', (chunk: Buffer) => {
             raw += chunk
           })
           req.on('end', () => {
@@ -118,5 +106,32 @@ export default defineConfig({
         })
       },
     },
-  ],
+  ].filter(Boolean)
+
+  if (!enableVmcBridge) {
+    console.log('[vmc-bridge] Disabled. Set VITE_ENABLE_VMC_BRIDGE=true to enable.')
+  }
+  if (!enablePoseExport) {
+    console.log('[pose-export] Disabled. Set VITE_ENABLE_POSE_EXPORT=true to enable.')
+  }
+
+  return {
+  // Security headers removed to fix black screen issue (blocks external resources)
+  // server: {
+  //   headers: {
+  //     'Cross-Origin-Opener-Policy': 'same-origin',
+  //     'Cross-Origin-Embedder-Policy': 'require-corp',
+  //   },
+  // },
+  preview: {
+    // headers removed
+  },
+  optimizeDeps: {
+    exclude: ['@ffmpeg/ffmpeg', '@ffmpeg/util'],
+  },
+  worker: {
+    format: 'iife'
+  },
+  plugins,
+  }
 })
