@@ -14,6 +14,7 @@ const poseOutputDir = path.resolve(__dirname, 'src/poses')
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), 'VITE_')
+  const isDev = mode === 'development'
   const enableVmcBridge = env.VITE_ENABLE_VMC_BRIDGE === 'true'
   const enablePoseExport = env.VITE_ENABLE_POSE_EXPORT === 'true'
   const plugins: PluginOption[] = [
@@ -21,6 +22,10 @@ export default defineConfig(({ mode }) => {
     enableVmcBridge && {
       name: 'vmc-bridge',
       configureServer(server: ViteDevServer) {
+        if (!isDev) {
+          console.warn('[vmc-bridge] Skipping setup outside development mode.')
+          return
+        }
         try {
           console.log('[vmc-bridge] Starting WebSocket server on port 39540...')
           const wss = new WebSocketServer({ port: 39540, host: '127.0.0.1' })
@@ -72,7 +77,18 @@ export default defineConfig(({ mode }) => {
     enablePoseExport && {
       name: 'pose-export-endpoint',
       configureServer(server: ViteDevServer) {
+        if (!isDev) {
+          console.warn('[pose-export] Skipping setup outside development mode.')
+          return
+        }
         server.middlewares.use('/__pose-export', (req: IncomingMessage, res: ServerResponse) => {
+          const remoteAddress = req.socket?.remoteAddress
+          if (remoteAddress && remoteAddress !== '127.0.0.1' && remoteAddress !== '::1') {
+            res.writeHead(403)
+            res.end('Forbidden')
+            return
+          }
+
           if (req.method !== 'POST') {
             res.writeHead(405)
             res.end('Method not allowed')
@@ -80,8 +96,14 @@ export default defineConfig(({ mode }) => {
           }
 
           let raw = ''
+          const maxBodyBytes = 1024 * 1024
           req.on('data', (chunk: Buffer) => {
             raw += chunk
+            if (raw.length > maxBodyBytes) {
+              res.writeHead(413)
+              res.end('Payload too large')
+              req.destroy()
+            }
           })
           req.on('end', () => {
             try {
