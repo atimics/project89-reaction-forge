@@ -7,6 +7,11 @@ const _parentRestWorldRotation = new THREE.Quaternion();
 const _quatA = new THREE.Quaternion();
 const _tempVec = new THREE.Vector3();
 
+const usesVrm0CoordinateSystem = (vrm: VRM): boolean => {
+  const metaVersion = `${vrm.meta?.metaVersion ?? ''}`.trim();
+  return metaVersion.startsWith('0');
+};
+
 export function getMixamoAnimation(
   animations: THREE.AnimationClip[],
   mixamoRoot: THREE.Object3D,
@@ -26,6 +31,7 @@ export function getMixamoAnimation(
   }
 
   const tracks: THREE.KeyframeTrack[] = [];
+  const shouldFlipAxes = usesVrm0CoordinateSystem(vrm);
 
   const hipsNode = findMixamoNode(mixamoRoot, 'mixamorigHips') ?? findMixamoNode(mixamoRoot, 'mixamorig:Hips');
   const motionHipsHeight = Math.abs(hipsNode?.position?.y ?? 1);
@@ -67,14 +73,14 @@ export function getMixamoAnimation(
         _quatA.toArray(flatQuaternion);
         for (let j = 0; j < flatQuaternion.length; j++) {
           const value = flatQuaternion[j];
-          track.values[i + j] = vrm.meta?.metaVersion === '0' && j % 2 === 0 ? -value : value;
+          track.values[i + j] = shouldFlipAxes && j % 2 === 0 ? -value : value;
         }
       }
 
       tracks.push(new THREE.QuaternionKeyframeTrack(`${vrmBoneName}.${propertyName}`, track.times, track.values));
     } else if (track instanceof THREE.VectorKeyframeTrack) {
       const modified = track.values.map((value, index) => {
-        const flipped = vrm.meta?.metaVersion === '0' && index % 3 !== 1 ? -value : value;
+        const flipped = shouldFlipAxes && index % 3 !== 1 ? -value : value;
         return flipped * hipsPositionScale;
       });
       tracks.push(new THREE.VectorKeyframeTrack(`${vrmBoneName}.${propertyName}`, track.times, modified));
@@ -108,4 +114,3 @@ export function getMixamoAnimation(
 
   return new THREE.AnimationClip('vrmAnimation', clip.duration, tracks);
 }
-
