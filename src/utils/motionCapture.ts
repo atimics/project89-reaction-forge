@@ -63,6 +63,18 @@ const GAZE_DEADZONE = 0.04;
 /** Head dampening factor (0.4 = 40% dampening, retain 60% of movement) */
 const HEAD_DAMPENING = 0.4;
 
+/** Upper body follow configuration - how much the torso follows head rotation */
+const UPPER_BODY_FOLLOW = {
+  /** How much spine follows head (0 = none, 1 = full) */
+  SPINE: 0.15,
+  /** How much chest follows head */
+  CHEST: 0.25,
+  /** How much upper chest follows head */
+  UPPER_CHEST: 0.35,
+  /** How much neck follows head (neck naturally follows more) */
+  NECK: 0.5,
+};
+
 /** Hand joint constraints for stability (radians) */
 const HAND_CONSTRAINTS = {
   WRIST: {
@@ -717,6 +729,28 @@ export class MotionCaptureManager {
                 this.targetBoneRotations.set('head', headQ);
                 const euler = new THREE.Euler().setFromQuaternion(headQ, 'YXZ');
                 live2dData.head = { x: THREE.MathUtils.radToDeg(euler.x), y: THREE.MathUtils.radToDeg(euler.y), z: THREE.MathUtils.radToDeg(euler.z) };
+                
+                // Upper body follow - make torso subtly follow head rotation for natural movement
+                // Only apply in face/upper body mode (not full body where pose rig handles torso)
+                if (this.mode === 'face') {
+                    const identity = new THREE.Quaternion();
+                    
+                    // Neck follows head most closely
+                    const neckQ = headQ.clone().slerp(identity, 1 - UPPER_BODY_FOLLOW.NECK);
+                    this.targetBoneRotations.set('neck', neckQ);
+                    
+                    // Upper chest follows less
+                    const upperChestQ = headQ.clone().slerp(identity, 1 - UPPER_BODY_FOLLOW.UPPER_CHEST);
+                    this.targetBoneRotations.set('upperChest', upperChestQ);
+                    
+                    // Chest follows even less
+                    const chestQ = headQ.clone().slerp(identity, 1 - UPPER_BODY_FOLLOW.CHEST);
+                    this.targetBoneRotations.set('chest', chestQ);
+                    
+                    // Spine follows least - just a subtle hint
+                    const spineQ = headQ.clone().slerp(identity, 1 - UPPER_BODY_FOLLOW.SPINE);
+                    this.targetBoneRotations.set('spine', spineQ);
+                }
              }
       }
       if (rig.eye) {

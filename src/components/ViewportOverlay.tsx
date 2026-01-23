@@ -581,85 +581,80 @@ export function ViewportOverlay({ mode, isPlaying, onPlayPause, onStop }: Viewpo
       </div>
 
       {showFocusGallery && (
-        <div className="modal-overlay" onClick={() => setShowFocusGallery(false)}>
-          <div className="modal-content focus-sprint-modal" onClick={(e) => e.stopPropagation()}>
-            <button className="modal-close" onClick={() => setShowFocusGallery(false)}>×</button>
-            <h2>PoseLab Sprint Gallery</h2>
-            <p className="muted">
-              {autoCaptures.length === 0
-                ? 'No captures yet — try another sprint to generate shots.'
-                : `Captured ${autoCaptures.length} shots.`}
-            </p>
-            {autoCaptures.length > 0 && (
-              <>
-                <div className="focus-sprint-actions">
-                  <button className="primary" onClick={handleDownloadAll}>
-                    Download all
-                  </button>
-                  <button className="secondary" onClick={() => setShowFocusGallery(false)}>
-                    Close
-                  </button>
+        <div className="sprint-gallery-overlay" onClick={() => setShowFocusGallery(false)}>
+          {autoCaptures.length === 0 ? (
+            <div className="sprint-gallery-empty">
+              <p>No captures yet — try another sprint!</p>
+              <button className="secondary" onClick={() => setShowFocusGallery(false)}>
+                Close
+              </button>
+            </div>
+          ) : (
+            <>
+              {/* Main large image display */}
+              <div className="sprint-gallery-main" onClick={(e) => e.stopPropagation()}>
+                <button
+                  className="sprint-gallery-nav-arrow left"
+                  onClick={handlePrevCapture}
+                  aria-label="Previous capture"
+                >
+                  <CaretLeft size={32} weight="bold" />
+                </button>
+                
+                <div className="sprint-gallery-image-wrapper">
+                  <img
+                    src={autoCaptures[focusCaptureIndex]}
+                    alt={`Sprint capture ${focusCaptureIndex + 1}`}
+                    className="sprint-gallery-image"
+                  />
                 </div>
-                <div className="focus-sprint-carousel">
-                  <button
-                    className="focus-sprint-nav"
-                    onClick={handlePrevCapture}
-                    aria-label="Previous capture"
-                    disabled={autoCaptures.length <= 1}
-                  >
-                    <CaretLeft size={20} weight="bold" />
-                  </button>
-                  <div className="focus-sprint-preview">
-                    <img
-                      src={autoCaptures[focusCaptureIndex]}
-                      alt={`Sprint capture ${focusCaptureIndex + 1}`}
-                    />
-                    <div className="focus-sprint-preview-actions">
-                      <span className="focus-sprint-count">
-                        {focusCaptureIndex + 1} / {autoCaptures.length}
-                      </span>
-                      <button
-                        className="secondary"
-                        onClick={() => handleDownloadCapture(autoCaptures[focusCaptureIndex], focusCaptureIndex)}
-                      >
-                        Save capture
-                      </button>
-                    </div>
-                  </div>
-                  <button
-                    className="focus-sprint-nav"
-                    onClick={handleNextCapture}
-                    aria-label="Next capture"
-                    disabled={autoCaptures.length <= 1}
-                  >
-                    <CaretRight size={20} weight="bold" />
-                  </button>
-                </div>
-                <div className="focus-sprint-gallery">
-                  {autoCaptures.map((url, index) => (
-                    <div
-                      key={`${url}-${index}`}
-                      className={`focus-sprint-thumb ${index === focusCaptureIndex ? 'active' : ''}`}
+                
+                <button
+                  className="sprint-gallery-nav-arrow right"
+                  onClick={handleNextCapture}
+                  aria-label="Next capture"
+                >
+                  <CaretRight size={32} weight="bold" />
+                </button>
+              </div>
+
+              {/* Bottom thumbnail strip */}
+              <div className="sprint-gallery-bottom" onClick={(e) => e.stopPropagation()}>
+                <div className="sprint-gallery-info">
+                  <span className="sprint-gallery-counter">
+                    {focusCaptureIndex + 1} / {autoCaptures.length}
+                  </span>
+                  <div className="sprint-gallery-actions">
+                    <button
+                      className="secondary"
+                      onClick={() => handleDownloadCapture(autoCaptures[focusCaptureIndex], focusCaptureIndex)}
                     >
-                      <button
-                        className="focus-sprint-thumb-button"
-                        onClick={() => setFocusCaptureIndex(index)}
-                        aria-label={`View sprint capture ${index + 1}`}
-                      >
-                        <img src={url} alt={`Sprint capture ${index + 1}`} />
-                      </button>
-                      <button
-                        className="focus-sprint-thumb-save"
-                        onClick={() => handleDownloadCapture(url, index)}
-                      >
-                        Save
-                      </button>
-                    </div>
+                      Save Current
+                    </button>
+                    <button className="primary" onClick={handleDownloadAll}>
+                      Download All
+                    </button>
+                    <button className="secondary" onClick={() => setShowFocusGallery(false)}>
+                      Close
+                    </button>
+                  </div>
+                </div>
+                
+                <div className="sprint-gallery-thumbs">
+                  {autoCaptures.map((url, index) => (
+                    <button
+                      key={`thumb-${index}`}
+                      className={`sprint-gallery-thumb ${index === focusCaptureIndex ? 'active' : ''}`}
+                      onClick={() => setFocusCaptureIndex(index)}
+                      aria-label={`View capture ${index + 1}`}
+                    >
+                      <img src={url} alt={`Thumbnail ${index + 1}`} />
+                    </button>
                   ))}
                 </div>
-              </>
-            )}
-          </div>
+              </div>
+            </>
+          )}
         </div>
       )}
     </>

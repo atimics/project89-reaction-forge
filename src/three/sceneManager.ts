@@ -41,6 +41,8 @@ const CAMERA_CONFIG = {
   MIN_DISTANCE: 0.3,
   /** Maximum orbit distance */
   MAX_DISTANCE: 5,
+  /** Selfie mode camera follow smoothing (lower = more dampening, 0.02-0.1 range) */
+  SELFIE_FOLLOW_SMOOTHING: 0.04,
 };
 
 /** Timing constants in milliseconds */
@@ -73,6 +75,12 @@ class SceneManager {
   private readonly followTargetLookAt = new THREE.Vector3();
   private followTarget?: THREE.Object3D;
   private followOffset = new THREE.Vector3();
+  /** Smoothed camera position for dampened selfie follow */
+  private readonly smoothedCameraPosition = new THREE.Vector3();
+  /** Smoothed look-at target for dampened selfie follow */
+  private readonly smoothedLookAt = new THREE.Vector3();
+  /** Whether selfie follow has been initialized (for first frame) */
+  private selfieFollowInitialized = false;
   private currentAspectRatio: AspectRatio = '16:9';
   private overlayMesh?: THREE.Mesh;
   private animatedBackground?: AnimatedBackground;
@@ -240,11 +248,27 @@ class SceneManager {
         // Calculate world position based on local offset rotated by target
         const worldOffset = this.followOffset.clone().applyQuaternion(this.followTargetQuaternion);
         
+        // Target positions for camera and look-at
+        const targetCameraPos = this.followTargetPosition.clone().add(worldOffset);
         this.followTargetLookAt.copy(this.followTargetPosition);
-        this.camera.position.copy(this.followTargetPosition).add(worldOffset);
-        this.camera.lookAt(this.followTargetLookAt);
+        
+        // Initialize smoothed positions on first frame
+        if (!this.selfieFollowInitialized) {
+          this.smoothedCameraPosition.copy(targetCameraPos);
+          this.smoothedLookAt.copy(this.followTargetLookAt);
+          this.selfieFollowInitialized = true;
+        }
+        
+        // Lerp towards target positions for subtle, dampened follow
+        const smoothing = CAMERA_CONFIG.SELFIE_FOLLOW_SMOOTHING;
+        this.smoothedCameraPosition.lerp(targetCameraPos, smoothing);
+        this.smoothedLookAt.lerp(this.followTargetLookAt, smoothing);
+        
+        // Apply smoothed positions
+        this.camera.position.copy(this.smoothedCameraPosition);
+        this.camera.lookAt(this.smoothedLookAt);
         if (this.controls) {
-          this.controls.target.copy(this.followTargetLookAt);
+          this.controls.target.copy(this.smoothedLookAt);
         }
       }
 
@@ -456,11 +480,13 @@ class SceneManager {
     if (!target) {
       this.followTarget = undefined;
       this.controls.enabled = true;
+      this.selfieFollowInitialized = false;
       return;
     }
 
     this.followTarget = target;
     this.controls.enabled = false;
+    this.selfieFollowInitialized = false; // Reset so first frame initializes smoothed positions
     
     // Capture initial state
     target.getWorldPosition(this.followTargetPosition);
