@@ -62,6 +62,12 @@ class InteractionManager {
       const orbit = sceneManager.getControls();
       if (orbit) orbit.enabled = !event.value;
       avatarManager.setInteraction(event.value);
+      
+      // When dragging ends (event.value = false), save the Hips rotation
+      // This captures any manual rotation adjustments made with the gizmo
+      if (!event.value) {
+        avatarManager.saveLockedHipsRotation();
+      }
     });
     
     this.transformControls.setMode('rotate');

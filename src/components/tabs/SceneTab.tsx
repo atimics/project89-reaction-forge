@@ -564,7 +564,14 @@ export function SceneTab() {
               </span>
               <button
                 className={`secondary small ${rotationLocked ? 'active' : ''}`}
-                onClick={() => setRotationLocked(!rotationLocked)}
+                onClick={() => {
+                  const newLocked = !rotationLocked;
+                  setRotationLocked(newLocked);
+                  // Clear locked Hips rotation when unlocking
+                  if (!newLocked) {
+                    avatarManager.clearLockedHipsRotation();
+                  }
+                }}
                 style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem' }}
                 title={rotationLocked ? 'Unlock rotation (will change with poses)' : 'Lock rotation (won\'t change with poses)'}
               >

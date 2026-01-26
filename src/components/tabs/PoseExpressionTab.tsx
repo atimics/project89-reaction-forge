@@ -28,11 +28,18 @@ export function PoseExpressionTab() {
   const [gizmoMode, setGizmoMode] = useState<'rotate' | 'translate'>('rotate');
   const [gizmoSpace, setGizmoSpace] = useState<'local' | 'world'>('local');
 
+  // Track if WE enabled manual posing (vs the hotkey)
+  const enabledByThisComponentRef = useRef(false);
+
   useEffect(() => {
     return () => {
-      // Cleanup gizmos on unmount
-      interactionManager.toggle(false);
-      avatarManager.setManualPosing(false);
+      // Only cleanup if THIS COMPONENT enabled manual posing (via checkbox)
+      // If user enabled via "2" hotkey, don't disable when switching tabs
+      if (enabledByThisComponentRef.current) {
+        interactionManager.toggle(false);
+        avatarManager.setManualPosing(false);
+        enabledByThisComponentRef.current = false;
+      }
     };
   }, []);
 
@@ -44,6 +51,9 @@ export function PoseExpressionTab() {
     const isInMultiplayer = mpState.isConnected && mpState.localPeerId;
     
     if (enabled) {
+      // Track that THIS COMPONENT enabled manual posing (for cleanup)
+      enabledByThisComponentRef.current = true;
+      
       // 1. Freeze the pose first so it's already static when helpers appear
       avatarManager.freezeCurrentPose();
       
@@ -59,8 +69,15 @@ export function PoseExpressionTab() {
       
       // 4. Auto-lock rotation so manual adjustments persist through animation changes
       useSceneSettingsStore.getState().setRotationLocked(true);
+      
+      // 5. Save current Hips rotation to enforce it while locked
+      avatarManager.saveLockedHipsRotation();
+      
       addToast("Manual Posing Enabled (rotation locked)", "info");
     } else {
+      // No longer enabled by this component
+      enabledByThisComponentRef.current = false;
+      
       // 1. Disable interaction tools
       interactionManager.toggle(false);
       

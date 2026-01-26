@@ -3,6 +3,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import { avatarManager } from "../three/avatarManager";
 import { sceneManager } from "../three/sceneManager";
 import { useAIStore } from "../state/useAIStore";
+import { useSceneSettingsStore } from "../state/useSceneSettingsStore";
 import { geminiService } from "../services/gemini";
 import { geminiProxy } from "../services/geminiProxy";
 import { avatarController, type GestureType, type EmotionState } from "./AvatarController";
@@ -379,11 +380,18 @@ class AIManager {
     const rotMatch = response.match(/\[SCENE_ROTATION:\s*(\d+)\]/i);
     if (rotMatch && rotMatch[1]) {
         const deg = parseInt(rotMatch[1]);
-        console.log(`[AIManager] Rotating scene to: ${deg}deg`);
         const vrm = avatarManager.getVRM();
-        if (vrm) {
+        
+        // Respect rotation lock and manual posing mode
+        const rotationLocked = useSceneSettingsStore.getState().rotationLocked;
+        const isManualPosing = avatarManager.isManualPosingEnabled();
+        
+        if (vrm && !rotationLocked && !isManualPosing) {
+            console.log(`[AIManager] Rotating scene to: ${deg}deg`);
             vrm.scene.rotation.y = THREE.MathUtils.degToRad(deg);
             actionTaken = true;
+        } else if (vrm) {
+            console.log(`[AIManager] Scene rotation blocked (locked: ${rotationLocked}, manual: ${isManualPosing})`);
         }
     }
 

@@ -6,6 +6,9 @@ import { animationManager } from "../three/animationManager";
 import { interactionManager } from "../three/interactionManager";
 import { projectManager } from "../persistence/projectManager";
 import { getPoseLabTimestamp } from "../utils/exportNaming";
+import { useSceneSettingsStore } from "../state/useSceneSettingsStore";
+import { useMultiplayerStore } from "../state/useMultiplayerStore";
+import { multiAvatarManager } from "../three/multiAvatarManager";
 
 // Helper to access store outside of component
 const getToast = () => useToast.getState();
@@ -117,17 +120,51 @@ export const commands: Action[] = [
   },
   { 
       id: "gizmo-rotate", 
-      name: "Gizmo: Rotate", 
+      name: "Gizmo: Rotate (Manual Posing)", 
       shortcut: ["2"], 
-      keywords: "rotate tool",
+      keywords: "rotate tool manual posing gizmo",
       perform: () => {
+         const mpState = useMultiplayerStore.getState();
+         const isInMultiplayer = mpState.isConnected && mpState.localPeerId;
+         
          if (interactionManager.enabled) {
+             // Disabling manual posing
              interactionManager.toggle(false);
-             getToast().addToast('Tool: Rotate Off', 'info');
+             
+             // Capture final pose state
+             avatarManager.freezeCurrentPose();
+             avatarManager.setManualPosing(false);
+             
+             // Update multiplayer state if connected
+             if (isInMultiplayer && mpState.localPeerId) {
+                 multiAvatarManager.setInteraction(false);
+                 multiAvatarManager.freezeCurrentPose(mpState.localPeerId);
+             }
+             
+             getToast().addToast('Manual Posing Disabled [2]', 'success');
          } else {
+             // Enabling manual posing
+             // 1. Freeze the pose first so it's already static when helpers appear
+             avatarManager.freezeCurrentPose();
+             
+             // 2. Also freeze in multiAvatarManager if in multiplayer
+             if (isInMultiplayer && mpState.localPeerId) {
+                 multiAvatarManager.setInteraction(true);
+                 multiAvatarManager.freezeCurrentPose(mpState.localPeerId);
+             }
+             
+             // 3. Enable interaction tools
              interactionManager.toggle(true);
              interactionManager.setGizmoMode('rotate');
-             getToast().addToast('Tool: Rotate On', 'info');
+             avatarManager.setManualPosing(true);
+             
+             // 4. Auto-lock rotation so manual adjustments persist through animation changes
+             useSceneSettingsStore.getState().setRotationLocked(true);
+             
+             // 5. Save current Hips rotation to enforce it while locked
+             avatarManager.saveLockedHipsRotation();
+             
+             getToast().addToast('Manual Posing Enabled (rotation locked) [2]', 'info');
          }
       } 
   },

@@ -89,6 +89,9 @@ class AvatarManager {
   private isManualPosing = false;
   private defaultHipsPosition: THREE.Vector3 = new THREE.Vector3(0, 1.0, 0);
   
+  // Locked Hips rotation - enforced every frame when rotation is locked
+  private lockedHipsRotation: THREE.Quaternion | null = null;
+  
   // Blink state
   private blinkState = {
     nextBlinkTime: 0,
@@ -105,8 +108,98 @@ class AvatarManager {
 
   isManualPosingEnabled(): boolean { return this.isManualPosing; }
   getCurrentUrl(): string | undefined { return this.currentUrl; }
-  setManualPosing(enabled: boolean) { this.isManualPosing = enabled; }
+  setManualPosing(enabled: boolean) { 
+    this.isManualPosing = enabled;
+    // When disabling manual posing, save the current Hips rotation
+    // so it can be enforced while rotation is locked
+    if (!enabled) {
+      this.saveLockedHipsRotation();
+    }
+  }
   setInteraction(interacting: boolean) { this.isInteracting = interacting; }
+
+  /**
+   * Save the current Hips rotation to be enforced while rotation is locked.
+   * Called when manual posing is disabled or when user explicitly wants to lock rotation.
+   */
+  saveLockedHipsRotation(): void {
+    const hipsNode = this.vrm?.humanoid?.getNormalizedBoneNode(VRMHumanBoneName.Hips);
+    if (!hipsNode) return;
+    this.lockedHipsRotation = hipsNode.quaternion.clone();
+    console.log('[AvatarManager] Saved locked Hips rotation:', this.lockedHipsRotation.toArray());
+  }
+
+  /**
+   * Clear the locked Hips rotation (called when rotation is unlocked)
+   */
+  clearLockedHipsRotation(): void {
+    this.lockedHipsRotation = null;
+    console.log('[AvatarManager] Cleared locked Hips rotation');
+  }
+
+  /**
+   * Capture current Hips rotation quaternion
+   * Used to preserve avatar orientation when rotation is locked
+   */
+  private captureHipsRotation(): THREE.Quaternion | null {
+    const hipsNode = this.vrm?.humanoid?.getNormalizedBoneNode(VRMHumanBoneName.Hips);
+    if (!hipsNode) return null;
+    return hipsNode.quaternion.clone();
+  }
+
+  /**
+   * Modify a VRMPose to preserve the current Hips rotation
+   * This keeps the avatar facing the direction the user set it to
+   */
+  private preserveHipsRotationInPose(targetPose: VRMPose): VRMPose {
+    const currentHipsRotation = this.captureHipsRotation();
+    if (!currentHipsRotation) return targetPose;
+    
+    // Clone the pose and override the hips rotation
+    const modifiedPose: VRMPose = { ...targetPose };
+    modifiedPose[VRMHumanBoneName.Hips] = {
+      ...targetPose[VRMHumanBoneName.Hips],
+      rotation: [currentHipsRotation.x, currentHipsRotation.y, currentHipsRotation.z, currentHipsRotation.w]
+    };
+    
+    console.log('[AvatarManager] Preserving Hips rotation for locked orientation');
+    return modifiedPose;
+  }
+
+  /**
+   * Enforce the locked Hips Y-axis rotation (facing direction) if rotation is locked.
+   * Called every frame in the tick loop.
+   * Only locks the Y-axis (yaw/facing direction), allowing X and Z to animate naturally.
+   * Does NOT enforce while user is actively manipulating bones with the gizmo.
+   */
+  private enforceLockedHipsRotation(): void {
+    if (!this.lockedHipsRotation) return;
+    
+    // Don't enforce while user is actively dragging with gizmo
+    // This allows the user to rotate freely, then we save the new rotation when they release
+    if (this.isInteracting || this.isManualPosing) return;
+    
+    const store = getSceneSettingsStore();
+    const rotationLocked = store?.getState().rotationLocked ?? false;
+    
+    if (!rotationLocked) return;
+    
+    const hipsNode = this.vrm?.humanoid?.getNormalizedBoneNode(VRMHumanBoneName.Hips);
+    if (!hipsNode) return;
+    
+    // Extract Y-axis rotation from saved quaternion (the facing direction we want to preserve)
+    const savedEuler = new THREE.Euler().setFromQuaternion(this.lockedHipsRotation, 'YXZ');
+    const savedY = savedEuler.y;
+    
+    // Get current animation rotation (has the natural hip motion we want to keep)
+    const currentEuler = new THREE.Euler().setFromQuaternion(hipsNode.quaternion, 'YXZ');
+    
+    // Combine: locked Y-rotation + animated X and Z rotation
+    currentEuler.y = savedY;
+    
+    // Apply the combined rotation
+    hipsNode.quaternion.setFromEuler(currentEuler);
+  }
 
   private updateBlink(_delta: number) {
     if (!this.vrm?.expressionManager) return;
@@ -197,6 +290,10 @@ class AvatarManager {
           // If interacting but animated, we still want the mixer to be ready
           // just not updating (paused state)
         }
+        
+        // CRITICAL: Enforce locked Hips rotation AFTER all other updates
+        // This ensures manual rotation adjustments are preserved through animations and poses
+        this.enforceLockedHipsRotation();
       }
     });
   }
@@ -276,16 +373,30 @@ class AvatarManager {
       console.warn('[AvatarManager] applyRawPose called but no VRM loaded');
       return;
     }
+    
+    // BLOCK pose application entirely when manual posing is active
+    // This preserves all manual bone adjustments made with the gizmo
+    if (this.isManualPosing) {
+      console.log('[AvatarManager] applyRawPose BLOCKED - manual posing is active');
+      return;
+    }
+    
     this.isInteracting = false;
 
-    // Only apply scene rotation if not locked
-    const { rotationLocked } = getSceneSettingsStore()?.getState() ?? { rotationLocked: false };
-    if (poseData.sceneRotation && !rotationLocked) {
+    // Only apply scene rotation if not locked AND not in manual posing mode
+    // Manual posing mode should always preserve the current rotation
+    const store = getSceneSettingsStore();
+    const rotationLocked = store?.getState().rotationLocked ?? false;
+    const shouldPreserveRotation = rotationLocked || this.isManualPosing;
+    
+    if (poseData.sceneRotation && !shouldPreserveRotation) {
       this.vrm.scene.rotation.set(
         THREE.MathUtils.degToRad(poseData.sceneRotation.x ?? 0),
         THREE.MathUtils.degToRad(poseData.sceneRotation.y ?? 0),
         THREE.MathUtils.degToRad(poseData.sceneRotation.z ?? 0),
       );
+    } else if (poseData.sceneRotation && shouldPreserveRotation) {
+      console.log('[AvatarManager] Scene rotation preserved (locked or manual posing active)');
     }
 
     if (animationMode !== 'static' && poseData.tracks) {
@@ -310,9 +421,12 @@ class AvatarManager {
         });
       }
       
+      // Preserve Hips rotation when rotation is locked
+      const poseToApply = rotationLocked ? this.preserveHipsRotationInPose(poseData.vrmPose) : poseData.vrmPose;
+      
       // Use smooth transition for preset-style changes, immediate for mocap/real-time
       if (smoothTransition) {
-        this.transitionToPose(poseData.vrmPose, 0.4, () => {
+        this.transitionToPose(poseToApply, 0.4, () => {
           console.log('[AvatarManager] ✅ Raw pose transition complete');
         });
       } else {
@@ -320,11 +434,11 @@ class AvatarManager {
         this.stopAnimation(true);
         this.vrm.humanoid?.resetNormalizedPose();
         this.vrm.update(0);
-        this.vrm.humanoid?.setNormalizedPose(poseData.vrmPose);
+        this.vrm.humanoid?.setNormalizedPose(poseToApply);
         
         // Explicitly set hips to default position if not specified in poseData
         const hipsNode = this.vrm.humanoid?.getNormalizedBoneNode(VRMHumanBoneName.Hips);
-        if (hipsNode && !poseData.vrmPose[VRMHumanBoneName.Hips]?.position) {
+        if (hipsNode && !poseToApply[VRMHumanBoneName.Hips]?.position) {
           hipsNode.position.copy(this.defaultHipsPosition);
         }
         
@@ -342,6 +456,14 @@ class AvatarManager {
       console.warn('[AvatarManager] applyPose called but no VRM loaded');
       return;
     }
+    
+    // BLOCK pose application entirely when manual posing is active
+    // This preserves all manual bone adjustments made with the gizmo
+    if (this.isManualPosing) {
+      console.log('[AvatarManager] applyPose BLOCKED - manual posing is active');
+      return;
+    }
+    
     this.isInteracting = false;
     
     // Determine if we should animate
@@ -359,14 +481,20 @@ class AvatarManager {
       return;
     }
 
-    // Only apply scene rotation if not locked (user hasn't manually rotated)
-    const { rotationLocked } = getSceneSettingsStore()?.getState() ?? { rotationLocked: false };
-    if (!rotationLocked) {
+    // Only apply scene rotation if not locked AND not in manual posing mode
+    // Manual posing mode should always preserve the current rotation
+    const store = getSceneSettingsStore();
+    const rotationLocked = store?.getState().rotationLocked ?? false;
+    const shouldPreserveRotation = rotationLocked || this.isManualPosing;
+    
+    if (!shouldPreserveRotation) {
       this.vrm.scene.rotation.set(
         THREE.MathUtils.degToRad(def.sceneRotation?.x ?? 0), 
         THREE.MathUtils.degToRad(def.sceneRotation?.y ?? 180), // Default to 180 if not specified
         THREE.MathUtils.degToRad(def.sceneRotation?.z ?? 0)
       );
+    } else {
+      console.log('[AvatarManager] Scene rotation preserved (locked or manual posing active)');
     }
 
     if (shouldAnimate && def.animationClip) {
@@ -393,10 +521,39 @@ class AvatarManager {
       console.warn('[AvatarManager] playAnimationClip called but no VRM loaded');
       return;
     }
-    console.log(`[AvatarManager] playAnimationClip: ${clip.name}, loop=${loop}, tracks=${clip.tracks.length}`);
+    
+    // BLOCK animation playback when manual posing is active
+    if (this.isManualPosing) {
+      console.log('[AvatarManager] playAnimationClip BLOCKED - manual posing is active');
+      return;
+    }
+    
+    // When rotation is locked, remove or replace the Hips rotation track
+    // to preserve the user's manual Hips adjustment
+    const store = getSceneSettingsStore();
+    const rotationLocked = store?.getState().rotationLocked ?? false;
+    
+    let clipToPlay = clip;
+    if (rotationLocked) {
+      // Find the Hips bone node name
+      const hipsNode = this.vrm?.humanoid?.getNormalizedBoneNode(VRMHumanBoneName.Hips);
+      if (hipsNode) {
+        const hipsTrackName = `${hipsNode.name}.quaternion`;
+        
+        // Create a new clip without the Hips rotation track
+        const filteredTracks = clip.tracks.filter(track => track.name !== hipsTrackName);
+        
+        if (filteredTracks.length !== clip.tracks.length) {
+          console.log(`[AvatarManager] Removing Hips rotation track to preserve locked orientation`);
+          clipToPlay = new THREE.AnimationClip(clip.name, clip.duration, filteredTracks);
+        }
+      }
+    }
+    
+    console.log(`[AvatarManager] playAnimationClip: ${clipToPlay.name}, loop=${loop}, tracks=${clipToPlay.tracks.length}`);
     this.isInteracting = false;
     this.isAnimated = true;
-    animationManager.playAnimation(clip, loop, fade);
+    animationManager.playAnimation(clipToPlay, loop, fade);
   }
 
   stopAnimation(immediate = false) {
@@ -487,25 +644,36 @@ class AvatarManager {
   /**
    * Smoothly transition to a static pose with animation
    * Preserves hips position to keep avatar in viewport
+   * Preserves hips rotation when rotation is locked
    */
   transitionToPose(targetPose: VRMPose, duration = 0.4, onComplete?: () => void) {
     if (!this.vrm) return;
+    
+    // BLOCK pose transitions when manual posing is active
+    if (this.isManualPosing) {
+      console.log('[AvatarManager] transitionToPose BLOCKED - manual posing is active');
+      onComplete?.(); // Still call onComplete to avoid blocking callers
+      return;
+    }
 
-    // We don't need to capture/restore manually anymore because createTransitionClip
-    // now actively targets the default position. This is more robust.
+    // Preserve Hips rotation when rotation is locked
+    // This keeps the avatar facing the direction the user set it to
+    const store = getSceneSettingsStore();
+    const rotationLocked = store?.getState().rotationLocked ?? false;
+    const poseToApply = rotationLocked ? this.preserveHipsRotationInPose(targetPose) : targetPose;
 
-    const transitionClip = this.createTransitionClip(targetPose, duration);
+    const transitionClip = this.createTransitionClip(poseToApply, duration);
     
     // Play the transition once
     this.isAnimated = true;
     animationManager.playTransition(transitionClip, () => {
       // When transition completes, apply the final pose statically
       this.isAnimated = false;
-      this.vrm?.humanoid?.setNormalizedPose(targetPose);
+      this.vrm?.humanoid?.setNormalizedPose(poseToApply);
       
       // Explicitly set hips to target (or default) to prevent any float error
       const hipsNode = this.vrm?.humanoid?.getNormalizedBoneNode(VRMHumanBoneName.Hips);
-      if (hipsNode && !targetPose[VRMHumanBoneName.Hips]?.position) {
+      if (hipsNode && !poseToApply[VRMHumanBoneName.Hips]?.position) {
         hipsNode.position.copy(this.defaultHipsPosition);
       }
       
