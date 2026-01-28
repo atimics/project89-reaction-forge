@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#030305"/>
+      <stop offset="50%" style="stop-color:#0a0a15"/>
+      <stop offset="100%" style="stop-color:#05080f"/>
+    </linearGradient>
+    
+    <linearGradient id="wave1Grad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#00ffd6;stop-opacity:0"/>
+      <stop offset="30%" style="stop-color:#00ffd6;stop-opacity:0.8"/>
+      <stop offset="70%" style="stop-color:#00ffd6;stop-opacity:0.8"/>
+      <stop offset="100%" style="stop-color:#00ffd6;stop-opacity:0"/>
+    </linearGradient>
+    
+    <linearGradient id="wave2Grad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#7c3aed;stop-opacity:0"/>
+      <stop offset="25%" style="stop-color:#7c3aed;stop-opacity:0.6"/>
+      <stop offset="75%" style="stop-color:#7c3aed;stop-opacity:0.6"/>
+      <stop offset="100%" style="stop-color:#7c3aed;stop-opacity:0"/>
+    </linearGradient>
+    
+    <linearGradient id="wave3Grad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#f97316;stop-opacity:0"/>
+      <stop offset="35%" style="stop-color:#f97316;stop-opacity:0.4"/>
+      <stop offset="65%" style="stop-color:#f97316;stop-opacity:0.4"/>
+      <stop offset="100%" style="stop-color:#f97316;stop-opacity:0"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="100%" height="100%" fill="url(#bgGrad)"/>
+  
+  <!-- Wave layers -->
+  <g filter="url(#glow)">
+    <!-- Cyan wave 1 -->
+    <path d="M-100 700 Q 200 600, 480 700 T 960 700 T 1440 700 T 1920 700 T 2400 700" 
+          fill="none" stroke="url(#wave1Grad)" stroke-width="2" opacity="0.9"/>
+    
+    <!-- Cyan wave 2 -->
+    <path d="M-100 720 Q 240 650, 520 720 T 1000 720 T 1480 720 T 1960 720 T 2440 720" 
+          fill="none" stroke="url(#wave1Grad)" stroke-width="1.5" opacity="0.7"/>
+    
+    <!-- Violet wave 1 -->
+    <path d="M-100 780 Q 300 700, 600 780 T 1100 780 T 1600 780 T 2100 780" 
+          fill="none" stroke="url(#wave2Grad)" stroke-width="2" opacity="0.8"/>
+    
+    <!-- Violet wave 2 -->
+    <path d="M-100 820 Q 280 760, 560 820 T 1040 820 T 1520 820 T 2000 820" 
+          fill="none" stroke="url(#wave2Grad)" stroke-width="1.5" opacity="0.6"/>
+    
+    <!-- Orange wave -->
+    <path d="M-100 880 Q 350 820, 700 880 T 1300 880 T 1900 880" 
+          fill="none" stroke="url(#wave3Grad)" stroke-width="1.5" opacity="0.5"/>
+    
+    <!-- Upper subtle waves -->
+    <path d="M-100 300 Q 400 250, 800 300 T 1600 300 T 2400 300" 
+          fill="none" stroke="#00ffd6" stroke-width="1" opacity="0.2"/>
+    
+    <path d="M-100 350 Q 300 300, 600 350 T 1200 350 T 1800 350 T 2400 350" 
+          fill="none" stroke="#7c3aed" stroke-width="1" opacity="0.15"/>
+    
+    <path d="M-100 400 Q 500 360, 1000 400 T 2000 400" 
+          fill="none" stroke="#00ffd6" stroke-width="0.5" opacity="0.1"/>
+  </g>
+  
+  <!-- Floating particles -->
+  <g fill="#00ffd6" opacity="0.6">
+    <circle cx="150" cy="200" r="2"/>
+    <circle cx="400" cy="500" r="1.5"/>
+    <circle cx="700" cy="150" r="2"/>
+    <circle cx="1200" cy="300" r="1.5"/>
+    <circle cx="1500" cy="100" r="2"/>
+    <circle cx="1750" cy="400" r="1.5"/>
+    <circle cx="250" cy="850" r="2"/>
+    <circle cx="1650" cy="750" r="1.5"/>
+  </g>
+</svg>

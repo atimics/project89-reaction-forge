@@ -1,0 +1,60 @@
+/**
+ * PulseRing Styles
+ * ═══════════════════════════════════════════════════════════════════════════
+ */
+
+.pulse-ring-wrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pulse-ring-element {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  border: 2px solid var(--accent);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Activate animation when parent has .pulse-active */
+.pulse-active .pulse-ring-element {
+  animation: pulse-ring-expand 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes pulse-ring-expand {
+  0% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1.8);
+    opacity: 0;
+  }
+}
+
+/* Color variants */
+.pulse-ring-cyan .pulse-ring-element {
+  border-color: var(--accent);
+}
+
+.pulse-ring-violet .pulse-ring-element {
+  border-color: var(--violet);
+}
+
+.pulse-ring-solar .pulse-ring-element {
+  border-color: var(--solar);
+}
+
+.pulse-ring-white .pulse-ring-element {
+  border-color: rgba(255, 255, 255, 0.8);
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .pulse-active .pulse-ring-element {
+    animation: none;
+  }
+}

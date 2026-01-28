@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    
+    <pattern id="hexPattern" x="0" y="0" width="112" height="97" patternUnits="userSpaceOnUse">
+      <!-- Hexagon outline -->
+      <polygon points="56,3 105,28 105,72 56,97 7,72 7,28" 
+               fill="none" stroke="#00ffd6" stroke-width="0.5" opacity="0.25"/>
+      <!-- Inner hexagon -->
+      <polygon points="56,15 93,35 93,65 56,85 19,65 19,35" 
+               fill="none" stroke="#00ffd6" stroke-width="0.3" opacity="0.15"/>
+    </pattern>
+    
+    <pattern id="hexPatternOffset" x="56" y="48.5" width="112" height="97" patternUnits="userSpaceOnUse">
+      <polygon points="56,3 105,28 105,72 56,97 7,72 7,28" 
+               fill="none" stroke="#7c3aed" stroke-width="0.5" opacity="0.2"/>
+    </pattern>
+    
+    <radialGradient id="centerFade" cx="50%" cy="50%" r="60%">
+      <stop offset="0%" style="stop-color:#0c0f18;stop-opacity:0.5"/>
+      <stop offset="100%" style="stop-color:#030305;stop-opacity:0"/>
+    </radialGradient>
+    
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#05080f"/>
+      <stop offset="50%" style="stop-color:#030305"/>
+      <stop offset="100%" style="stop-color:#080510"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="100%" height="100%" fill="url(#bgGrad)"/>
+  
+  <!-- Hexagon patterns -->
+  <rect width="100%" height="100%" fill="url(#hexPattern)"/>
+  <rect width="100%" height="100%" fill="url(#hexPatternOffset)"/>
+  
+  <!-- Center fade for avatar visibility -->
+  <rect width="100%" height="100%" fill="url(#centerFade)"/>
+  
+  <!-- Highlighted hexagons (scattered) -->
+  <g filter="url(#glow)" opacity="0.6">
+    <!-- Top left cluster -->
+    <polygon points="150,50 199,75 199,119 150,144 101,119 101,75" 
+             fill="none" stroke="#00ffd6" stroke-width="1.5"/>
+    <polygon points="262,98 311,123 311,167 262,192 213,167 213,123" 
+             fill="none" stroke="#00ffd6" stroke-width="1"/>
+    
+    <!-- Top right cluster -->
+    <polygon points="1700,80 1749,105 1749,149 1700,174 1651,149 1651,105" 
+             fill="none" stroke="#7c3aed" stroke-width="1.5"/>
+    <polygon points="1588,128 1637,153 1637,197 1588,222 1539,197 1539,153" 
+             fill="none" stroke="#00ffd6" stroke-width="1"/>
+    
+    <!-- Bottom left cluster -->
+    <polygon points="200,850 249,875 249,919 200,944 151,919 151,875" 
+             fill="none" stroke="#7c3aed" stroke-width="1.5"/>
+    <polygon points="312,898 361,923 361,967 312,992 263,967 263,923" 
+             fill="none" stroke="#00ffd6" stroke-width="1"/>
+    
+    <!-- Bottom right cluster -->
+    <polygon points="1650,800 1699,825 1699,869 1650,894 1601,869 1601,825" 
+             fill="none" stroke="#00ffd6" stroke-width="1.5"/>
+    <polygon points="1762,848 1811,873 1811,917 1762,942 1713,917 1713,873" 
+             fill="none" stroke="#7c3aed" stroke-width="1"/>
+    
+    <!-- Center accent hexagons -->
+    <polygon points="960,300 1009,325 1009,369 960,394 911,369 911,325" 
+             fill="none" stroke="#00ffd6" stroke-width="1" opacity="0.4"/>
+    <polygon points="960,750 1009,775 1009,819 960,844 911,819 911,775" 
+             fill="none" stroke="#7c3aed" stroke-width="1" opacity="0.4"/>
+  </g>
+  
+  <!-- Glowing nodes at hexagon centers -->
+  <g filter="url(#glow)">
+    <circle cx="150" cy="97" r="3" fill="#00ffd6" opacity="0.8"/>
+    <circle cx="1700" cy="127" r="3" fill="#7c3aed" opacity="0.8"/>
+    <circle cx="200" cy="897" r="3" fill="#7c3aed" opacity="0.8"/>
+    <circle cx="1650" cy="847" r="3" fill="#00ffd6" opacity="0.8"/>
+  </g>
+</svg>

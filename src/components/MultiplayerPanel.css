@@ -21,6 +21,12 @@
   box-shadow: var(--shadow-lg);
   position: relative;
   overflow: hidden;
+  /* Glass accent glow on hover */
+  transition: border-color var(--duration-normal) var(--ease-out);
+}
+
+.multiplayer-panel:hover {
+  border-color: rgba(124, 58, 237, 0.2);
 }
 
 /* Subtle gradient overlay */
@@ -37,6 +43,25 @@
     transparent 100%
   );
   pointer-events: none;
+}
+
+/* Glass accent glow in top-right corner */
+.multiplayer-panel::after {
+  content: '';
+  position: absolute;
+  top: -40px;
+  right: -40px;
+  width: 150px;
+  height: 150px;
+  background: radial-gradient(circle, rgba(124, 58, 237, 0.12) 0%, transparent 70%);
+  filter: blur(30px);
+  pointer-events: none;
+  opacity: 0.5;
+  transition: opacity var(--duration-normal) var(--ease-out);
+}
+
+.multiplayer-panel:hover::after {
+  opacity: 1;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════

@@ -1,0 +1,27 @@
+/**
+ * ScrambleText Styles
+ * ═══════════════════════════════════════════════════════════════════════════
+ */
+
+.scramble-text {
+  display: inline-block;
+  font-family: var(--font-mono);
+  letter-spacing: var(--tracking-tight);
+}
+
+.scramble-text.animating {
+  color: var(--accent);
+  text-shadow: 0 0 10px rgba(0, 255, 214, 0.3);
+}
+
+/* Reduced motion - just fade in */
+@media (prefers-reduced-motion: reduce) {
+  .scramble-text.animating {
+    animation: scramble-fade 0.3s ease-out forwards;
+  }
+  
+  @keyframes scramble-fade {
+    from { opacity: 0.5; }
+    to { opacity: 1; }
+  }
+}

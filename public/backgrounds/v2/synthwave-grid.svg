@@ -1,0 +1,99 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <!-- Signal Green Glow -->
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    
+    <!-- Gradient for sky -->
+    <linearGradient id="skyGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#030305"/>
+      <stop offset="40%" style="stop-color:#0a0a15"/>
+      <stop offset="60%" style="stop-color:#1a0a2e"/>
+      <stop offset="80%" style="stop-color:#2d1b4e"/>
+      <stop offset="100%" style="stop-color:#0a0a15"/>
+    </linearGradient>
+    
+    <!-- Sun gradient -->
+    <linearGradient id="sunGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#ff6b9d"/>
+      <stop offset="50%" style="stop-color:#c44569"/>
+      <stop offset="100%" style="stop-color:#7c3aed"/>
+    </linearGradient>
+    
+    <!-- Grid gradient fade -->
+    <linearGradient id="gridFade" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#00ffd6;stop-opacity:0.8"/>
+      <stop offset="100%" style="stop-color:#00ffd6;stop-opacity:0.1"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="100%" height="100%" fill="url(#skyGradient)"/>
+  
+  <!-- Sun -->
+  <ellipse cx="960" cy="600" rx="200" ry="200" fill="url(#sunGradient)" opacity="0.9"/>
+  <ellipse cx="960" cy="600" rx="200" ry="200" fill="none" stroke="#ff6b9d" stroke-width="2" opacity="0.5"/>
+  
+  <!-- Sun stripes (retrowave style) -->
+  <g opacity="0.8">
+    <rect x="760" y="520" width="400" height="8" fill="#030305"/>
+    <rect x="760" y="545" width="400" height="10" fill="#030305"/>
+    <rect x="760" y="575" width="400" height="14" fill="#030305"/>
+    <rect x="760" y="610" width="400" height="18" fill="#030305"/>
+    <rect x="760" y="650" width="400" height="24" fill="#030305"/>
+    <rect x="760" y="700" width="400" height="32" fill="#030305"/>
+  </g>
+  
+  <!-- Horizon line -->
+  <line x1="0" y1="650" x2="1920" y2="650" stroke="#00ffd6" stroke-width="2" filter="url(#glow)"/>
+  
+  <!-- Perspective Grid - Horizontal lines -->
+  <g stroke="url(#gridFade)" stroke-width="1" filter="url(#glow)">
+    <line x1="0" y1="680" x2="1920" y2="680" opacity="0.9"/>
+    <line x1="0" y1="720" x2="1920" y2="720" opacity="0.8"/>
+    <line x1="0" y1="770" x2="1920" y2="770" opacity="0.7"/>
+    <line x1="0" y1="830" x2="1920" y2="830" opacity="0.6"/>
+    <line x1="0" y1="900" x2="1920" y2="900" opacity="0.5"/>
+    <line x1="0" y1="990" x2="1920" y2="990" opacity="0.4"/>
+    <line x1="0" y1="1080" x2="1920" y2="1080" opacity="0.3"/>
+  </g>
+  
+  <!-- Perspective Grid - Vertical lines (converging to horizon) -->
+  <g stroke="#00ffd6" stroke-width="1" opacity="0.6" filter="url(#glow)">
+    <line x1="960" y1="650" x2="0" y2="1080"/>
+    <line x1="960" y1="650" x2="160" y2="1080"/>
+    <line x1="960" y1="650" x2="320" y2="1080"/>
+    <line x1="960" y1="650" x2="480" y2="1080"/>
+    <line x1="960" y1="650" x2="640" y2="1080"/>
+    <line x1="960" y1="650" x2="800" y2="1080"/>
+    <line x1="960" y1="650" x2="960" y2="1080"/>
+    <line x1="960" y1="650" x2="1120" y2="1080"/>
+    <line x1="960" y1="650" x2="1280" y2="1080"/>
+    <line x1="960" y1="650" x2="1440" y2="1080"/>
+    <line x1="960" y1="650" x2="1600" y2="1080"/>
+    <line x1="960" y1="650" x2="1760" y2="1080"/>
+    <line x1="960" y1="650" x2="1920" y2="1080"/>
+  </g>
+  
+  <!-- Stars -->
+  <g fill="#ffffff">
+    <circle cx="150" cy="80" r="1.5" opacity="0.8"/>
+    <circle cx="300" cy="150" r="1" opacity="0.6"/>
+    <circle cx="450" cy="50" r="1.5" opacity="0.7"/>
+    <circle cx="600" cy="180" r="1" opacity="0.5"/>
+    <circle cx="750" cy="100" r="2" opacity="0.9"/>
+    <circle cx="1100" cy="120" r="1.5" opacity="0.7"/>
+    <circle cx="1250" cy="60" r="1" opacity="0.6"/>
+    <circle cx="1400" cy="200" r="1.5" opacity="0.8"/>
+    <circle cx="1550" cy="90" r="1" opacity="0.5"/>
+    <circle cx="1700" cy="160" r="2" opacity="0.9"/>
+    <circle cx="1800" cy="40" r="1" opacity="0.6"/>
+    <circle cx="100" cy="250" r="1" opacity="0.5"/>
+    <circle cx="1850" cy="280" r="1.5" opacity="0.7"/>
+  </g>
+</svg>

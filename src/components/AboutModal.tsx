@@ -25,8 +25,22 @@ export function AboutModal({ isOpen, onClose }: AboutModalProps) {
       <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '600px' }}>
         <button className="modal-close" onClick={onClose}><X size={20} weight="bold" /></button>
         
-        <h2 style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <img src="/logo/poselab.svg" alt="PoseLab" style={{ width: '32px', height: '32px' }} />
+        <h2 style={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          gap: '10px',
+          color: 'var(--signal-green, var(--accent))',
+          textShadow: '0 0 20px rgba(0, 255, 214, 0.3)'
+        }}>
+          <img 
+            src="/logo/poselab.svg" 
+            alt="PoseLab" 
+            style={{ 
+              width: '32px', 
+              height: '32px',
+              filter: 'drop-shadow(0 0 10px rgba(0, 255, 214, 0.4))'
+            }} 
+          />
           PoseLab
         </h2>
         

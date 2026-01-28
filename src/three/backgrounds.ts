@@ -13,55 +13,113 @@ type BackgroundDefinition = {
   };
 };
 
+// ═══════════════════════════════════════════════════════════════════════════
+// High-Resolution SVG Loader
+// Renders SVGs to canvas at 4K resolution for crisp backgrounds
+// ═══════════════════════════════════════════════════════════════════════════
+const SVG_RENDER_WIDTH = 3840;  // 4K width
+const SVG_RENDER_HEIGHT = 2160; // 4K height
+
+async function loadSVGAsHighResTexture(url: string): Promise<THREE.Texture> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    
+    img.onload = () => {
+      // Create high-resolution canvas
+      const canvas = document.createElement('canvas');
+      canvas.width = SVG_RENDER_WIDTH;
+      canvas.height = SVG_RENDER_HEIGHT;
+      
+      const ctx = canvas.getContext('2d');
+      if (!ctx) {
+        reject(new Error('Could not get canvas context'));
+        return;
+      }
+      
+      // Enable high-quality rendering
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+      
+      // Draw SVG scaled to fill canvas
+      ctx.drawImage(img, 0, 0, SVG_RENDER_WIDTH, SVG_RENDER_HEIGHT);
+      
+      // Create texture from canvas
+      const texture = new THREE.CanvasTexture(canvas);
+      texture.colorSpace = THREE.SRGBColorSpace;
+      texture.minFilter = THREE.LinearFilter;
+      texture.magFilter = THREE.LinearFilter;
+      texture.generateMipmaps = false; // Not needed for backgrounds
+      texture.needsUpdate = true;
+      
+      console.log(`[Background] SVG rendered at ${SVG_RENDER_WIDTH}x${SVG_RENDER_HEIGHT}:`, url);
+      resolve(texture);
+    };
+    
+    img.onerror = (error) => {
+      reject(error);
+    };
+    
+    img.src = url;
+  });
+}
+
 const backgroundDefinitions: BackgroundDefinition[] = [
+  // ═══════════════════════════════════════════════════════════════════════════
+  // V2 Lightweight Vector Backgrounds (1-5KB each)
+  // Brand-aligned with signal green (#00ffd6) and violet (#7c3aed)
+  // ═══════════════════════════════════════════════════════════════════════════
   {
-    id: 'midnight-circuit',
-    label: 'Midnight Circuit',
-    color: '#05060c',
-    image: '/backgrounds/midnight-circuit.svg',
+    id: 'synthwave-grid',
+    label: 'Synthwave Grid',
+    color: '#030305',
+    image: '/backgrounds/v2/synthwave-grid.svg',
   },
   {
-    id: 'protocol-sunset',
-    label: 'Protocol Sunset',
-    color: '#ff6f61',
-    image: '/backgrounds/protocol-sunset.svg',
+    id: 'neural-circuit',
+    label: 'Neural Circuit',
+    color: '#030305',
+    image: '/backgrounds/v2/neural-circuit.svg',
   },
   {
-    id: 'green-loom-matrix',
-    label: 'Green Loom Matrix',
-    color: '#0b3d2e',
-    image: '/backgrounds/green-loom-matrix.svg',
+    id: 'neon-waves',
+    label: 'Neon Waves',
+    color: '#030305',
+    image: '/backgrounds/v2/neon-waves.svg',
   },
   {
-    id: 'neural-grid',
-    label: 'Neural Grid',
-    color: '#1a1a2e',
-    image: '/backgrounds/neural-grid.svg',
+    id: 'quantum-particles',
+    label: 'Quantum Particles',
+    color: '#030305',
+    image: '/backgrounds/v2/quantum-particles.svg',
   },
   {
-    id: 'cyber-waves',
-    label: 'Cyber Waves',
-    color: '#0d1b2a',
-    image: '/backgrounds/cyber-waves.svg',
+    id: 'signal-glitch',
+    label: 'Signal Glitch',
+    color: '#050305',
+    image: '/backgrounds/v2/signal-glitch.svg',
   },
   {
-    id: 'signal-breach',
-    label: 'Signal Breach',
-    color: '#1a0a0a',
-    image: '/backgrounds/signal-breach.svg',
+    id: 'cyber-hexagons',
+    label: 'Cyber Hexagons',
+    color: '#030305',
+    image: '/backgrounds/v2/cyber-hexagons.svg',
   },
   {
-    id: 'quantum-field',
-    label: 'Quantum Field',
-    color: '#2d1b4e',
-    image: '/backgrounds/quantum-field.svg',
+    id: 'protocol-gradient',
+    label: 'Protocol Gradient',
+    color: '#030305',
+    image: '/backgrounds/v2/protocol-gradient.svg',
   },
   {
-    id: 'protocol-dawn',
-    label: 'Protocol Dawn',
-    color: '#1a2332',
-    image: '/backgrounds/protocol-dawn.svg',
+    id: 'void-minimal',
+    label: 'Void (Minimal)',
+    color: '#030305',
+    image: '/backgrounds/v2/void-minimal.svg',
   },
+  // ═══════════════════════════════════════════════════════════════════════════
+  // Utility Backgrounds
+  // ═══════════════════════════════════════════════════════════════════════════
   {
     id: 'green-screen',
     label: 'Green Screen',
@@ -147,20 +205,29 @@ export async function applyBackground(scene: THREE.Scene, id: BackgroundId | str
       
       if (!texture) {
         console.log('[Background] Loading image:', definition.image);
-        texture = await new Promise<THREE.Texture>((resolve, reject) => {
-          textureLoader.load(
-            definition.image!,
-            (loadedTexture) => {
-              loadedTexture.colorSpace = THREE.SRGBColorSpace;
-              resolve(loadedTexture);
-            },
-            undefined,
-            (error) => {
-              console.warn('[Background] Failed to load image:', definition.image, error);
-              reject(error);
-            }
-          );
-        });
+        
+        // Use high-res SVG loader for SVG files
+        const isSVG = definition.image.toLowerCase().endsWith('.svg');
+        
+        if (isSVG) {
+          texture = await loadSVGAsHighResTexture(definition.image);
+        } else {
+          texture = await new Promise<THREE.Texture>((resolve, reject) => {
+            textureLoader.load(
+              definition.image!,
+              (loadedTexture) => {
+                loadedTexture.colorSpace = THREE.SRGBColorSpace;
+                resolve(loadedTexture);
+              },
+              undefined,
+              (error) => {
+                console.warn('[Background] Failed to load image:', definition.image, error);
+                reject(error);
+              }
+            );
+          });
+        }
+        
         textureCache.set(definition.image, texture);
       }
       

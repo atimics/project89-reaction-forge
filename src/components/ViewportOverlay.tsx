@@ -34,6 +34,7 @@ import { useAvatarSource } from '../state/useAvatarSource';
 import { useAvatarListStore } from '../state/useAvatarListStore';
 import { live2dManager } from '../live2d/live2dManager';
 import { getPoseLabTimestamp } from '../utils/exportNaming';
+import { SparkleField, useSparkles } from './SparkleField';
 
 type AspectRatio = '16:9' | '1:1' | '9:16';
 
@@ -71,6 +72,9 @@ export function ViewportOverlay({ mode, isPlaying, onPlayPause, onStop }: Viewpo
   
   // Recording State
   const [isRecording, setIsRecording] = useState(false);
+  
+  // Sparkle celebration effect
+  const { active: sparklesActive, trigger: triggerSparkles } = useSparkles(3000);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const recordingStreamRef = useRef<MediaStream | null>(null);
@@ -338,6 +342,7 @@ export function ViewportOverlay({ mode, isPlaying, onPlayPause, onStop }: Viewpo
     endTimerRef.current = window.setTimeout(() => {
       setFocusSecondsLeft(0);
       stopFocusSprint(true);
+      triggerSparkles(); // Celebrate with kawaii sparkles!
       addToast('PoseLab Sprint complete — review your captures.', 'success');
     }, focusDurationMs);
   };
@@ -539,9 +544,13 @@ export function ViewportOverlay({ mode, isPlaying, onPlayPause, onStop }: Viewpo
       */}
 
       {/* Recording Button - Bottom Right */}
-      <div className="viewport-overlay bottom-right" style={{ pointerEvents: 'auto' }}>
+      <div className="viewport-overlay bottom-right" style={{ pointerEvents: 'auto', display: 'flex', alignItems: 'center', gap: '12px' }}>
+        {/* Recording status indicator */}
+        {isRecording && (
+          <span className="status-recording neon-flicker">REC</span>
+        )}
         <button
-          className={`recording-button ${isRecording ? 'recording' : ''}`}
+          className={`recording-button ${isRecording ? 'recording neon-flicker-intense' : ''}`}
           onClick={handleToggleRecording}
           title={isRecording ? "Stop Recording" : "Record Video"}
           aria-label={isRecording ? "Stop Recording" : "Record Video"}
@@ -558,7 +567,7 @@ export function ViewportOverlay({ mode, isPlaying, onPlayPause, onStop }: Viewpo
             cursor: 'pointer',
             color: 'white',
             boxShadow: isRecording 
-              ? '0 0 15px #ff4444, 0 0 5px #ff4444' 
+              ? '0 0 15px #ff4444, 0 0 30px #ff444480' 
               : '0 4px 6px rgba(0,0,0,0.3)',
             transition: 'all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
             transform: isRecording ? 'scale(1.1)' : 'scale(1)',
@@ -579,6 +588,9 @@ export function ViewportOverlay({ mode, isPlaying, onPlayPause, onStop }: Viewpo
           {isRecording ? <StopCircle size={32} weight="fill" /> : <VideoCamera size={28} weight="fill" />}
         </button>
       </div>
+
+      {/* Sparkle celebration overlay */}
+      <SparkleField active={sparklesActive} count={25} opacity={0.8} />
 
       {showFocusGallery && (
         <div className="sprint-gallery-overlay" onClick={() => setShowFocusGallery(false)}>

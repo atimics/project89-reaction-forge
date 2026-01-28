@@ -23,16 +23,17 @@ export type PoseId =
 export type ExpressionId = 'calm' | 'joy' | 'surprise';
 
 export type BackgroundId = 
-  | 'midnight-circuit'
-  | 'protocol-sunset'
-  | 'green-loom-matrix'
-  | 'neural-grid'
-  | 'cyber-waves'
-  | 'signal-breach'
-  | 'quantum-field'
-  | 'protocol-dawn'
+  // V2 Lightweight Vector Backgrounds
+  | 'synthwave-grid'
+  | 'neural-circuit'
+  | 'neon-waves'
+  | 'quantum-particles'
+  | 'signal-glitch'
+  | 'cyber-hexagons'
+  | 'protocol-gradient'
+  | 'void-minimal'
+  // Utility
   | 'green-screen'
-  | 'cyber-alley'
   | 'lush-forest'
   | 'volcano'
   | 'deep-sea'
