@@ -54,7 +54,7 @@ const TIMING = {
 };
 
 /** Default background ID on scene init */
-const DEFAULT_BACKGROUND: BackgroundId = 'midnight-circuit';
+const DEFAULT_BACKGROUND: BackgroundId = 'synthwave-grid';
 
 type AspectRatio = '16:9' | '1:1' | '9:16';
 

@@ -7,7 +7,7 @@ export const reactionPresets: ReactionPreset[] = [
     description: 'Dynamic action pose for reconnaissance briefs.',
     pose: 'dawn-runner',
     expression: 'calm',
-    background: 'midnight-circuit',
+    background: 'neural-circuit',
   },
   {
     id: 'sunset-call',
@@ -15,7 +15,7 @@ export const reactionPresets: ReactionPreset[] = [
     description: 'Confident standing pose for incoming intel.',
     pose: 'sunset-call',
     expression: 'surprise',
-    background: 'protocol-sunset',
+    background: 'protocol-gradient',
   },
   {
     id: 'cipher-whisper',
@@ -23,7 +23,7 @@ export const reactionPresets: ReactionPreset[] = [
     description: 'Thoughtful sitting pose for strategic planning.',
     pose: 'cipher-whisper',
     expression: 'calm',
-    background: 'midnight-circuit',
+    background: 'neural-circuit',
   },
   {
     id: 'nebula-drift',
@@ -31,7 +31,7 @@ export const reactionPresets: ReactionPreset[] = [
     description: 'Fluid locomotion for meditative uplinks.',
     pose: 'nebula-drift',
     expression: 'joy',
-    background: 'cyber-waves',
+    background: 'neon-waves',
   },
   {
     id: 'signal-reverie',
@@ -39,7 +39,7 @@ export const reactionPresets: ReactionPreset[] = [
     description: 'Crouching stance with focused energy.',
     pose: 'signal-reverie',
     expression: 'surprise',
-    background: 'signal-breach',
+    background: 'signal-glitch',
   },
   {
     id: 'agent-taunt',
@@ -47,7 +47,7 @@ export const reactionPresets: ReactionPreset[] = [
     description: 'Playful provocation for psychological operations.',
     pose: 'agent-taunt',
     expression: 'joy',
-    background: 'quantum-field',
+    background: 'quantum-particles',
   },
   {
     id: 'agent-dance',
@@ -55,7 +55,7 @@ export const reactionPresets: ReactionPreset[] = [
     description: 'Celebratory moves for mission success.',
     pose: 'agent-dance',
     expression: 'joy',
-    background: 'green-loom-matrix',
+    background: 'synthwave-grid',
   },
   {
     id: 'agent-clapping',
@@ -63,7 +63,7 @@ export const reactionPresets: ReactionPreset[] = [
     description: 'Enthusiastic applause for team victories.',
     pose: 'agent-clapping',
     expression: 'joy',
-    background: 'green-loom-matrix',
+    background: 'synthwave-grid',
   },
   {
     id: 'silly-agent',
@@ -71,7 +71,7 @@ export const reactionPresets: ReactionPreset[] = [
     description: 'Playful and carefree dance moves.',
     pose: 'silly-agent',
     expression: 'joy',
-    background: 'cyber-waves',
+    background: 'neon-waves',
   },
   {
     id: 'simple-wave',
@@ -79,7 +79,7 @@ export const reactionPresets: ReactionPreset[] = [
     description: 'Friendly greeting gesture.',
     pose: 'simple-wave',
     expression: 'joy',
-    background: 'protocol-dawn',
+    background: 'protocol-gradient',
   },
   {
     id: 'point',
@@ -87,7 +87,7 @@ export const reactionPresets: ReactionPreset[] = [
     description: 'Directing attention forward.',
     pose: 'point',
     expression: 'calm',
-    background: 'midnight-circuit',
+    background: 'neural-circuit',
   },
   {
     id: 'defeat',
@@ -95,7 +95,7 @@ export const reactionPresets: ReactionPreset[] = [
     description: 'A moment of crushing setback.',
     pose: 'defeat',
     expression: 'calm',
-    background: 'signal-breach',
+    background: 'signal-glitch',
   },
   {
     id: 'focus',
@@ -103,7 +103,7 @@ export const reactionPresets: ReactionPreset[] = [
     description: 'Intense concentration on the task.',
     pose: 'focus',
     expression: 'calm',
-    background: 'neural-grid',
+    background: 'cyber-hexagons',
   },
   {
     id: 'rope-climb',
@@ -111,7 +111,7 @@ export const reactionPresets: ReactionPreset[] = [
     description: 'Ascending vertically.',
     pose: 'rope-climb',
     expression: 'calm',
-    background: 'midnight-circuit',
+    background: 'neural-circuit',
   },
   {
     id: 'climb-top',
@@ -119,7 +119,7 @@ export const reactionPresets: ReactionPreset[] = [
     description: 'Reaching the summit.',
     pose: 'climb-top',
     expression: 'joy',
-    background: 'protocol-dawn',
+    background: 'protocol-gradient',
   },
   {
     id: 'thumbs-up',
@@ -127,7 +127,7 @@ export const reactionPresets: ReactionPreset[] = [
     description: 'Affirmative gesture.',
     pose: 'thumbs-up',
     expression: 'joy',
-    background: 'green-loom-matrix',
+    background: 'synthwave-grid',
   },
   {
     id: 'offensive-idle',
@@ -135,7 +135,7 @@ export const reactionPresets: ReactionPreset[] = [
     description: 'Ready for confrontation.',
     pose: 'offensive-idle',
     expression: 'calm',
-    background: 'quantum-field',
+    background: 'quantum-particles',
   },
   {
     id: 'waking',
@@ -143,7 +143,7 @@ export const reactionPresets: ReactionPreset[] = [
     description: 'Slowly coming online.',
     pose: 'waking',
     expression: 'calm',
-    background: 'protocol-dawn',
+    background: 'void-minimal',
   },
   {
     id: 'treading-water',
@@ -151,7 +151,7 @@ export const reactionPresets: ReactionPreset[] = [
     description: 'Staying afloat in the data stream.',
     pose: 'treading-water',
     expression: 'calm',
-    background: 'cyber-waves',
+    background: 'neon-waves',
   },
   {
     id: 'cheering',
@@ -159,7 +159,7 @@ export const reactionPresets: ReactionPreset[] = [
     description: 'Celebrating a victory.',
     pose: 'cheering',
     expression: 'joy',
-    background: 'protocol-sunset',
+    background: 'protocol-gradient',
   },
 ];
 

@@ -35,8 +35,8 @@ export function ScrambleText({
 }: ScrambleTextProps) {
   const [displayText, setDisplayText] = useState(text);
   const [isAnimating, setIsAnimating] = useState(false);
-  const frameRef = useRef<number>();
-  const startTimeRef = useRef<number>();
+  const frameRef = useRef<number | undefined>(undefined);
+  const startTimeRef = useRef<number | undefined>(undefined);
 
   const scramble = useCallback(() => {
     if (!active) {
@@ -120,7 +120,7 @@ export function ScrambleText({
 export function useScramble(text: string, duration = 1000) {
   const [displayText, setDisplayText] = useState(text);
   const [isAnimating, setIsAnimating] = useState(false);
-  const frameRef = useRef<number>();
+  const frameRef = useRef<number | undefined>(undefined);
 
   const trigger = useCallback(() => {
     if (isAnimating) return;

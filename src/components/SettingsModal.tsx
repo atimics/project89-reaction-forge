@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useSettingsStore, type Locale, type QualityLevel, type ViewportStyle } from '../state/useSettingsStore';
+import { useSettingsStore, type Locale, type QualityLevel } from '../state/useSettingsStore';
 import { autosaveManager, type AutosaveEntry } from '../persistence/autosaveManager';
 import { projectManager } from '../persistence/projectManager';
 import { useToastStore } from '../state/useToastStore';
