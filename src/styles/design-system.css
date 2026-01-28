@@ -60,7 +60,7 @@
   --shell-glow-2: rgba(124, 58, 237, 0.06);
   --shell-glow-3: rgba(249, 115, 22, 0.04);
   
-  /* Primary Spectrum - Aurora Cyan */
+  /* Primary Spectrum - Aurora Cyan / Signal Green */
   --accent-50: #e6fffc;
   --accent-100: #b3fff5;
   --accent-200: #80ffed;
@@ -71,6 +71,27 @@
   --accent-700: #00a890;
   --accent-800: #007d6d;
   --accent-900: #00524a;
+  
+  /* ═══════════════════════════════════════════════════════════════════════════
+     BRAND SEMANTIC ALIASES (from DOCTRINE.md)
+     These provide brand-consistent naming per the PoseLab Brand Bible
+     ═══════════════════════════════════════════════════════════════════════════ */
+  
+  /* Signal Green - The signature color. For emphasis, never decoration. */
+  --signal-green: var(--accent);
+  --signal-green-glow: rgba(0, 255, 214, 0.25);
+  --signal-green-muted: rgba(0, 255, 214, 0.15);
+  
+  /* Panel Surfaces - The void is home */
+  --void: var(--color-void);
+  --panel-surface: var(--color-surface);
+  --panel-elevated: var(--color-elevated);
+  
+  /* Text Clarity System */
+  --clarity: var(--text-primary);           /* Primary text - full visibility */
+  --whisper: var(--text-secondary);         /* Secondary text - softer presence */
+  --murmur: var(--text-tertiary);           /* Tertiary - barely there */
+  --silence: var(--text-muted);             /* Muted - almost invisible */
   
   /* Secondary Spectrum - Electric Violet */
   --violet-50: #f3e8ff;
@@ -211,10 +232,13 @@
   /* Durations */
   --duration-instant: 50ms;
   --duration-fast: 150ms;
-  --duration-normal: 250ms;
+  --duration-normal: 200ms;  /* Brand: "confident, not lazy" - per DOCTRINE */
   --duration-slow: 400ms;
   --duration-slower: 600ms;
   --duration-slowest: 1000ms;
+  
+  /* Brand-aligned motion (DOCTRINE: 200ms ease-out = confident) */
+  --motion-confident: 200ms var(--ease-out);
   
   /* Easings */
   --ease-linear: linear;

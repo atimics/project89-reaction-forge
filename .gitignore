@@ -84,3 +84,8 @@ coverage/
 # Debug logs
 debug.log
 error.log
+
+# ============================================
+# INTERNAL STRATEGY DOCUMENTS
+# ============================================
+DOCTRINE.md

@@ -4,6 +4,7 @@ import { persist } from 'zustand/middleware';
 export type QualityLevel = 'high' | 'medium' | 'low';
 export type Theme = 'dark' | 'light' | 'system';
 export type Locale = 'en' | 'ja' | 'es' | 'fr' | 'ko';
+export type ViewportStyle = 'clean' | 'vhs' | 'hologram' | 'scanlines';
 
 interface SettingsState {
   quality: QualityLevel;
@@ -15,6 +16,7 @@ interface SettingsState {
   autosaveEnabled: boolean;
   autosaveIntervalMinutes: number;
   autosaveMaxEntries: number;
+  viewportStyle: ViewportStyle;
   setQuality: (quality: QualityLevel) => void;
   setShadows: (enabled: boolean) => void;
   setShowStats: (enabled: boolean) => void;
@@ -24,6 +26,7 @@ interface SettingsState {
   setAutosaveEnabled: (enabled: boolean) => void;
   setAutosaveIntervalMinutes: (minutes: number) => void;
   setAutosaveMaxEntries: (maxEntries: number) => void;
+  setViewportStyle: (style: ViewportStyle) => void;
 }
 
 export const useSettingsStore = create<SettingsState>()(
@@ -38,6 +41,7 @@ export const useSettingsStore = create<SettingsState>()(
       autosaveEnabled: true,
       autosaveIntervalMinutes: 5,
       autosaveMaxEntries: 20,
+      viewportStyle: 'clean',
       setQuality: (quality) => set({ quality }),
       setShadows: (shadows) => set({ shadows }),
       setShowStats: (showStats) => set({ showStats }),
@@ -47,6 +51,7 @@ export const useSettingsStore = create<SettingsState>()(
       setAutosaveEnabled: (autosaveEnabled) => set({ autosaveEnabled }),
       setAutosaveIntervalMinutes: (autosaveIntervalMinutes) => set({ autosaveIntervalMinutes }),
       setAutosaveMaxEntries: (autosaveMaxEntries) => set({ autosaveMaxEntries }),
+      setViewportStyle: (viewportStyle) => set({ viewportStyle }),
     }),
     {
       name: 'reaction-forge-settings',

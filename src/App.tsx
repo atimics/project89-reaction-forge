@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { AppHeader } from './components/AppHeader';
 import { CanvasStage } from './components/CanvasStage';
 import { ViewportOverlay } from './components/ViewportOverlay';
+import { ViewportEffectOverlay } from './components/ViewportEffectOverlay';
 import { ControlPanel } from './components/ControlPanel';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { ToastHost } from './ui/Toast';
@@ -89,6 +90,7 @@ function App() {
         <section className="viewport">
           <ErrorBoundary>
             <CanvasStage />
+            <ViewportEffectOverlay />
             <ViewportOverlay mode={mode} />
           </ErrorBoundary>
         </section>

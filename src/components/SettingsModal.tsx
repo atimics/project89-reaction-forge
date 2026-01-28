@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
-import { useSettingsStore, type Locale, type QualityLevel } from '../state/useSettingsStore';
+import { useSettingsStore, type Locale, type QualityLevel, type ViewportStyle } from '../state/useSettingsStore';
 import { autosaveManager, type AutosaveEntry } from '../persistence/autosaveManager';
 import { projectManager } from '../persistence/projectManager';
 import { useToastStore } from '../state/useToastStore';
-import { Desktop, GearSix, Moon, Sun } from '@phosphor-icons/react';
+import { Desktop, GearSix, Moon, Sun, FilmStrip, Cube, Scan, Circle } from '@phosphor-icons/react';
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -21,6 +21,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     autosaveEnabled,
     autosaveIntervalMinutes,
     autosaveMaxEntries,
+    viewportStyle,
     setQuality,
     setShadows,
     setShowStats,
@@ -30,6 +31,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     setAutosaveEnabled,
     setAutosaveIntervalMinutes,
     setAutosaveMaxEntries,
+    setViewportStyle,
   } = useSettingsStore();
   const addToast = useToastStore((state) => state.addToast);
   const [autosaves, setAutosaves] = useState<AutosaveEntry[]>([]);
@@ -111,6 +113,41 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
               <span className="muted small">{Math.round(textScale * 100)}%</span>
             </div>
             <p className="muted small">Increase scale for readability on high-density screens.</p>
+          </div>
+
+          <div className="setting-group">
+            <label>Viewport Style</label>
+            <div className="viewport-style-toggle">
+              <button 
+                className={`style-btn ${viewportStyle === 'clean' ? 'active' : ''}`}
+                onClick={() => setViewportStyle('clean')}
+                title="Clean - No effects"
+              >
+                <Circle size={16} weight={viewportStyle === 'clean' ? 'fill' : 'regular'} /> Clean
+              </button>
+              <button 
+                className={`style-btn ${viewportStyle === 'scanlines' ? 'active' : ''}`}
+                onClick={() => setViewportStyle('scanlines')}
+                title="Scanlines - Subtle CRT effect"
+              >
+                <Scan size={16} weight={viewportStyle === 'scanlines' ? 'fill' : 'regular'} /> Scanlines
+              </button>
+              <button 
+                className={`style-btn ${viewportStyle === 'vhs' ? 'active' : ''}`}
+                onClick={() => setViewportStyle('vhs')}
+                title="VHS - Retro tape effect"
+              >
+                <FilmStrip size={16} weight={viewportStyle === 'vhs' ? 'fill' : 'regular'} /> VHS
+              </button>
+              <button 
+                className={`style-btn ${viewportStyle === 'hologram' ? 'active' : ''}`}
+                onClick={() => setViewportStyle('hologram')}
+                title="Hologram - Cyberpunk effect"
+              >
+                <Cube size={16} weight={viewportStyle === 'hologram' ? 'fill' : 'regular'} /> Hologram
+              </button>
+            </div>
+            <p className="muted small">Apply visual effects to the 3D viewport for stylized captures.</p>
           </div>
 
           <div className="setting-group">
@@ -315,6 +352,45 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
         .theme-btn:hover:not(.active) {
           color: var(--text-primary);
           background: rgba(255,255,255,0.05);
+        }
+
+        .viewport-style-toggle {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 6px;
+          background: rgba(0, 0, 0, 0.2);
+          padding: 6px;
+          border-radius: 10px;
+          margin-top: 8px;
+        }
+        
+        .style-btn {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 6px;
+          padding: 10px 8px;
+          border-radius: 8px;
+          background: transparent;
+          border: 1px solid transparent;
+          color: var(--text-secondary);
+          cursor: pointer;
+          transition: all 0.2s ease;
+          font-family: var(--font-body);
+          font-weight: 500;
+          font-size: 0.85rem;
+        }
+        
+        .style-btn.active {
+          background: rgba(0, 255, 214, 0.15);
+          color: var(--accent);
+          border-color: rgba(0, 255, 214, 0.3);
+        }
+        
+        .style-btn:hover:not(.active) {
+          color: var(--text-primary);
+          background: rgba(255,255,255,0.05);
+          border-color: rgba(255,255,255,0.1);
         }
 
         .close-button {

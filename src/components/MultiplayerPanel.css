@@ -507,16 +507,17 @@
 .mp-quick-join {
   width: 44px;
   height: 44px;
-  border: none;
-  background: var(--glass-bg);
+  border-radius: 50%;
+  border: 1px solid rgba(124, 58, 237, 0.3);
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.15), rgba(0, 255, 214, 0.1));
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border-radius: 50%;
-  border: 1px solid var(--glass-border);
   font-size: 1.2rem;
+  color: var(--violet);
   cursor: pointer;
-  transition: var(--transition-all);
-  box-shadow: var(--shadow-md);
+  /* Kawaii spring easing - matches record & sprint buttons */
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 0 0 12px rgba(124, 58, 237, 0.2);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -525,15 +526,22 @@
 }
 
 .mp-quick-join:hover:not(:disabled) {
-  background: linear-gradient(135deg, var(--violet) 0%, var(--violet-700) 100%);
-  border-color: rgba(124, 58, 237, 0.4);
-  transform: scale(1.08);
-  box-shadow: var(--shadow-lg), 0 0 24px rgba(124, 58, 237, 0.3);
+  /* Kawaii bounce + rotate - matches sprint button */
+  transform: scale(1.15) rotate(5deg);
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.3), rgba(0, 255, 214, 0.2));
+  border-color: rgba(124, 58, 237, 0.5);
+  box-shadow: 0 0 20px rgba(124, 58, 237, 0.5);
+  color: #fff;
+}
+
+.mp-quick-join:active:not(:disabled) {
+  transform: scale(0.95) rotate(-2deg);
 }
 
 .mp-quick-join:disabled {
   opacity: 0.4;
   cursor: not-allowed;
+  transform: none;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
