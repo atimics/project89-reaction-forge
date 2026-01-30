@@ -53,7 +53,6 @@ class VMCFrameBuffer {
   
   // Temporary quaternion for SLERP operations
   private tempQuat = new THREE.Quaternion();
-  private tempQuat2 = new THREE.Quaternion();
   
   /**
    * Push a new bone rotation into the buffer
