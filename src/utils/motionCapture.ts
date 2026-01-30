@@ -7,6 +7,8 @@ import { motionEngine } from '../poses/motionEngine';
 import { sceneManager } from '../three/sceneManager';
 import { OneEuroFilter, OneEuroFilterQuat, OneEuroFilterVec3 } from './OneEuroFilter';
 import { live2dManager } from '../live2d/live2dManager';
+import { vmcFrameBuffer } from './vmcInput';
+import { voiceLipSync } from './voiceLipSync';
 
 // ======================
 // Configuration Constants
@@ -52,6 +54,33 @@ const SMOOTHING = {
   // Specific overrides
   EYE_MIN_CUTOFF: 2.0, // Eyes move faster
   HEAD_MIN_CUTOFF: 0.5, // Head is heavier
+};
+
+/** VMC-specific smoothing configuration - tuned for external motion capture */
+const VMC_SMOOTHING = {
+  // Very low minCutoff = very aggressive smoothing when slow/stationary (kills micro-jitter)
+  MIN_CUTOFF: 0.25,
+  // Very low beta = prioritize smoothness over responsiveness
+  BETA: 0.12,
+  // Head needs extra smoothing as it's most visible
+  HEAD_MIN_CUTOFF: 0.2,
+  HEAD_BETA: 0.08,
+  // Hands can be slightly snappier but still smooth
+  HAND_MIN_CUTOFF: 0.4,
+  HAND_BETA: 0.2,
+  // Root position needs very strong smoothing to prevent body wobble
+  ROOT_MIN_CUTOFF: 0.2,
+  ROOT_BETA: 0.1,
+  // Expression smoothing (non-mouth expressions)
+  EXPRESSION_MIN_CUTOFF: 0.6,
+  EXPRESSION_BETA: 0.2,
+  // Velocity deadzone - ignore rotational changes below this threshold (radians)
+  // Increased for more aggressive jitter rejection
+  ROTATION_DEADZONE: 0.003,
+  // Position deadzone - ignore positional changes below this threshold (units)
+  POSITION_DEADZONE: 0.002,
+  // Additional exponential smoothing factor (0-1, lower = more smoothing)
+  EXPONENTIAL_FACTOR: 0.2,
 };
 
 /** Gaze sensitivity multiplier for eye tracking */
@@ -339,6 +368,10 @@ export class MotionCaptureManager {
   }
   
   startExternalInput() {
+      // Reinitialize filters with VMC-specific parameters for better jitter reduction
+      this.boneFilters.clear();
+      this.faceFilters.clear();
+      this.rootPositionFilter = new OneEuroFilterVec3(VMC_SMOOTHING.ROOT_MIN_CUTOFF, VMC_SMOOTHING.ROOT_BETA);
       this.startUpdateLoop('vmc');
   }
 
@@ -366,6 +399,11 @@ export class MotionCaptureManager {
   }
 
   applyExternalExpression(name: string, value: number) {
+      // Skip mouth expressions if voice lip sync is active (local mic takes priority)
+      if (voiceLipSync.isExpressionControlled(name)) {
+          return;
+      }
+      
       // 1. Try exact match
       if (this.availableBlendshapes.size === 0 || this.availableBlendshapes.has(name)) {
           this.targetFaceValues.set(name, value);
@@ -390,7 +428,7 @@ export class MotionCaptureManager {
           'lookleft': ['LookLeft', 'lookLeft', 'eyeLookInRight', 'eyeLookOutLeft'],
           'lookright': ['LookRight', 'lookRight', 'eyeLookInLeft', 'eyeLookOutRight'],
           'lookup': ['LookUp', 'lookUp', 'eyeLookUpLeft', 'eyeLookUpRight'],
-          'lookdown': ['LookDown', 'lookDown', 'eyeLookDownLeft', 'eyeLookDownRight'],
+          'lookdown': ['LookDown', 'lookDown', 'eyeLookDownLeft', 'eyLookDownRight'],
           'neutral': ['Neutral', 'neutral'],
           'relaxed': ['Relaxed', 'relaxed', 'Fun'],
       };
@@ -437,17 +475,47 @@ export class MotionCaptureManager {
       }
       
       // 1. Smooth Facial Expressions
+      const isVMC = this.updateSources.has('vmc');
+      const renderTimeMs = performance.now();
+      
       this.targetFaceValues.forEach((targetVal, name) => {
+          // Skip mouth expressions if voice lip sync is active (local mic has priority)
+          if (isVMC && voiceLipSync.isExpressionControlled(name)) {
+              return;
+          }
+          
           let filter = this.faceFilters.get(name);
           if (!filter) {
-              const minCutoff = (name.toLowerCase().includes('eye') || name.toLowerCase().includes('blink')) 
-                ? SMOOTHING.EYE_MIN_CUTOFF 
-                : SMOOTHING.MIN_CUTOFF;
-              filter = new OneEuroFilter(minCutoff, SMOOTHING.BETA);
+              const lowerName = name.toLowerCase();
+              const isEyeRelated = lowerName.includes('eye') || lowerName.includes('blink') || lowerName.includes('look');
+              
+              let minCutoff: number;
+              let beta: number;
+              
+              if (isVMC) {
+                  // VMC expressions - use tuned parameters
+                  minCutoff = isEyeRelated ? SMOOTHING.EYE_MIN_CUTOFF : VMC_SMOOTHING.EXPRESSION_MIN_CUTOFF;
+                  beta = VMC_SMOOTHING.EXPRESSION_BETA;
+              } else {
+                  // Webcam - original parameters
+                  minCutoff = isEyeRelated ? SMOOTHING.EYE_MIN_CUTOFF : SMOOTHING.MIN_CUTOFF;
+                  beta = SMOOTHING.BETA;
+              }
+              
+              filter = new OneEuroFilter(minCutoff, beta);
               this.faceFilters.set(name, filter);
           }
           
-          const newVal = filter.filter(targetVal, timestamp);
+          // For VMC: Use interpolated value from buffer for timing jitter reduction
+          let valueToFilter = targetVal;
+          if (isVMC) {
+              const interpolatedVal = vmcFrameBuffer.getInterpolatedExpression(name, renderTimeMs);
+              if (interpolatedVal !== null) {
+                  valueToFilter = interpolatedVal;
+              }
+          }
+          
+          const newVal = filter.filter(valueToFilter, timestamp);
           this.currentFaceValues.set(name, newVal);
           
           this.vrm!.expressionManager!.setValue(name, newVal);
@@ -456,7 +524,7 @@ export class MotionCaptureManager {
       
       // 2. Smooth Bone Rotations
       this.targetBoneRotations.forEach((targetQ, boneName) => {
-          if (this.mode === 'face' && !this.updateSources.has('vmc')) {
+          if (this.mode === 'face' && !isVMC) {
               const allowedBones = [
                   'head', 'neck',
                   'chest', 'upperchest', 'spine', // Hips removed to prevent full body rotation
@@ -471,33 +539,103 @@ export class MotionCaptureManager {
           if (node) {
               let filter = this.boneFilters.get(boneName);
               if (!filter) {
-                  const isVMC = this.updateSources.has('vmc');
-                  const minCutoff = isVMC ? 1.0 : (boneName.toLowerCase().includes('head') ? SMOOTHING.HEAD_MIN_CUTOFF : SMOOTHING.MIN_CUTOFF);
-                  const beta = isVMC ? 0.3 : SMOOTHING.BETA; 
+                  const lowerBoneName = boneName.toLowerCase();
+                  
+                  let minCutoff: number;
+                  let beta: number;
+                  
+                  if (isVMC) {
+                      // VMC-specific tuned parameters based on bone type
+                      if (lowerBoneName.includes('head')) {
+                          minCutoff = VMC_SMOOTHING.HEAD_MIN_CUTOFF;
+                          beta = VMC_SMOOTHING.HEAD_BETA;
+                      } else if (lowerBoneName.includes('hand') || lowerBoneName.includes('thumb') || 
+                                 lowerBoneName.includes('index') || lowerBoneName.includes('middle') ||
+                                 lowerBoneName.includes('ring') || lowerBoneName.includes('little')) {
+                          minCutoff = VMC_SMOOTHING.HAND_MIN_CUTOFF;
+                          beta = VMC_SMOOTHING.HAND_BETA;
+                      } else {
+                          minCutoff = VMC_SMOOTHING.MIN_CUTOFF;
+                          beta = VMC_SMOOTHING.BETA;
+                      }
+                  } else {
+                      // Webcam mocap parameters
+                      minCutoff = lowerBoneName.includes('head') ? SMOOTHING.HEAD_MIN_CUTOFF : SMOOTHING.MIN_CUTOFF;
+                      beta = SMOOTHING.BETA;
+                  }
                   
                   filter = new OneEuroFilterQuat(minCutoff, beta);
                   this.boneFilters.set(boneName, filter);
               }
 
-              const smoothed = filter.filter(targetQ.x, targetQ.y, targetQ.z, targetQ.w, timestamp);
+              // For VMC: Use SLERP-interpolated quaternion from buffer for timing jitter reduction
+              let quatToFilter = targetQ;
+              if (isVMC) {
+                  const interpolatedQuat = vmcFrameBuffer.getInterpolatedBoneRotation(boneName, renderTimeMs);
+                  if (interpolatedQuat) {
+                      quatToFilter = interpolatedQuat;
+                  }
+              }
+
+              const smoothed = filter.filter(quatToFilter.x, quatToFilter.y, quatToFilter.z, quatToFilter.w, timestamp);
               
-              node.quaternion.set(smoothed.x, smoothed.y, smoothed.z, smoothed.w);
+              // For VMC: Apply velocity deadzone to ignore micro-movements
+              if (isVMC) {
+                  // Calculate angular difference from current pose
+                  const currentQ = node.quaternion;
+                  const dot = Math.abs(currentQ.x * smoothed.x + currentQ.y * smoothed.y + 
+                                       currentQ.z * smoothed.z + currentQ.w * smoothed.w);
+                  const angularDiff = 2 * Math.acos(Math.min(1, dot));
+                  
+                  // Only apply if change is above deadzone threshold
+                  if (angularDiff > VMC_SMOOTHING.ROTATION_DEADZONE) {
+                      node.quaternion.set(smoothed.x, smoothed.y, smoothed.z, smoothed.w);
+                  }
+                  // If below threshold, keep current quaternion (no update = no jitter)
+              } else {
+                  node.quaternion.set(smoothed.x, smoothed.y, smoothed.z, smoothed.w);
+              }
           }
       });
 
       // 3. Smooth Root Position
-      if ((this.mode === 'full' && this.targetRootPosition) || (this.updateSources.has('vmc') && this.targetRootPosition)) {
+      if ((this.mode === 'full' && this.targetRootPosition) || (isVMC && this.targetRootPosition)) {
           const hips = this.vrm.humanoid.getNormalizedBoneNode('hips');
           if (hips) {
+             // For VMC: Use interpolated position from buffer for timing jitter reduction
+             let posToFilter = this.targetRootPosition;
+             if (isVMC && vmcFrameBuffer.hasRootPosition()) {
+                 const interpolatedPos = vmcFrameBuffer.getInterpolatedRootPosition(renderTimeMs);
+                 if (interpolatedPos) {
+                     // Apply calibration offset to interpolated position (clone to avoid mutation)
+                     posToFilter = interpolatedPos.clone().add(this.calibrationOffset).add(this.baseHipsPosition);
+                 }
+             }
+             
              const smoothedPos = this.rootPositionFilter.filter(
-                 this.targetRootPosition.x,
-                 this.targetRootPosition.y,
-                 this.targetRootPosition.z,
+                 posToFilter.x,
+                 posToFilter.y,
+                 posToFilter.z,
                  timestamp
              );
              
-             this.currentRootPosition.set(smoothedPos.x, smoothedPos.y, smoothedPos.z);
-             hips.position.copy(this.currentRootPosition);
+             // For VMC: Apply position deadzone to ignore micro-movements
+             if (isVMC) {
+                 const dx = smoothedPos.x - this.currentRootPosition.x;
+                 const dy = smoothedPos.y - this.currentRootPosition.y;
+                 const dz = smoothedPos.z - this.currentRootPosition.z;
+                 const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+                 
+                 // Only update if movement is above threshold
+                 if (distance > VMC_SMOOTHING.POSITION_DEADZONE) {
+                     this.currentRootPosition.set(smoothedPos.x, smoothedPos.y, smoothedPos.z);
+                     hips.position.copy(this.currentRootPosition);
+                 }
+                 // If below threshold, keep current position (no update = no jitter)
+             } else {
+                 this.currentRootPosition.set(smoothedPos.x, smoothedPos.y, smoothedPos.z);
+                 hips.position.copy(this.currentRootPosition);
+             }
           }
       }
       

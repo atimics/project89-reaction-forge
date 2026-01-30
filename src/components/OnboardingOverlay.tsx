@@ -163,9 +163,9 @@ export function OnboardingOverlay() {
         // Fallback to local default if API fails
         const response = await fetch('/vrm/VIPE_Hero_2851-default.vrm');
         const blob = await response.blob();
-        const file = new File([blob], 'VIPE_Hero_2851-default.vrm', { type: 'model/gltf-binary' });
+        const file = new File([blob], 'default-avatar.vrm', { type: 'model/gltf-binary' });
         setFileSource(file);
-        addToast('Agent VIPE Hero materialized (Offline Mode).', 'success');
+        addToast('Default avatar loaded (Offline Mode).', 'success');
       }
     } catch (error) {
       console.error('Failed to load sample avatar:', error);

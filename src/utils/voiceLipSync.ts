@@ -413,6 +413,42 @@ export class VoiceLipSync {
   getCurrentValues(): { A: number; E: number; I: number; O: number; U: number } {
     return { ...this.currentValues };
   }
+
+  /**
+   * Check if a given expression name is controlled by voice lip sync
+   * Used to prevent VMC from overwriting mouth expressions when lip sync is active
+   */
+  isExpressionControlled(expressionName: string): boolean {
+    if (!this.isActive) return false;
+    
+    const lowerName = expressionName.toLowerCase();
+    
+    // Check all mouth expression mappings
+    for (const candidates of Object.values(MOUTH_EXPRESSIONS)) {
+      if (candidates.some(c => c.toLowerCase() === lowerName)) {
+        return true;
+      }
+    }
+    
+    // Also check common mouth-related expressions
+    const mouthKeywords = ['mouth', 'jaw', 'lip', 'tongue'];
+    if (mouthKeywords.some(keyword => lowerName.includes(keyword))) {
+      return true;
+    }
+    
+    return false;
+  }
+
+  /**
+   * Get all expression names that voice lip sync controls
+   */
+  getControlledExpressionNames(): string[] {
+    const names: string[] = [];
+    for (const candidates of Object.values(MOUTH_EXPRESSIONS)) {
+      names.push(...candidates);
+    }
+    return names;
+  }
 }
 
 // Export singleton instance

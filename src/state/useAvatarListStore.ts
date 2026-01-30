@@ -42,6 +42,10 @@ type AvatarListState = {
 const PROJECTS_LIST_URL = 'https://raw.githubusercontent.com/ToxSam/open-source-avatars/main/data/projects.json';
 const AVATAR_DATA_BASE_URL = 'https://raw.githubusercontent.com/ToxSam/open-source-avatars/main/data/';
 
+// Only allow child-friendly, open-source collections for public randomization
+// VIPE and Grifter collections are hidden as they may contain mature content
+const ALLOWED_COLLECTIONS = ['opensource-avatars'];
+
 export const useAvatarListStore = create<AvatarListState>((set, get) => ({
   avatars: [],
   isLoading: false,
@@ -57,10 +61,15 @@ export const useAvatarListStore = create<AvatarListState>((set, get) => ({
       if (!projectsResponse.ok) throw new Error('Failed to fetch projects list');
       const projects: ProjectEntry[] = await projectsResponse.json();
 
+      // Filter to only include allowed collections (excludes VIPE, Grifter, etc.)
+      const allowedProjects = projects.filter((project) => 
+        ALLOWED_COLLECTIONS.includes(project.id)
+      );
+
       const allAvatars: AvatarEntry[] = [];
 
-      // 2. For each project, fetch its corresponding avatar_data_file
-      const fetchPromises = projects.map(async (project) => {
+      // 2. For each allowed project, fetch its corresponding avatar_data_file
+      const fetchPromises = allowedProjects.map(async (project) => {
         const avatarDataUrl = `${AVATAR_DATA_BASE_URL}${project.avatar_data_file}`;
         
         try {
