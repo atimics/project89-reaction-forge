@@ -108,6 +108,10 @@ class EnvironmentManager {
   private originalBackground?: THREE.Color | THREE.Texture | null;
   private _videoElement: HTMLVideoElement | null = null;
   private _unsubscribeBackgroundTransfer: (() => void) | null = null;
+  
+  // Persistence state
+  private customEnvironmentData: string | null = null;
+  private customEnvironmentType: string | null = null;
 
   /**
    * Initialize the PMREM generator
@@ -204,12 +208,39 @@ class EnvironmentManager {
    */
   async loadHDRIFromFile(file: File): Promise<void> {
     const url = URL.createObjectURL(file);
+    
+    // Store for persistence
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result as string;
+      // Extract base64
+      const base64 = result.split(',')[1];
+      this.customEnvironmentData = base64;
+      this.customEnvironmentType = file.name.endsWith('.exr') ? 'image/x-exr' : 'application/x-hdr';
+    };
+    reader.readAsDataURL(file);
+
     try {
       await this.loadHDRI(url);
     } finally {
       // Don't revoke immediately - the texture needs the URL
       // It will be cleaned up when dispose() is called
     }
+  }
+
+  /**
+   * Set custom environment data manually (e.g. from project load)
+   */
+  setCustomData(data: string, type: string) {
+    this.customEnvironmentData = data;
+    this.customEnvironmentType = type;
+  }
+
+  getCustomData() {
+    return {
+      data: this.customEnvironmentData,
+      type: this.customEnvironmentType
+    };
   }
 
   /**
@@ -378,6 +409,8 @@ class EnvironmentManager {
 
     this.dispose();
     this.currentSettings = { ...DEFAULT_ENV_SETTINGS };
+    this.customEnvironmentData = null;
+    this.customEnvironmentType = null;
     console.log('[EnvironmentManager] Environment cleared');
   }
 

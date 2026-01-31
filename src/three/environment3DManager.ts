@@ -20,6 +20,7 @@ export interface LoadedEnvironment {
   id: string;
   name: string;
   url: string;
+  data?: string; // Base64 for persistence
   group: THREE.Group;
   settings: Environment3DSettings;
 }
@@ -69,13 +70,18 @@ class Environment3DManager {
   /**
    * Load a GLB file from URL or blob
    */
-  async loadFromUrl(url: string, name?: string): Promise<LoadedEnvironment> {
+  async loadFromUrl(url: string, name?: string, base64Data?: string): Promise<LoadedEnvironment> {
     const scene = sceneManager.getScene();
     if (!scene) {
       throw new Error('Scene not initialized');
     }
 
     console.log('[Environment3D] Loading GLB:', url);
+
+    // If no base64 data provided and it's a blob URL, we can't easily get it here without fetch
+    // But for File uploads, loadFromFile handles it. 
+    // For remote URLs, we might want to fetch it if we want to save it later.
+    // For now, let's rely on loadFromFile or explicit base64 passing.
 
     return new Promise((resolve, reject) => {
       this.loader.load(
@@ -122,6 +128,7 @@ class Environment3DManager {
             id,
             name: name || this.extractName(url) || `Environment ${this.idCounter}`,
             url,
+            data: base64Data,
             group,
             settings,
           };
@@ -151,8 +158,48 @@ class Environment3DManager {
    */
   async loadFromFile(file: File): Promise<LoadedEnvironment> {
     const url = URL.createObjectURL(file);
+    
+    // Read file as base64 for persistence
+    const base64Data = await new Promise<string>((resolve) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = reader.result as string;
+        resolve(result.split(',')[1]);
+      };
+      reader.readAsDataURL(file);
+    });
+
     try {
-      const env = await this.loadFromUrl(url, file.name.replace(/\.glb$/i, ''));
+      const env = await this.loadFromUrl(url, file.name.replace(/\.glb$/i, ''), base64Data);
+      return env;
+    } catch (error) {
+      URL.revokeObjectURL(url);
+      throw error;
+    }
+  }
+
+  /**
+   * Load environment from base64 data (for project restore)
+   */
+  async loadFromData(base64: string, name: string, settings?: Environment3DSettings): Promise<LoadedEnvironment> {
+    // Convert base64 to blob
+    const binaryString = window.atob(base64);
+    const len = binaryString.length;
+    const bytes = new Uint8Array(len);
+    for (let i = 0; i < len; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+    }
+    const blob = new Blob([bytes], { type: 'model/gltf-binary' });
+    const url = URL.createObjectURL(blob);
+    
+    try {
+      const env = await this.loadFromUrl(url, name, base64);
+      
+      // Restore settings if provided
+      if (settings) {
+        this.updateSettings(env.id, settings);
+      }
+      
       return env;
     } catch (error) {
       URL.revokeObjectURL(url);
@@ -264,6 +311,20 @@ class Environment3DManager {
    */
   getAll(): LoadedEnvironment[] {
     return Array.from(this.environments.values());
+  }
+
+  /**
+   * Get serializeable data for all environments
+   */
+  getSerializeableData() {
+    return Array.from(this.environments.values())
+      .filter(env => env.data) // Only return those with data (uploaded ones)
+      .map(env => ({
+        id: env.id,
+        name: env.name,
+        data: env.data!,
+        settings: env.settings
+      }));
   }
 
   /**

@@ -1,8 +1,13 @@
+import * as THREE from 'three';
 import { useReactionStore } from '../state/useReactionStore';
 import { useTimelineStore } from '../state/useTimelineStore';
 import { useAvatarSource } from '../state/useAvatarSource';
+import { useAvatarListStore } from '../state/useAvatarListStore';
+import { useSceneSettingsStore } from '../state/useSceneSettingsStore';
 import { sceneManager } from '../three/sceneManager';
 import { avatarManager } from '../three/avatarManager';
+import { environmentManager } from '../three/environmentManager';
+import { environment3DManager } from '../three/environment3DManager';
 import { PROJECT_VERSION, type ProjectState } from '../types/project';
 
 export class ProjectManager {
@@ -13,17 +18,33 @@ export class ProjectManager {
     const reactionState = useReactionStore.getState();
     const timelineState = useTimelineStore.getState();
     const avatarSource = useAvatarSource.getState();
+    const sceneSettings = useSceneSettingsStore.getState();
     
     const camera = sceneManager.getCamera();
     const controls = sceneManager.getControls();
     
-    // Get background ID from the active preset
-    const backgroundId = reactionState.activePreset.background || 'midnight';
+    // Get background ID from scene settings or fallback to active preset
+    const backgroundId = sceneSettings.currentBackground || reactionState.activePreset.background || 'midnight';
 
     // Get avatar URL - check if it's a remote URL (not a blob)
     const currentUrl = avatarManager.getCurrentUrl();
     const isRemoteUrl = currentUrl && !currentUrl.startsWith('blob:');
     
+    // Get custom environment data
+    const customEnv = environmentManager.getCustomData();
+    
+    // Get 3D environments
+    const environments3d = environment3DManager.getSerializeableData();
+
+    // Get current avatar pose and transform
+    const currentPose = avatarManager.captureCurrentPose();
+    const currentExpressions = avatarManager.getExpressionWeights();
+    const vrm = avatarManager.getVRM();
+    const avatarTransform = vrm ? {
+        position: { x: vrm.scene.position.x, y: vrm.scene.position.y, z: vrm.scene.position.z },
+        rotation: { x: THREE.MathUtils.radToDeg(vrm.scene.rotation.x), y: THREE.MathUtils.radToDeg(vrm.scene.rotation.y), z: THREE.MathUtils.radToDeg(vrm.scene.rotation.z) }
+    } : undefined;
+
     return {
       version: PROJECT_VERSION,
       date: Date.now(),
@@ -32,10 +53,19 @@ export class ProjectManager {
       },
       scene: {
         backgroundId,
+        customBackgroundData: sceneSettings.customBackgroundData,
+        customBackgroundType: sceneSettings.customBackgroundType,
+        customEnvironmentData: customEnv.data,
+        customEnvironmentType: customEnv.type,
+        environments3d,
         camera: {
           position: camera ? { x: camera.position.x, y: camera.position.y, z: camera.position.z } : { x: 0, y: 1.4, z: 1.6 },
           target: controls ? { x: controls.target.x, y: controls.target.y, z: controls.target.z } : { x: 0, y: 1.4, z: 0 },
         },
+        lighting: sceneSettings.lighting,
+        postProcessing: sceneSettings.postProcessing,
+        environmentSettings: sceneSettings.environment,
+        material: sceneSettings.material,
       },
       timeline: {
         sequence: timelineState.sequence,
@@ -47,8 +77,10 @@ export class ProjectManager {
       },
       avatar: {
         name: avatarSource.sourceLabel || 'Current Avatar',
-        // Only save URL if it's a remote/persistent URL
-        url: isRemoteUrl ? currentUrl : undefined
+        url: isRemoteUrl ? currentUrl : undefined,
+        pose: currentPose,
+        expressions: currentExpressions,
+        transform: avatarTransform
       }
     };
   }
@@ -67,9 +99,80 @@ export class ProjectManager {
     // 1. Restore Scene
     // Set Background
     try {
-      await sceneManager.setBackground(project.scene.backgroundId);
+      const sceneSettings = useSceneSettingsStore.getState();
+      
+      // Restore Custom HDRI if present
+      if (project.scene.customEnvironmentData && project.scene.customEnvironmentType) {
+        environmentManager.setCustomData(
+          project.scene.customEnvironmentData,
+          project.scene.customEnvironmentType
+        );
+        // If the saved preset was 'custom', this will ensure it loads correctly when applied below
+        // Note: We need to convert base64 to blob/url to apply it
+        const binaryString = window.atob(project.scene.customEnvironmentData);
+        const len = binaryString.length;
+        const bytes = new Uint8Array(len);
+        for (let i = 0; i < len; i++) {
+             bytes[i] = binaryString.charCodeAt(i);
+        }
+        const blob = new Blob([bytes], { type: project.scene.customEnvironmentType });
+        const url = URL.createObjectURL(blob);
+        await environmentManager.loadHDRI(url);
+      }
+
+      // Restore 3D Environments
+      if (project.scene.environments3d && project.scene.environments3d.length > 0) {
+        console.log('[ProjectManager] Restoring 3D environments:', project.scene.environments3d.length);
+        environment3DManager.removeAll(); // Clear existing
+        
+        for (const envData of project.scene.environments3d) {
+          try {
+            await environment3DManager.loadFromData(envData.data, envData.name, envData.settings);
+          } catch (e) {
+            console.error('[ProjectManager] Failed to restore 3D environment:', envData.name, e);
+          }
+        }
+      }
+
+      if (project.scene.backgroundId === 'custom' && project.scene.customBackgroundData && project.scene.customBackgroundType) {
+        // Restore custom background
+        sceneSettings.setCustomBackground(
+          project.scene.customBackgroundData,
+          project.scene.customBackgroundType
+        );
+        const dataUrl = `data:${project.scene.customBackgroundType};base64,${project.scene.customBackgroundData}`;
+        await sceneManager.setBackground(dataUrl);
+      } else {
+        // Restore standard background
+        await sceneManager.setBackground(project.scene.backgroundId);
+        sceneSettings.setCurrentBackground(project.scene.backgroundId);
+      }
     } catch (e) {
       console.warn('[ProjectManager] Failed to set background:', e);
+    }
+    
+    // Restore Lighting
+    if (project.scene.lighting) {
+        const sceneSettings = useSceneSettingsStore.getState();
+        sceneSettings.setLighting(project.scene.lighting);
+    }
+
+    // Restore Post-Processing
+    if (project.scene.postProcessing) {
+        const sceneSettings = useSceneSettingsStore.getState();
+        sceneSettings.setPostProcessing(project.scene.postProcessing);
+    }
+
+    // Restore Environment Settings
+    if (project.scene.environmentSettings) {
+        const sceneSettings = useSceneSettingsStore.getState();
+        sceneSettings.setEnvironment(project.scene.environmentSettings);
+    }
+
+    // Restore Material Settings
+    if (project.scene.material) {
+        const sceneSettings = useSceneSettingsStore.getState();
+        sceneSettings.setMaterial(project.scene.material);
     }
     
     // Set Camera
@@ -110,14 +213,73 @@ export class ProjectManager {
         const avatarSource = useAvatarSource.getState();
         avatarSource.setRemoteUrl(project.avatar.url, project.avatar.name || 'Project Avatar');
         console.log('[ProjectManager] Attempting to load avatar from:', project.avatar.url);
+        
+        // Note: Avatar load is async. We might want to wait for it if we want to apply the pose immediately.
+        // However, useAvatarSource triggers a load in AvatarManager.
+        // We can hook into the completion or just try to apply it later.
+        // For now, we rely on the user or the store logic.
+        // BUT, since we have pose data, we should probably try to apply it after load.
       } catch (e) {
         console.warn('[ProjectManager] Failed to load avatar:', e);
         avatarWarning = 'Could not load avatar. Please reload it manually.';
       }
     } else if (project.avatar?.name) {
-      // Avatar was local file, can't restore
-      avatarWarning = `Avatar "${project.avatar.name}" was a local file and needs to be reloaded.`;
-      console.log('[ProjectManager] Avatar was local file, cannot auto-restore:', project.avatar.name);
+      // Fallback: Check if this is a known library avatar
+      console.log('[ProjectManager] Avatar URL missing, checking library for:', project.avatar.name);
+      
+      try {
+          const avatarListStore = useAvatarListStore.getState();
+          // Ensure avatars are loaded
+          if (avatarListStore.avatars.length === 0) {
+              console.log('[ProjectManager] Avatar library empty, fetching...');
+              await avatarListStore.fetchAvatars();
+          }
+          
+          // Look for match
+          const match = useAvatarListStore.getState().avatars.find(a => a.name === project.avatar.name);
+          
+          if (match) {
+              console.log('[ProjectManager] Found library match for avatar:', match.name);
+              const avatarSource = useAvatarSource.getState();
+              avatarSource.setRemoteUrl(match.model_file_url, match.name);
+          } else {
+              // Avatar was local file, can't restore
+              avatarWarning = `Avatar "${project.avatar.name}" was a local file and needs to be reloaded.`;
+              console.log('[ProjectManager] Avatar was local file, cannot auto-restore:', project.avatar.name);
+          }
+      } catch (e) {
+           console.warn('[ProjectManager] Error searching avatar library:', e);
+           avatarWarning = `Avatar "${project.avatar.name}" could not be restored.`;
+      }
+    }
+
+    // Restore Avatar Transform & Pose (if avatar is present or when it loads)
+    // Since we can't easily wait for the avatar to load here if it's async via store,
+    // we'll check if the avatar is already there (unlikely if we just set url) 
+    // or if we should register a one-time callback.
+    // Ideally, we apply this data.
+    
+    // For now, apply if VRM exists (e.g. if avatar didn't change)
+    const vrm = avatarManager.getVRM();
+    if (vrm) {
+       if (project.avatar.transform) {
+           vrm.scene.position.set(project.avatar.transform.position.x, project.avatar.transform.position.y, project.avatar.transform.position.z);
+           vrm.scene.rotation.set(
+               THREE.MathUtils.degToRad(project.avatar.transform.rotation.x), 
+               THREE.MathUtils.degToRad(project.avatar.transform.rotation.y), 
+               THREE.MathUtils.degToRad(project.avatar.transform.rotation.z)
+           );
+       }
+       if (project.avatar.pose) {
+           // Apply raw pose directly
+           // Using a slight delay to ensure it overrides any T-pose reset
+           setTimeout(() => {
+                avatarManager.applyRawPose({ 
+                  vrmPose: project.avatar.pose,
+                  expressions: project.avatar.expressions
+                }, 'static', false);
+           }, 100);
+       }
     }
 
     console.log('[ProjectManager] Project loaded successfully:', project.metadata.name);

@@ -759,6 +759,22 @@ class AvatarManager {
     return names.sort();
   }
 
+  getExpressionWeights(): Record<string, number> {
+    if (!this.vrm?.expressionManager) return {};
+    
+    const weights: Record<string, number> = {};
+    const available = this.getAvailableExpressions();
+    
+    available.forEach(name => {
+      const value = this.vrm!.expressionManager!.getValue(name);
+      if (value !== undefined && value > 0) {
+        weights[name] = value;
+      }
+    });
+    
+    return weights;
+  }
+
   setExpressionWeight(name: string, weight: number) {
     if (!this.vrm?.expressionManager) return;
     this.vrm.expressionManager.setValue(name, weight);
