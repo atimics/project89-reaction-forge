@@ -767,7 +767,7 @@ class AvatarManager {
     
     available.forEach(name => {
       const value = this.vrm!.expressionManager!.getValue(name);
-      if (value !== undefined && value > 0) {
+      if (value !== undefined && value !== null && value > 0) {
         weights[name] = value;
       }
     });

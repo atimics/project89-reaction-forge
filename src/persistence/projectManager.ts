@@ -103,12 +103,12 @@ export class ProjectManager {
       
       // Restore Custom HDRI if present
       if (project.scene.customEnvironmentData && project.scene.customEnvironmentType) {
+        console.log('[ProjectManager] Restoring custom HDRI');
         environmentManager.setCustomData(
           project.scene.customEnvironmentData,
           project.scene.customEnvironmentType
         );
-        // If the saved preset was 'custom', this will ensure it loads correctly when applied below
-        // Note: We need to convert base64 to blob/url to apply it
+        
         const binaryString = window.atob(project.scene.customEnvironmentData);
         const len = binaryString.length;
         const bytes = new Uint8Array(len);
@@ -134,15 +134,19 @@ export class ProjectManager {
         }
       }
 
+      // Restore Background
       if (project.scene.backgroundId === 'custom' && project.scene.customBackgroundData && project.scene.customBackgroundType) {
+        console.log('[ProjectManager] Restoring custom 2D background');
         // Restore custom background
         sceneSettings.setCustomBackground(
           project.scene.customBackgroundData,
           project.scene.customBackgroundType
         );
+        // Note: setCustomBackground already sets currentBackground to 'custom' and updates store
         const dataUrl = `data:${project.scene.customBackgroundType};base64,${project.scene.customBackgroundData}`;
         await sceneManager.setBackground(dataUrl);
-      } else {
+      } else if (project.scene.backgroundId) {
+        console.log('[ProjectManager] Restoring background:', project.scene.backgroundId);
         // Restore standard background
         await sceneManager.setBackground(project.scene.backgroundId);
         sceneSettings.setCurrentBackground(project.scene.backgroundId);

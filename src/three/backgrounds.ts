@@ -157,82 +157,90 @@ export async function applyBackground(scene: THREE.Scene, id: BackgroundId | str
   // Try to load image if specified
   if (definition.image) {
     try {
-      // Check for Custom Blob URL with Type Hint
-      if (definition.image.startsWith('blob:') && definition.image.includes('#type=')) {
-        const [url, typeParam] = definition.image.split('#type=');
+      const imageUrl = definition.image;
+      let mimeType = '';
+
+      // Extract mime type from blob URL or data URL
+      if (imageUrl.startsWith('blob:') && imageUrl.includes('#type=')) {
+        mimeType = imageUrl.split('#type=')[1];
+      } else if (imageUrl.startsWith('data:')) {
+        const match = imageUrl.match(/^data:([^;]+);/);
+        if (match) mimeType = match[1];
+      }
+
+      // Handle GIF
+      if (mimeType.includes('gif')) {
+        console.log('[Background] Detected GIF:', imageUrl);
+        const gifTexture = new GifTexture();
+        await gifTexture.load(imageUrl);
+        scene.background = gifTexture.texture;
         
-        // Handle GIF
-        if (typeParam.includes('gif')) {
-           console.log('[Background] Detected GIF:', url);
-           const gifTexture = new GifTexture();
-           await gifTexture.load(url);
-           scene.background = gifTexture.texture;
-           
-           return {
-             texture: gifTexture.texture,
-             update: (delta) => gifTexture.update(delta),
-             dispose: () => gifTexture.dispose()
-           };
-        }
+        return {
+          texture: gifTexture.texture,
+          update: (delta) => gifTexture.update(delta),
+          dispose: () => gifTexture.dispose()
+        };
+      }
+      
+      // Handle Video
+      if (mimeType.includes('video') || mimeType.includes('mp4') || mimeType.includes('webm') || 
+          imageUrl.toLowerCase().endsWith('.mp4') || imageUrl.toLowerCase().endsWith('.webm')) {
+        console.log('[Background] Detected Video:', imageUrl);
+        const video = document.createElement('video');
+        video.src = imageUrl;
+        video.loop = true;
+        video.muted = true;
+        video.playsInline = true;
+        video.play().catch(e => console.warn('[Background] Video autoplay failed:', e));
         
-        // Handle Video
-        if (typeParam.includes('video') || typeParam.includes('mp4') || typeParam.includes('webm')) {
-           console.log('[Background] Detected Video:', url);
-           const video = document.createElement('video');
-           video.src = url;
-           video.loop = true;
-           video.muted = true;
-           video.play().catch(e => console.warn('[Background] Video autoplay failed:', e));
-           
-           const videoTexture = new THREE.VideoTexture(video);
-           videoTexture.colorSpace = THREE.SRGBColorSpace;
-           scene.background = videoTexture;
-           
-           return {
-             texture: videoTexture,
-             update: () => {}, // VideoTexture updates automatically
-             dispose: () => {
-               video.pause();
-               video.src = '';
-               videoTexture.dispose();
-             }
-           };
-        }
+        const videoTexture = new THREE.VideoTexture(video);
+        videoTexture.colorSpace = THREE.SRGBColorSpace;
+        scene.background = videoTexture;
+        
+        return {
+          texture: videoTexture,
+          update: () => {}, // VideoTexture updates automatically
+          dispose: () => {
+            video.pause();
+            video.src = '';
+            videoTexture.dispose();
+          }
+        };
       }
 
       // Standard Image Loading
-      let texture = textureCache.get(definition.image);
+      let texture = textureCache.get(imageUrl);
       
       if (!texture) {
-        console.log('[Background] Loading image:', definition.image);
+        console.log('[Background] Loading image:', imageUrl);
         
         // Use high-res SVG loader for SVG files
-        const isSVG = definition.image.toLowerCase().endsWith('.svg');
+        const isSVG = imageUrl.toLowerCase().includes('.svg') || mimeType.includes('svg');
         
         if (isSVG) {
-          texture = await loadSVGAsHighResTexture(definition.image);
+          texture = await loadSVGAsHighResTexture(imageUrl);
         } else {
           texture = await new Promise<THREE.Texture>((resolve, reject) => {
             textureLoader.load(
-              definition.image!,
+              imageUrl,
               (loadedTexture) => {
                 loadedTexture.colorSpace = THREE.SRGBColorSpace;
                 resolve(loadedTexture);
               },
               undefined,
               (error) => {
-                console.warn('[Background] Failed to load image:', definition.image, error);
+                console.warn('[Background] Failed to load image:', imageUrl, error);
                 reject(error);
               }
             );
           });
         }
         
-        textureCache.set(definition.image, texture);
+        textureCache.set(imageUrl, texture);
       }
       
       scene.background = texture;
-      console.log('[Background] Applied image:', definition.image);
+      console.log('[Background] Applied image:', imageUrl);
       return null;
     } catch (error) {
       console.warn('[Background] Image load failed, using color fallback', error);

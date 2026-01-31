@@ -360,15 +360,19 @@ export function SceneTab() {
     setCustomBackgroundUrl(typeUrl);
     
     // Store base64 for persistence and multiplayer sync
-    // Only for images that aren't too large (under 5MB)
-    if (file.type.startsWith('image/') && file.size < 5 * 1024 * 1024) {
+    // Only for images that aren't too large (under 20MB for persistence, but we warn if > 5MB for sync)
+    if (file.type.startsWith('image/') && file.size < 20 * 1024 * 1024) {
       const reader = new FileReader();
       reader.onloadend = () => {
         const base64 = (reader.result as string).split(',')[1];
         setCustomBackgroundStore(base64, file.type);
         
         // Notify multiplayer (will be handled by sync manager)
-        notifySceneChange({ background: 'custom' });
+        if (file.size < 5 * 1024 * 1024) {
+          notifySceneChange({ background: 'custom' });
+        } else {
+          addToast('Background saved to project (too large for live sync)', 'info');
+        }
       };
       reader.readAsDataURL(file);
     } else {
