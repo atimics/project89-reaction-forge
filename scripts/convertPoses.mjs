@@ -5,10 +5,10 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const threeModulePath = path.resolve(
   __dirname,
-  '../project89-reactor/node_modules/three/build/three.module.js',
+  '../node_modules/three/build/three.module.js',
 );
 const THREE = await import(pathToFileURL(threeModulePath));
-const posesDir = path.resolve(__dirname, '../project89-reactor/src/poses');
+const posesDir = path.resolve(__dirname, '../src/poses');
 
 const poseFiles = fs
   .readdirSync(posesDir)

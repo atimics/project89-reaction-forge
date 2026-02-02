@@ -161,6 +161,116 @@ export const reactionPresets: ReactionPreset[] = [
     expression: 'joy',
     background: 'protocol-gradient',
   },
+  {
+    id: 'walk-cycle',
+    label: 'Casual Walk',
+    description: 'A steady locomotion cycle.',
+    pose: 'locomotion-walk',
+    expression: 'calm',
+    background: 'synthwave-grid',
+    animated: true,
+    animationMode: 'loop'
+  },
+  {
+    id: 'sprinting',
+    label: 'Full Sprint',
+    description: 'High velocity movement.',
+    pose: 'locomotion-run',
+    expression: 'calm',
+    background: 'signal-glitch',
+    animated: true,
+    animationMode: 'loop'
+  },
+  {
+    id: 'sad-sitting',
+    label: 'Deep Reflection',
+    description: 'A slumped sitting pose for gloomy data logs.',
+    pose: 'sit-sad',
+    expression: 'calm',
+    background: 'void-minimal',
+    animated: true,
+    animationMode: 'loop'
+  },
+  {
+    id: 'office-work',
+    label: 'Data Entry',
+    description: 'Focused typing at a terminal.',
+    pose: 'sit-typing',
+    expression: 'calm',
+    background: 'hacker-room',
+    animated: true,
+    animationMode: 'loop'
+  },
+  {
+    id: 'formal-bow',
+    label: 'Formal Greeting',
+    description: 'A respectful quick bow.',
+    pose: 'emote-bow',
+    expression: 'calm',
+    background: 'shinto-shrine',
+    animated: true,
+    animationMode: 'once'
+  },
+  {
+    id: 'jogging',
+    label: 'Slow Jog',
+    description: 'Steady rhythmic running.',
+    pose: 'locomotion-jog',
+    expression: 'calm',
+    background: 'neon-waves',
+    animated: true,
+    animationMode: 'loop'
+  },
+  {
+    id: 'crouch-walk',
+    label: 'Stealth Movement',
+    description: 'Low-profile walking for tactical infiltration.',
+    pose: 'locomotion-crouch-walk',
+    expression: 'calm',
+    background: 'cyber-hexagons',
+    animated: true,
+    animationMode: 'loop'
+  },
+  {
+    id: 'nervous-idle',
+    label: 'Anxious Wait',
+    description: 'Nervously looking around while waiting.',
+    pose: 'idle-nervous',
+    expression: 'surprise',
+    background: 'signal-glitch',
+    animated: true,
+    animationMode: 'loop'
+  },
+  {
+    id: 'sitting-chair',
+    label: 'Office Rest',
+    description: 'Standard seated position on a chair.',
+    pose: 'sit-chair',
+    expression: 'calm',
+    background: 'glass-platform',
+    animated: true,
+    animationMode: 'loop'
+  },
+  {
+    id: 'silly-dance-v2',
+    label: 'Pure Joy',
+    description: 'Carefree and silly dance moves.',
+    pose: 'emote-dance-silly',
+    expression: 'joy',
+    background: 'quantum-particles',
+    animated: true,
+    animationMode: 'loop'
+  },
+  {
+    id: 'treading-water-v2',
+    label: 'Surface Swim',
+    description: 'Floating and treading water.',
+    pose: 'action-swim',
+    expression: 'calm',
+    background: 'deep-sea',
+    animated: true,
+    animationMode: 'loop'
+  }
 ];
 
 const defaultPreset = reactionPresets[0];

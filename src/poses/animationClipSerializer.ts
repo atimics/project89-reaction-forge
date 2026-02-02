@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import type { VRM, VRMHumanBoneName } from '@pixiv/three-vrm';
+import { VRM, VRMHumanBoneName } from '@pixiv/three-vrm';
 
 /**
  * Serialize an AnimationClip to JSON format
@@ -39,7 +39,6 @@ const VRM_BONE_MAP: Record<string, VRMHumanBoneName> = {
   'Normalized_upperChest': 'upperChest' as VRMHumanBoneName,
   'Normalized_neck': 'neck' as VRMHumanBoneName,
   'Normalized_head': 'head' as VRMHumanBoneName,
-  // Left side
   'Normalized_leftShoulder': 'leftShoulder' as VRMHumanBoneName,
   'Normalized_leftUpperArm': 'leftUpperArm' as VRMHumanBoneName,
   'Normalized_leftLowerArm': 'leftLowerArm' as VRMHumanBoneName,
@@ -48,7 +47,6 @@ const VRM_BONE_MAP: Record<string, VRMHumanBoneName> = {
   'Normalized_leftLowerLeg': 'leftLowerLeg' as VRMHumanBoneName,
   'Normalized_leftFoot': 'leftFoot' as VRMHumanBoneName,
   'Normalized_leftToes': 'leftToes' as VRMHumanBoneName,
-  // Right side
   'Normalized_rightShoulder': 'rightShoulder' as VRMHumanBoneName,
   'Normalized_rightUpperArm': 'rightUpperArm' as VRMHumanBoneName,
   'Normalized_rightLowerArm': 'rightLowerArm' as VRMHumanBoneName,
@@ -57,7 +55,170 @@ const VRM_BONE_MAP: Record<string, VRMHumanBoneName> = {
   'Normalized_rightLowerLeg': 'rightLowerLeg' as VRMHumanBoneName,
   'Normalized_rightFoot': 'rightFoot' as VRMHumanBoneName,
   'Normalized_rightToes': 'rightToes' as VRMHumanBoneName,
+
+  // ============================================
+  // Generic / Mixamo-style Raw Names (often capitalized)
+  // Frequently found in custom prefixes like AvatarsR2_0052
+  // ============================================
+  'Hips': 'hips' as VRMHumanBoneName,
+  'Spine': 'spine' as VRMHumanBoneName,
+  'Spine1': 'chest' as VRMHumanBoneName,
+  'Spine2': 'upperChest' as VRMHumanBoneName,
+  'Neck': 'neck' as VRMHumanBoneName,
+  'Head': 'head' as VRMHumanBoneName,
+  'LeftShoulder': 'leftShoulder' as VRMHumanBoneName,
+  'LeftArm': 'leftUpperArm' as VRMHumanBoneName,
+  'LeftForeArm': 'leftLowerArm' as VRMHumanBoneName,
+  'LeftHand': 'leftHand' as VRMHumanBoneName,
+  'LeftUpLeg': 'leftUpperLeg' as VRMHumanBoneName,
+  'LeftLeg': 'leftLowerLeg' as VRMHumanBoneName,
+  'LeftFoot': 'leftFoot' as VRMHumanBoneName,
+  'LeftToeBase': 'leftToes' as VRMHumanBoneName,
+  'RightShoulder': 'rightShoulder' as VRMHumanBoneName,
+  'RightArm': 'rightUpperArm' as VRMHumanBoneName,
+  'RightForeArm': 'rightLowerArm' as VRMHumanBoneName,
+  'RightHand': 'rightHand' as VRMHumanBoneName,
+  'RightUpLeg': 'rightUpperLeg' as VRMHumanBoneName,
+  'RightLeg': 'rightLowerLeg' as VRMHumanBoneName,
+  'RightFoot': 'rightFoot' as VRMHumanBoneName,
+  'RightToeBase': 'rightToes' as VRMHumanBoneName,
   
+  // Generic Fingers (often capitalized, map to standard VRM)
+  // NOTE: Handedness is often implied by the full path, extractBoneNameFromTrack handles this.
+  'Thumb1': 'leftThumbProximal' as VRMHumanBoneName, 
+  'Thumb2': 'leftThumbIntermediate' as VRMHumanBoneName,
+  'Thumb3': 'leftThumbDistal' as VRMHumanBoneName,
+  'Index1': 'leftIndexProximal' as VRMHumanBoneName,
+  'Index2': 'leftIndexIntermediate' as VRMHumanBoneName,
+  'Index3': 'leftIndexDistal' as VRMHumanBoneName,
+  'Middle1': 'leftMiddleProximal' as VRMHumanBoneName,
+  'Middle2': 'leftMiddleIntermediate' as VRMHumanBoneName,
+  'Middle3': 'leftMiddleDistal' as VRMHumanBoneName,
+  'Ring1': 'leftRingProximal' as VRMHumanBoneName,
+  'Ring2': 'leftRingIntermediate' as VRMHumanBoneName,
+  'Ring3': 'leftRingDistal' as VRMHumanBoneName,
+  'Pinky1': 'leftLittleProximal' as VRMHumanBoneName,
+  'Pinky2': 'leftLittleIntermediate' as VRMHumanBoneName,
+  'Pinky3': 'leftLittleDistal' as VRMHumanBoneName,
+
+  // ============================================
+  // Mixamo Standard Rig (mixamorig prefix)
+  // ============================================
+  // Hips & Spine  // ============================================
+  // Hips & Spine
+  'mixamorigHips': 'hips' as VRMHumanBoneName,
+  'mixamorig_Hips': 'hips' as VRMHumanBoneName,
+  'mixamorigSpine': 'spine' as VRMHumanBoneName,
+  'mixamorig_Spine': 'spine' as VRMHumanBoneName,
+  'mixamorigSpine1': 'chest' as VRMHumanBoneName,
+  'mixamorig_Spine1': 'chest' as VRMHumanBoneName,
+  'mixamorigSpine2': 'upperChest' as VRMHumanBoneName,
+  'mixamorig_Spine2': 'upperChest' as VRMHumanBoneName,
+  'mixamorigNeck': 'neck' as VRMHumanBoneName,
+  'mixamorig_Neck': 'neck' as VRMHumanBoneName,
+  'mixamorigHead': 'head' as VRMHumanBoneName,
+  'mixamorig_Head': 'head' as VRMHumanBoneName,
+
+  // Arms
+  'mixamorigLeftShoulder': 'leftShoulder' as VRMHumanBoneName,
+  'mixamorig_LeftShoulder': 'leftShoulder' as VRMHumanBoneName,
+  'mixamorigLeftArm': 'leftUpperArm' as VRMHumanBoneName,
+  'mixamorig_LeftArm': 'leftUpperArm' as VRMHumanBoneName,
+  'mixamorigLeftForeArm': 'leftLowerArm' as VRMHumanBoneName,
+  'mixamorig_LeftForeArm': 'leftLowerArm' as VRMHumanBoneName,
+  'mixamorigLeftHand': 'leftHand' as VRMHumanBoneName,
+  'mixamorig_LeftHand': 'leftHand' as VRMHumanBoneName,
+  'mixamorigRightShoulder': 'rightShoulder' as VRMHumanBoneName,
+  'mixamorig_RightShoulder': 'rightShoulder' as VRMHumanBoneName,
+  'mixamorigRightArm': 'rightUpperArm' as VRMHumanBoneName,
+  'mixamorig_RightArm': 'rightUpperArm' as VRMHumanBoneName,
+  'mixamorigRightForeArm': 'rightLowerArm' as VRMHumanBoneName,
+  'mixamorig_RightForeArm': 'rightLowerArm' as VRMHumanBoneName,
+  'mixamorigRightHand': 'rightHand' as VRMHumanBoneName,
+  'mixamorig_RightHand': 'rightHand' as VRMHumanBoneName,
+
+  // Legs
+  'mixamorigLeftUpLeg': 'leftUpperLeg' as VRMHumanBoneName,
+  'mixamorig_LeftUpLeg': 'leftUpperLeg' as VRMHumanBoneName,
+  'mixamorigLeftLeg': 'leftLowerLeg' as VRMHumanBoneName,
+  'mixamorig_LeftLeg': 'leftLowerLeg' as VRMHumanBoneName,
+  'mixamorigLeftFoot': 'leftFoot' as VRMHumanBoneName,
+  'mixamorig_LeftFoot': 'leftFoot' as VRMHumanBoneName,
+  'mixamorigLeftToeBase': 'leftToes' as VRMHumanBoneName,
+  'mixamorig_LeftToeBase': 'leftToes' as VRMHumanBoneName,
+  'mixamorigRightUpLeg': 'rightUpperLeg' as VRMHumanBoneName,
+  'mixamorig_RightUpLeg': 'rightUpperLeg' as VRMHumanBoneName,
+  'mixamorigRightLeg': 'rightLowerLeg' as VRMHumanBoneName,
+  'mixamorig_RightLeg': 'rightLowerLeg' as VRMHumanBoneName,
+  'mixamorigRightFoot': 'rightFoot' as VRMHumanBoneName,
+  'mixamorig_RightFoot': 'rightFoot' as VRMHumanBoneName,
+  'mixamorigRightToeBase': 'rightToes' as VRMHumanBoneName,
+  'mixamorig_RightToeBase': 'rightToes' as VRMHumanBoneName,
+  
+  // Left Hand Fingers
+  'mixamorigLeftHandThumb1': 'leftThumbProximal' as VRMHumanBoneName,
+  'mixamorig_LeftHandThumb1': 'leftThumbProximal' as VRMHumanBoneName,
+  'mixamorigLeftHandThumb2': 'leftThumbIntermediate' as VRMHumanBoneName,
+  'mixamorig_LeftHandThumb2': 'leftThumbIntermediate' as VRMHumanBoneName,
+  'mixamorigLeftHandThumb3': 'leftThumbDistal' as VRMHumanBoneName,
+  'mixamorig_LeftHandThumb3': 'leftThumbDistal' as VRMHumanBoneName,
+  'mixamorigLeftHandIndex1': 'leftIndexProximal' as VRMHumanBoneName,
+  'mixamorig_LeftHandIndex1': 'leftIndexProximal' as VRMHumanBoneName,
+  'mixamorigLeftHandIndex2': 'leftIndexIntermediate' as VRMHumanBoneName,
+  'mixamorig_LeftHandIndex2': 'leftIndexIntermediate' as VRMHumanBoneName,
+  'mixamorigLeftHandIndex3': 'leftIndexDistal' as VRMHumanBoneName,
+  'mixamorig_LeftHandIndex3': 'leftIndexDistal' as VRMHumanBoneName,
+  'mixamorigLeftHandMiddle1': 'leftMiddleProximal' as VRMHumanBoneName,
+  'mixamorig_LeftHandMiddle1': 'leftMiddleProximal' as VRMHumanBoneName,
+  'mixamorigLeftHandMiddle2': 'leftMiddleIntermediate' as VRMHumanBoneName,
+  'mixamorig_LeftHandMiddle2': 'leftMiddleIntermediate' as VRMHumanBoneName,
+  'mixamorigLeftHandMiddle3': 'leftMiddleDistal' as VRMHumanBoneName,
+  'mixamorig_LeftHandMiddle3': 'leftMiddleDistal' as VRMHumanBoneName,
+  'mixamorigLeftHandRing1': 'leftRingProximal' as VRMHumanBoneName,
+  'mixamorig_LeftHandRing1': 'leftRingProximal' as VRMHumanBoneName,
+  'mixamorigLeftHandRing2': 'leftRingIntermediate' as VRMHumanBoneName,
+  'mixamorig_LeftHandRing2': 'leftRingIntermediate' as VRMHumanBoneName,
+  'mixamorigLeftHandRing3': 'leftRingDistal' as VRMHumanBoneName,
+  'mixamorig_LeftHandRing3': 'leftRingDistal' as VRMHumanBoneName,
+  'mixamorigLeftHandPinky1': 'leftLittleProximal' as VRMHumanBoneName,
+  'mixamorig_LeftHandPinky1': 'leftLittleProximal' as VRMHumanBoneName,
+  'mixamorigLeftHandPinky2': 'leftLittleIntermediate' as VRMHumanBoneName,
+  'mixamorig_LeftHandPinky2': 'leftLittleIntermediate' as VRMHumanBoneName,
+  'mixamorigLeftHandPinky3': 'leftLittleDistal' as VRMHumanBoneName,
+  'mixamorig_LeftHandPinky3': 'leftLittleDistal' as VRMHumanBoneName,
+
+  // Right Hand Fingers
+  'mixamorigRightHandThumb1': 'rightThumbProximal' as VRMHumanBoneName,
+  'mixamorig_RightHandThumb1': 'rightThumbProximal' as VRMHumanBoneName,
+  'mixamorigRightHandThumb2': 'rightThumbIntermediate' as VRMHumanBoneName,
+  'mixamorig_RightHandThumb2': 'rightThumbIntermediate' as VRMHumanBoneName,
+  'mixamorigRightHandThumb3': 'rightThumbDistal' as VRMHumanBoneName,
+  'mixamorig_RightHandThumb3': 'rightThumbDistal' as VRMHumanBoneName,
+  'mixamorigRightHandIndex1': 'rightIndexProximal' as VRMHumanBoneName,
+  'mixamorig_RightHandIndex1': 'rightIndexProximal' as VRMHumanBoneName,
+  'mixamorigRightHandIndex2': 'rightIndexIntermediate' as VRMHumanBoneName,
+  'mixamorig_RightHandIndex2': 'rightIndexIntermediate' as VRMHumanBoneName,
+  'mixamorigRightHandIndex3': 'rightIndexDistal' as VRMHumanBoneName,
+  'mixamorig_RightHandIndex3': 'rightIndexDistal' as VRMHumanBoneName,
+  'mixamorigRightHandMiddle1': 'rightMiddleProximal' as VRMHumanBoneName,
+  'mixamorig_RightHandMiddle1': 'rightMiddleProximal' as VRMHumanBoneName,
+  'mixamorigRightHandMiddle2': 'rightMiddleIntermediate' as VRMHumanBoneName,
+  'mixamorig_RightHandMiddle2': 'rightMiddleIntermediate' as VRMHumanBoneName,
+  'mixamorigRightHandMiddle3': 'rightMiddleDistal' as VRMHumanBoneName,
+  'mixamorig_RightHandMiddle3': 'rightMiddleDistal' as VRMHumanBoneName,
+  'mixamorigRightHandRing1': 'rightRingProximal' as VRMHumanBoneName,
+  'mixamorig_RightHandRing1': 'rightRingProximal' as VRMHumanBoneName,
+  'mixamorigRightHandRing2': 'rightRingIntermediate' as VRMHumanBoneName,
+  'mixamorig_RightHandRing2': 'rightRingIntermediate' as VRMHumanBoneName,
+  'mixamorigRightHandRing3': 'rightRingDistal' as VRMHumanBoneName,
+  'mixamorig_RightHandRing3': 'rightRingDistal' as VRMHumanBoneName,
+  'mixamorigRightHandPinky1': 'rightLittleProximal' as VRMHumanBoneName,
+  'mixamorig_RightHandPinky1': 'rightLittleProximal' as VRMHumanBoneName,
+  'mixamorigRightHandPinky2': 'rightLittleIntermediate' as VRMHumanBoneName,
+  'mixamorig_RightHandPinky2': 'rightLittleIntermediate' as VRMHumanBoneName,
+  'mixamorigRightHandPinky3': 'rightLittleDistal' as VRMHumanBoneName,
+  'mixamorig_RightHandPinky3': 'rightLittleDistal' as VRMHumanBoneName,
+
   // ============================================
   // Legacy/Unity style (underscore + L/R suffix)
   // Used in older JSON animation files
@@ -285,8 +446,12 @@ export function deserializeAnimationClip(data: SerializedAnimationClip): THREE.A
     tracks.push(track);
   });
 
-  return new THREE.AnimationClip(data.name, data.duration, tracks);
-}
+    if (data.tracks.length === 0) {
+      console.warn(`[deserializeAnimationClip] Warning: AnimationClip "${data.name}" has 0 tracks.`);
+    }
+
+    return new THREE.AnimationClip(data.name, data.duration, tracks);
+  }
 
 /**
  * Get the hierarchical path to a node from the root
@@ -317,14 +482,79 @@ function extractBoneNameFromTrack(trackName: string): VRMHumanBoneName | null {
   
   const pathPart = propertyMatch[1];
   const parts = pathPart.split('/');
-  const lastPart = parts[parts.length - 1];
-  
-  // Try to find this in our bone map
+  const lastPart = parts[parts.length - 1]; // e.g., "Normalized_index_intermediateR"
+  const lowerLastPart = lastPart.toLowerCase();
+
+  // Attempt 1: Direct lookup in VRM_BONE_MAP (case-sensitive for direct keys)
   if (VRM_BONE_MAP[lastPart]) {
     return VRM_BONE_MAP[lastPart];
   }
-  
-  return null;
+
+  // Attempt 2: Iteratively strip common prefixes and try to find a match
+  const commonPrefixes = [
+    'VRMHumanoidRig/', 
+    'Normalized_',
+    'mixamorig:',
+    'mixamorig',
+    'AvatarsR2_0052', 
+  ];
+
+  let currentTestName = lastPart;
+  for (const prefix of commonPrefixes) {
+    if (currentTestName.startsWith(prefix)) {
+      currentTestName = currentTestName.substring(prefix.length);
+    }
+    // After each strip, try to match against both VRM_BONE_MAP keys and values
+    if (VRM_BONE_MAP[currentTestName]) {
+        return VRM_BONE_MAP[currentTestName];
+    }
+    for (const vrmBone of Object.values(VRMHumanBoneName)) {
+        if (currentTestName.toLowerCase() === vrmBone.toLowerCase()) {
+            return vrmBone;
+        }
+    }
+  }
+
+  // Attempt 3: Specific handling for finger bones where handedness might be inferred from pathPart
+  const fingerMap: Record<string, VRMHumanBoneName[]> = {
+    'thumb1': [VRMHumanBoneName.LeftThumbMetacarpal, VRMHumanBoneName.RightThumbMetacarpal],
+    'thumb2': [VRMHumanBoneName.LeftThumbProximal, VRMHumanBoneName.RightThumbProximal],
+    'thumb3': [VRMHumanBoneName.LeftThumbDistal, VRMHumanBoneName.RightThumbDistal],
+    'index1': [VRMHumanBoneName.LeftIndexProximal, VRMHumanBoneName.RightIndexProximal],
+    'index2': [VRMHumanBoneName.LeftIndexIntermediate, VRMHumanBoneName.RightIndexIntermediate],
+    'index3': [VRMHumanBoneName.LeftIndexDistal, VRMHumanBoneName.RightIndexDistal],
+    'middle1': [VRMHumanBoneName.LeftMiddleProximal, VRMHumanBoneName.RightMiddleProximal],
+    'middle2': [VRMHumanBoneName.LeftMiddleIntermediate, VRMHumanBoneName.RightMiddleIntermediate],
+    'middle3': [VRMHumanBoneName.LeftMiddleDistal, VRMHumanBoneName.RightMiddleDistal],
+    'ring1': [VRMHumanBoneName.LeftRingProximal, VRMHumanBoneName.RightRingProximal],
+    'ring2': [VRMHumanBoneName.LeftRingIntermediate, VRMHumanBoneName.RightRingIntermediate],
+    'ring3': [VRMHumanBoneName.LeftRingDistal, VRMHumanBoneName.RightRingDistal],
+    'pinky1': [VRMHumanBoneName.LeftLittleProximal, VRMHumanBoneName.RightLittleProximal],
+    'pinky2': [VRMHumanBoneName.LeftLittleIntermediate, VRMHumanBoneName.RightLittleIntermediate],
+    'pinky3': [VRMHumanBoneName.LeftLittleDistal, VRMHumanBoneName.RightLittleDistal],
+  };
+
+  for (const fingerPart in fingerMap) {
+    if (lowerLastPart.includes(fingerPart)) {
+      const possibleBones = fingerMap[fingerPart];
+      if (pathPart.toLowerCase().includes('left')) return possibleBones[0];
+      if (pathPart.toLowerCase().includes('right')) return possibleBones[1];
+    }
+  }
+
+  // Final fallback: Check if any VRMHumanBoneName is a suffix of the lastPart (case-insensitive)
+  let bestMatch: VRMHumanBoneName | null = null;
+  let bestMatchLength = 0;
+
+  for (const vrmBone of Object.values(VRMHumanBoneName)) {
+      const lowerVrmBone = vrmBone.toLowerCase();
+      if (lowerLastPart.endsWith(lowerVrmBone) && lowerVrmBone.length > bestMatchLength) {
+          bestMatch = vrmBone;
+          bestMatchLength = lowerVrmBone.length;
+      }
+  }
+
+  return bestMatch;
 }
 
 export interface RetargetOptions {

@@ -17,20 +17,49 @@ import { serializeAnimationClip } from '../poses/animationClipSerializer';
 
 // FBX files available for conversion
 const FBX_FILES = [
-  { file: 'Cheering.fbx', id: 'cheering', label: 'Cheering' },
-  { file: 'Clapping.fbx', id: 'clapping-fbx', label: 'Clapping' },
-  { file: 'Climbing To Top.fbx', id: 'climbing', label: 'Climbing' },
-  { file: 'Defeat.fbx', id: 'defeat', label: 'Defeat' },
-  { file: 'Focus.fbx', id: 'focus', label: 'Focus' },
-  { file: 'Happy Idle.fbx', id: 'happy-idle', label: 'Happy Idle' },
-  { file: 'Offensive Idle.fbx', id: 'offensive-idle', label: 'Offensive Idle' },
-  { file: 'Pointing.fbx', id: 'pointing-mixamo', label: 'Pointing' },
-  { file: 'Rope Climb.fbx', id: 'rope-climb', label: 'Rope Climb' },
-  { file: 'Silly Dancing.fbx', id: 'silly-dancing', label: 'Silly Dancing' },
-  { file: 'Standing Thumbs Up.fbx', id: 'thumbs-up', label: 'Thumbs Up' },
-  { file: 'Taunt.fbx', id: 'taunt-mixamo', label: 'Taunt' },
-  { file: 'Treading Water.fbx', id: 'treading-water', label: 'Treading Water' },
-  { file: 'Waking.fbx', id: 'waking', label: 'Waking' },
+  // Locomotion
+  { file: 'Walking.fbx', id: 'locomotion-walk', label: 'Walk' },
+  { file: 'Running.fbx', id: 'locomotion-run', label: 'Run' },
+  { file: 'Slow Run.fbx', id: 'locomotion-jog', label: 'Jog' },
+  { file: 'Crouched Walking.fbx', id: 'locomotion-crouch-walk', label: 'Crouch Walk' },
+  { file: 'Left Turn.fbx', id: 'locomotion-turn-left', label: 'Turn Left' },
+  { file: 'Right Turn.fbx', id: 'locomotion-turn-right', label: 'Turn Right' },
+  { file: 'Stop Walking.fbx', id: 'locomotion-stop', label: 'Stop Walking' },
+
+  // Idles
+  { file: 'Neutral Idle.fbx', id: 'idle-neutral', label: 'Neutral Idle' },
+  { file: 'Happy Idle.fbx', id: 'idle-happy', label: 'Happy Idle' },
+  { file: 'Breathing Idle.fbx', id: 'idle-breathing', label: 'Breathing Idle' },
+  { file: 'Nervously Look Around.fbx', id: 'idle-nervous', label: 'Nervous Look' },
+  { file: 'Offensive Idle.fbx', id: 'idle-offensive', label: 'Offensive Idle' },
+
+  // Sitting
+  { file: 'Sitting.fbx', id: 'sit-chair', label: 'Sit (Chair)' },
+  { file: 'Sitting Floor.fbx', id: 'sit-floor', label: 'Sit (Floor)' },
+  { file: 'Sitting Sad.fbx', id: 'sit-sad', label: 'Sit (Sad)' },
+  { file: 'Typing.fbx', id: 'sit-typing', label: 'Typing' },
+  { file: 'Stand To Sit.fbx', id: 'transition-stand-to-sit', label: 'Stand to Sit' },
+  { file: 'Sit To Stand.fbx', id: 'transition-sit-to-stand', label: 'Sit to Stand' },
+  { file: 'Standing Up From Floor.fbx', id: 'transition-floor-to-stand', label: 'Floor to Stand' },
+
+  // Social / Emotes
+  { file: 'Waving.fbx', id: 'emote-wave', label: 'Wave' },
+  { file: 'Pointing.fbx', id: 'emote-point', label: 'Point' },
+  { file: 'Clapping.fbx', id: 'emote-clap', label: 'Clap' },
+  { file: 'Cheering.fbx', id: 'emote-cheer', label: 'Cheer' },
+  { file: 'Standing Thumbs Up.fbx', id: 'emote-thumbsup', label: 'Thumbs Up' },
+  { file: 'Quick Formal Bow.fbx', id: 'emote-bow', label: 'Bow' },
+  { file: 'Silly Dancing.fbx', id: 'emote-dance-silly', label: 'Silly Dance' },
+  { file: 'Taunt.fbx', id: 'emote-taunt', label: 'Taunt' },
+  { file: 'Bored.fbx', id: 'emote-bored', label: 'Bored' },
+
+  // Action / Misc
+  { file: 'Defeat.fbx', id: 'action-defeat', label: 'Defeat' },
+  { file: 'Focus.fbx', id: 'action-focus', label: 'Focus' },
+  { file: 'Rope Climb.fbx', id: 'action-rope-climb', label: 'Rope Climb' },
+  { file: 'Climbing To Top.fbx', id: 'action-climb-top', label: 'Climb Top' },
+  { file: 'Treading Water.fbx', id: 'action-swim', label: 'Treading Water' },
+  { file: 'Waking.fbx', id: 'action-waking', label: 'Waking' },
 ];
 
 interface ConversionResult {

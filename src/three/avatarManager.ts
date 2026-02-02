@@ -553,7 +553,24 @@ class AvatarManager {
 
     if (shouldAnimate && def.animationClip) {
       console.log(`[AvatarManager] Playing animation clip for: ${pose}`);
-      this.playAnimationClip(def.animationClip, shouldLoop);
+      
+      // Ensure the clip is using actual scene paths (Armature/Hips...) 
+      // instead of bone names (hips...) before playing
+      const { retargetAnimationClip } = await import('../poses/animationClipSerializer');
+      
+      // Determine if the clip needs retargeting to scene paths.
+      // 1. Clips with no slashes at all definitely need retargeting (e.g. "hips.quaternion")
+      // 2. Clips with "VRMHumanoidRig/" paths need retargeting
+      // 3. Clips that are already scene-path-based are kept as-is
+      const needsRetargeting = def.animationClip.tracks.some(t => 
+        !t.name.includes('/') || t.name.startsWith('VRMHumanoidRig/') || t.name.startsWith('mixamorig')
+      );
+
+      const playableClip = needsRetargeting
+        ? retargetAnimationClip(def.animationClip, this.vrm, { stripHipsPosition: true })
+        : def.animationClip;
+
+      this.playAnimationClip(playableClip, shouldLoop);
     } else if (shouldAnimate) {
       console.log(`[AvatarManager] Generating animation from pose: ${pose}`);
       const vrmPose = buildVRMPose(def);
@@ -777,8 +794,9 @@ class AvatarManager {
   resetPose() { if (!this.vrm) return; this.stopAnimation(); this.vrm.humanoid?.resetNormalizedPose(); this.vrm.update(0); }
   setAnimationLoop(loop: boolean) { if (this.isAnimated) animationManager.setLoop(loop); }
   setAnimationSpeed(speed: number) { if (this.isAnimated) animationManager.setSpeed(speed); }
-  seekAnimation(time: number) { if (this.isAnimated) animationManager.seek(time); }
+  seekAnimation(time: number): void { if (this.isAnimated) animationManager.seek(time); }
   isAnimationPlaying(): boolean { return this.isAnimated && animationManager.isPlaying(); }
+  getCurrentAnimationAction(): THREE.AnimationAction | undefined { return animationManager.getCurrentAction(); }
   getVRM(): VRM | undefined { return this.vrm; }
   clear() {
     const scene = sceneManager.getScene();

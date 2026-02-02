@@ -8,6 +8,7 @@ import { convertAnimationToScenePaths } from '../../pose-lab/convertAnimationToS
 import { useReactionStore } from '../../state/useReactionStore';
 import { useToastStore } from '../../state/useToastStore';
 import { useAnimationStore } from '../../state/useAnimationStore';
+import { ANIMATION_POOL } from '../../poses/animation-pool';
 import { 
   FilmSlate, 
   Play, 
@@ -132,8 +133,62 @@ export function AnimationsTab() {
     setStatusMessage('⏹️ Animation stopped (Pose Frozen)');
   };
 
+  const handleLibraryPlay = async (poseId: string) => {
+    if (!isAvatarReady) {
+      addToast('Please load a VRM avatar first', 'warning');
+      return;
+    }
+    
+    setStatusMessage(`Loading from library: ${poseId}...`);
+    try {
+      // In PoseLab, avatarManager.applyPose handles loading the JSON and retargeting
+      // We set animated=true and loop/once based on state
+      await avatarManager.applyPose(poseId as any, true, isLooping ? 'loop' : 'once');
+      
+      // Update UI state
+      const vrm = avatarManager.getVRM();
+      if (vrm) {
+        // Fallback to searching the scene for the mixer if needed, but animationManager usually has it
+        const currentAction = (avatarManager as any).getCurrentAnimationAction?.() || 
+                            THREE.AnimationClip.findByName(vrm.scene.animations || [], poseId);
+        
+        if (currentAction && typeof currentAction.getClip === 'function') {
+          setCurrentAnimation(currentAction.getClip());
+        }
+      }
+      setStatusMessage(`▶️ Playing: ${poseId}`);
+    } catch (error) {
+      console.error('Failed to load library animation:', error);
+      setStatusMessage(`❌ Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  };
+
   return (
     <div className="tab-content">
+      {/* --- LIBRARY --- */}
+      <div className="tab-section">
+        <h3>Animation Library</h3>
+        <p className="muted small">Quick-select built-in animations</p>
+        
+        <div className="animation-list" style={{ maxHeight: '200px', overflowY: 'auto', marginBottom: '1rem' }}>
+          {ANIMATION_POOL.map((item) => (
+            <div key={item.id} className="animation-item">
+              <div className="animation-item__info">
+                <strong>{item.label}</strong>
+                <span className="muted small" style={{ textTransform: 'capitalize' }}>{item.category}</span>
+              </div>
+              <button 
+                className="icon-button"
+                onClick={() => handleLibraryPlay(item.id)}
+                title="Play from library"
+              >
+                <Play size={16} weight="fill" />
+              </button>
+            </div>
+          ))}
+        </div>
+      </div>
+
       {/* --- IMPORT --- */}
       <div className="tab-section">
         <h3>Import Animation</h3>

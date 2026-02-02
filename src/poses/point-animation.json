@@ -3,7 +3,7 @@
   "duration": 2.7666666507720947,
   "tracks": [
     {
-      "name": "VRMHumanoidRig/Normalized_hips.position",
+      "name": "VRMHumanoidRig/Normalized_AvatarsR2_0052Hips.position",
       "type": "vector",
       "times": [
         0,
@@ -92,262 +92,262 @@
         2.7666666507720947
       ],
       "values": [
-        0.001623640418983996,
-        0.8659225106239319,
-        -0.012080522254109383,
-        0.0012502052122727036,
-        0.8657954335212708,
-        -0.009772189892828465,
-        0.0008897260413505137,
-        0.8657010197639465,
-        -0.008176205679774284,
-        0.0005621375166811049,
-        0.8656548857688904,
-        -0.006798816379159689,
-        0.0002925241133198142,
-        0.8656549453735352,
-        -0.005575784482061863,
-        0.00009718619548948482,
-        0.8656636476516724,
-        -0.004456307739019394,
-        0.00031844881596043706,
-        0.8657127618789673,
-        -0.0035230102948844433,
-        0.0005686155636794865,
-        0.8657147288322449,
-        -0.002693071262910962,
-        0.0008198011782951653,
-        0.8657203912734985,
-        -0.0019290642812848091,
-        0.0010612569749355316,
-        0.865781843662262,
-        -0.0011678338050842285,
-        0.001288086175918579,
-        0.8659103512763977,
-        -0.0003501086903270334,
-        0.0015039390418678522,
-        0.866072952747345,
-        0.0005518554826267064,
-        0.0017175868852064013,
-        0.8662265539169312,
-        0.001474573276937008,
-        0.001926313154399395,
-        0.8663490414619446,
-        0.0025494759902358055,
-        0.0021310579031705856,
-        0.8664457201957703,
-        0.003751639975234866,
-        0.0023569148033857346,
-        0.8665387630462646,
-        0.004750990774482489,
-        0.0026280395686626434,
-        0.866663932800293,
-        0.005235745571553707,
-        0.0029204676393419504,
-        0.8668670058250427,
-        0.004992125555872917,
-        0.0031862398609519005,
-        0.8671437501907349,
-        0.0040273042395710945,
-        0.0034604070242494345,
-        0.8673983812332153,
-        0.002686424646526575,
-        0.0038722145836800337,
-        0.867533802986145,
-        0.0014641323359683156,
-        0.004514946602284908,
-        0.8675701022148132,
-        0.0006316500366665423,
-        0.0053619034588336945,
-        0.8675658106803894,
-        0.00013946495892014354,
-        0.006323750596493483,
-        0.8675461411476135,
-        -0.00016572163440287113,
-        0.007332809269428253,
-        0.8675054907798767,
-        -0.0003410996578168124,
-        0.008357676677405834,
-        0.8674430251121521,
-        -0.0003355425433255732,
-        0.009366710670292377,
-        0.8673787117004395,
-        -0.00006769583706045523,
-        0.010308588854968548,
-        0.8673175573348999,
-        0.0005188520299270749,
-        0.01113623846322298,
-        0.8672417402267456,
-        0.0014141874853521585,
-        0.011828035116195679,
-        0.867139995098114,
-        0.002513526938855648,
-        0.012395678088068962,
-        0.8670280575752258,
-        0.0036570411175489426,
-        0.012867074459791183,
-        0.8669232726097107,
-        0.004715130664408207,
-        0.013261419720947742,
-        0.8668231964111328,
-        0.005634518340229988,
-        0.01357512827962637,
-        0.8667104244232178,
-        0.0064306315034627914,
-        0.013791951350867748,
-        0.8665797114372253,
-        0.007132621947675943,
-        0.013913124799728394,
-        0.8664491176605225,
-        0.00772231537848711,
-        0.013967446982860565,
-        0.8663380146026611,
-        0.008143904618918896,
-        0.013984190300107002,
-        0.8662502765655518,
-        0.008361470885574818,
-        0.013960286043584347,
-        0.8661789894104004,
-        0.008372188545763493,
-        0.013868325389921665,
-        0.866123378276825,
-        0.008176479488611221,
-        0.01369357667863369,
-        0.8660939931869507,
-        0.007770994678139687,
-        0.013451654464006424,
-        0.8660981059074402,
-        0.007169898599386215,
-        0.013164342381060123,
-        0.8661285042762756,
-        0.006412094924598932,
-        0.012841163203120232,
-        0.8661699295043945,
-        0.005536255426704884,
-        0.01249734777957201,
-        0.8662140369415283,
-        0.004552303347736597,
-        0.01215695682913065,
-        0.866267740726471,
-        0.0034586642868816853,
-        0.01183103397488594,
-        0.8663395643234253,
-        0.0022847249638289213,
-        0.011507131159305573,
-        0.8664223551750183,
-        0.0010862061753869057,
-        0.011170605197548866,
-        0.8665001392364502,
-        -0.00010034608567366377,
-        0.010822160169482231,
-        0.8665645122528076,
-        -0.0012718249345198274,
-        0.010470231994986534,
-        0.8666197061538696,
-        -0.0024349770974367857,
-        0.010114711709320545,
-        0.8666670322418213,
-        -0.0035756577271968126,
-        0.00974959321320057,
-        0.866690993309021,
-        -0.0046383654698729515,
-        0.009383992291986942,
-        0.8666715621948242,
-        -0.005544956307858229,
-        0.009044014848768711,
-        0.866600513458252,
-        -0.0062339697033166885,
-        0.008737164549529552,
-        0.8664880990982056,
-        -0.006700281053781509,
-        0.008407345972955227,
-        0.8663800954818726,
-        -0.007040956523269415,
-        0.00797069352120161,
-        0.8663344383239746,
-        -0.007414714433252811,
-        0.007412304170429707,
-        0.866352915763855,
-        -0.007901722565293312,
-        0.006796550936996937,
-        0.8663704991340637,
-        -0.00845984648913145,
-        0.006188190076500177,
-        0.8663409352302551,
-        -0.00905281025916338,
-        0.005603243596851826,
-        0.866283118724823,
-        -0.009781153872609138,
-        0.005026216618716717,
-        0.866267204284668,
-        -0.010826441459357738,
-        0.004452534951269627,
-        0.8663490414619446,
-        -0.012206480838358402,
-        0.0039001284167170525,
-        0.8665217757225037,
-        -0.013124620541930199,
-        0.0033838103991001844,
-        0.8667576313018799,
-        -0.013818458653986454,
-        0.0029080898966640234,
-        0.867026686668396,
-        -0.014318848960101604,
-        0.00250869314186275,
-        0.8672850728034973,
-        -0.014682972803711891,
-        0.002249940065667033,
-        0.8674740195274353,
-        -0.015011832118034363,
-        0.0021202967036515474,
-        0.8675587177276611,
-        -0.015263387002050877,
-        0.0020197497215121984,
-        0.8675503134727478,
-        -0.015464105643332005,
-        0.0018988022347912192,
-        0.8674938678741455,
-        -0.01563635654747486,
-        0.0018228731350973248,
-        0.8674286007881165,
-        -0.015752503648400307,
-        0.0018798429518938065,
-        0.8673719167709351,
-        -0.015830473974347115,
-        0.002074280520901084,
-        0.8673320412635803,
-        -0.015849098563194275,
-        0.002328521804884076,
-        0.8673089742660522,
-        -0.015815697610378265,
-        0.0024378655944019556,
-        0.8671984672546387,
-        -0.015722567215561867,
-        0.002387707121670246,
-        0.8670064210891724,
-        -0.015554110519587994,
-        0.002303224988281727,
-        0.8668107986450195,
-        -0.015327177941799164,
-        0.0021912087686359882,
-        0.8666220307350159,
-        -0.014989042654633522,
-        0.0020564040169119835,
-        0.8664384484291077,
-        -0.014641381800174713,
-        0.0019207911100238562,
-        0.866254448890686,
-        -0.01389487087726593,
-        0.0017876379424706101,
-        0.8660788536071777,
-        -0.012986709363758564,
-        0.001623640418983996,
-        0.8659225106239319,
-        -0.012080522254109383
+        0.0017901977989822626,
+        0.954751193523407,
+        -0.013319774530827999,
+        0.0013784545008093119,
+        0.9546110033988953,
+        -0.010774646885693073,
+        0.0009809965267777443,
+        0.9545069336891174,
+        -0.009014942683279514,
+        0.0006198030896484852,
+        0.9544560313224792,
+        -0.007496256846934557,
+        0.00032253199606202543,
+        0.954456090927124,
+        -0.006147763226181269,
+        0.00010715581447584555,
+        0.9544656872749329,
+        -0.004913447890430689,
+        0.00035111611941829324,
+        0.9545198678970337,
+        -0.0038844100199639797,
+        0.0006269456935115159,
+        0.9545220732688904,
+        -0.0029693336691707373,
+        0.0009038985590450466,
+        0.954528272151947,
+        -0.0021269528660923243,
+        0.0011701234616339207,
+        0.9545960426330566,
+        -0.0012876332039013505,
+        0.0014202215243130922,
+        0.9547377228736877,
+        -0.00038602377753704786,
+        0.0016582170501351357,
+        0.9549170136451721,
+        0.0006084662745706737,
+        0.001893781591206789,
+        0.9550864100456238,
+        0.0016258388059213758,
+        0.002123919315636158,
+        0.95522141456604,
+        0.002811008132994175,
+        0.0023496674839407206,
+        0.9553279876708984,
+        0.0041364929638803005,
+        0.002598693361505866,
+        0.9554305672645569,
+        0.005238359794020653,
+        0.0028976306784898043,
+        0.9555686116218567,
+        0.005772842094302177,
+        0.0032200568821281195,
+        0.9557924866676331,
+        0.005504230968654156,
+        0.0035130928736180067,
+        0.9560976624488831,
+        0.00444043567404151,
+        0.0038153845816850662,
+        0.9563784003257751,
+        0.002962005091831088,
+        0.004269436467438936,
+        0.9565277099609375,
+        0.0016143269604071975,
+        0.004978101700544357,
+        0.9565677642822266,
+        0.0006964463973417878,
+        0.0059119416400790215,
+        0.9565629959106445,
+        0.00015377164527308196,
+        0.0069724577479064465,
+        0.9565413594245911,
+        -0.00018272179295308888,
+        0.008085028268396854,
+        0.95649653673172,
+        -0.0003760905528906733,
+        0.009215028956532478,
+        0.9564275741577148,
+        -0.00036996338167227805,
+        0.01032757293432951,
+        0.9563567042350769,
+        -0.00007464025838999078,
+        0.011366071179509163,
+        0.9562892913818359,
+        0.0005720772314816713,
+        0.012278623878955841,
+        0.9562056660652161,
+        0.0015592585550621152,
+        0.013041386380791664,
+        0.9560934901237488,
+        0.002771371277049184,
+        0.013667259365320206,
+        0.9559701085090637,
+        0.004032189957797527,
+        0.014187012799084187,
+        0.955854594707489,
+        0.00519882095977664,
+        0.014621810987591743,
+        0.955744206905365,
+        0.006212522275745869,
+        0.014967700466513634,
+        0.9556198716163635,
+        0.007090302649885416,
+        0.015206766314804554,
+        0.9554758071899414,
+        0.007864304818212986,
+        0.015340370126068592,
+        0.9553317427635193,
+        0.00851449090987444,
+        0.015400264412164688,
+        0.9552092552185059,
+        0.008979327976703644,
+        0.01541872601956129,
+        0.9551125168800354,
+        0.009219212457537651,
+        0.015392369590699673,
+        0.9550339579582214,
+        0.009231030009686947,
+        0.015290975570678711,
+        0.9549725651741028,
+        0.00901524443179369,
+        0.015098300762474537,
+        0.9549401998519897,
+        0.008568163961172104,
+        0.014831561595201492,
+        0.9549447894096375,
+        0.007905405946075916,
+        0.014514775015413761,
+        0.9549782276153564,
+        0.007069864775985479,
+        0.014158444479107857,
+        0.9550238847732544,
+        0.0061041791923344135,
+        0.013779358007013798,
+        0.9550725817680359,
+        0.005019290838390589,
+        0.013404049910604954,
+        0.9551317691802979,
+        0.0038134632632136345,
+        0.013044692575931549,
+        0.9552109241485596,
+        0.002519098110496998,
+        0.012687562964856625,
+        0.9553022384643555,
+        0.0011976320529356599,
+        0.012316514737904072,
+        0.9553880095481873,
+        -0.00011063985584769398,
+        0.011932325549423695,
+        0.9554589986801147,
+        -0.0014022920513525605,
+        0.011544296517968178,
+        0.9555198550224304,
+        -0.0026847633998841047,
+        0.011152305640280247,
+        0.9555720090866089,
+        -0.003942457959055901,
+        0.010749733075499535,
+        0.9555984139442444,
+        -0.005114181432873011,
+        0.010346626862883568,
+        0.95557701587677,
+        -0.006113772746175528,
+        0.00997177418321371,
+        0.9554986357688904,
+        -0.006873466540127993,
+        0.009633446112275124,
+        0.9553747177124023,
+        -0.007387613877654076,
+        0.009269794449210167,
+        0.9552556276321411,
+        -0.007763236295431852,
+        0.00878834817558527,
+        0.9552053213119507,
+        -0.008175335824489594,
+        0.008172677829861641,
+        0.9552257061004639,
+        -0.008712301962077618,
+        0.007493759039789438,
+        0.9552450180053711,
+        -0.009327679872512817,
+        0.006822990719228983,
+        0.9552124738693237,
+        -0.009981471113860607,
+        0.006178039126098156,
+        0.9551487565040588,
+        -0.010784531012177467,
+        0.0055418191477656364,
+        0.9551311731338501,
+        -0.01193704642355442,
+        0.0049092876724898815,
+        0.95522141456604,
+        -0.013458654284477234,
+        0.004300213884562254,
+        0.9554119110107422,
+        -0.014470978640019894,
+        0.003730930620804429,
+        0.9556719064712524,
+        -0.015235993079841137,
+        0.003206409513950348,
+        0.9559686183929443,
+        -0.01578771322965622,
+        0.002766041550785303,
+        0.9562534689903259,
+        -0.01618919149041176,
+        0.0024807448498904705,
+        0.9564617872238159,
+        -0.016551785171031952,
+        0.0023378022015094757,
+        0.956555187702179,
+        -0.016829144209623337,
+        0.002226941054686904,
+        0.9565459489822388,
+        -0.017050454393029213,
+        0.0020935863722115755,
+        0.9564836621284485,
+        -0.01724037528038025,
+        0.0020098683889955282,
+        0.9564117193222046,
+        -0.017368435859680176,
+        0.002072682371363044,
+        0.95634925365448,
+        -0.01745440624654293,
+        0.0022870656102895737,
+        0.9563052654266357,
+        -0.017474941909313202,
+        0.0025673876516520977,
+        0.9562798142433167,
+        -0.017438113689422607,
+        0.002687948290258646,
+        0.9561579823493958,
+        -0.017335429787635803,
+        0.0026326444931328297,
+        0.9559462070465088,
+        -0.01714969240128994,
+        0.0025394957046955824,
+        0.9557304978370667,
+        -0.016899481415748596,
+        0.002415988827124238,
+        0.955522358417511,
+        -0.016526658087968826,
+        0.0022673553321510553,
+        0.9553200006484985,
+        -0.016143333166837692,
+        0.002117831027135253,
+        0.9551171064376831,
+        -0.015320243313908577,
+        0.001971018500626087,
+        0.9549235105514526,
+        -0.014318919740617275,
+        0.0017901977989822626,
+        0.954751193523407,
+        -0.013319774530827999
       ]
     },
     {
-      "name": "VRMHumanoidRig/Normalized_hips.quaternion",
+      "name": "VRMHumanoidRig/Normalized_AvatarsR2_0052Hips.quaternion",
       "type": "quaternion",
       "times": [
         0,
@@ -775,7 +775,7 @@
       ]
     },
     {
-      "name": "VRMHumanoidRig/Normalized_hips/Normalized_spine.quaternion",
+      "name": "VRMHumanoidRig/Normalized_AvatarsR2_0052Hips/Normalized_AvatarsR2_0052Spine.quaternion",
       "type": "quaternion",
       "times": [
         0,
@@ -1203,7 +1203,7 @@
       ]
     },
     {
-      "name": "VRMHumanoidRig/Normalized_hips/Normalized_spine/Normalized_chest.quaternion",
+      "name": "VRMHumanoidRig/Normalized_AvatarsR2_0052Hips/Normalized_AvatarsR2_0052Spine/Normalized_AvatarsR2_0052Spine1.quaternion",
       "type": "quaternion",
       "times": [
         0,
@@ -1631,7 +1631,7 @@
       ]
     },
     {
-      "name": "VRMHumanoidRig/Normalized_hips/Normalized_spine/Normalized_chest/Normalized_upperChest.quaternion",
+      "name": "VRMHumanoidRig/Normalized_AvatarsR2_0052Hips/Normalized_AvatarsR2_0052Spine/Normalized_AvatarsR2_0052Spine1/Normalized_AvatarsR2_0052Spine2.quaternion",
       "type": "quaternion",
       "times": [
         0,
@@ -2059,7 +2059,7 @@
       ]
     },
     {
-      "name": "VRMHumanoidRig/Normalized_hips/Normalized_spine/Normalized_chest/Normalized_upperChest/Normalized_neck.quaternion",
+      "name": "VRMHumanoidRig/Normalized_AvatarsR2_0052Hips/Normalized_AvatarsR2_0052Spine/Normalized_AvatarsR2_0052Spine1/Normalized_AvatarsR2_0052Spine2/Normalized_AvatarsR2_0052Neck.quaternion",
       "type": "quaternion",
       "times": [
         0,
@@ -2487,7 +2487,7 @@
       ]
     },
     {
-      "name": "VRMHumanoidRig/Normalized_hips/Normalized_spine/Normalized_chest/Normalized_upperChest/Normalized_neck/Normalized_head.quaternion",
+      "name": "VRMHumanoidRig/Normalized_AvatarsR2_0052Hips/Normalized_AvatarsR2_0052Spine/Normalized_AvatarsR2_0052Spine1/Normalized_AvatarsR2_0052Spine2/Normalized_AvatarsR2_0052Neck/Normalized_AvatarsR2_0052Head.quaternion",
       "type": "quaternion",
       "times": [
         0,
@@ -2915,7 +2915,7 @@
       ]
     },
     {
-      "name": "VRMHumanoidRig/Normalized_hips/Normalized_spine/Normalized_chest/Normalized_upperChest/Normalized_rightShoulder.quaternion",
+      "name": "VRMHumanoidRig/Normalized_AvatarsR2_0052Hips/Normalized_AvatarsR2_0052Spine/Normalized_AvatarsR2_0052Spine1/Normalized_AvatarsR2_0052Spine2/Normalized_AvatarsR2_0052RightShoulder.quaternion",
       "type": "quaternion",
       "times": [
         0,
@@ -3343,7 +3343,7 @@
       ]
     },
     {
-      "name": "VRMHumanoidRig/Normalized_hips/Normalized_spine/Normalized_chest/Normalized_upperChest/Normalized_rightShoulder/Normalized_rightUpperArm.quaternion",
+      "name": "VRMHumanoidRig/Normalized_AvatarsR2_0052Hips/Normalized_AvatarsR2_0052Spine/Normalized_AvatarsR2_0052Spine1/Normalized_AvatarsR2_0052Spine2/Normalized_AvatarsR2_0052RightShoulder/Normalized_AvatarsR2_0052RightArm.quaternion",
       "type": "quaternion",
       "times": [
         0,
@@ -3771,7 +3771,7 @@
       ]
     },
     {
-      "name": "VRMHumanoidRig/Normalized_hips/Normalized_spine/Normalized_chest/Normalized_upperChest/Normalized_rightShoulder/Normalized_rightUpperArm/Normalized_rightLoweArm.quaternion",
+      "name": "VRMHumanoidRig/Normalized_AvatarsR2_0052Hips/Normalized_AvatarsR2_0052Spine/Normalized_AvatarsR2_0052Spine1/Normalized_AvatarsR2_0052Spine2/Normalized_AvatarsR2_0052RightShoulder/Normalized_AvatarsR2_0052RightArm/Normalized_AvatarsR2_0052RightForeArm.quaternion",
       "type": "quaternion",
       "times": [
         0,
@@ -4199,7 +4199,7 @@
       ]
     },
     {
-      "name": "VRMHumanoidRig/Normalized_hips/Normalized_spine/Normalized_chest/Normalized_upperChest/Normalized_rightShoulder/Normalized_rightUpperArm/Normalized_rightLoweArm/Normalized_rightHand.quaternion",
+      "name": "VRMHumanoidRig/Normalized_AvatarsR2_0052Hips/Normalized_AvatarsR2_0052Spine/Normalized_AvatarsR2_0052Spine1/Normalized_AvatarsR2_0052Spine2/Normalized_AvatarsR2_0052RightShoulder/Normalized_AvatarsR2_0052RightArm/Normalized_AvatarsR2_0052RightForeArm/Normalized_AvatarsR2_0052RightHand.quaternion",
       "type": "quaternion",
       "times": [
         0,
@@ -4627,7 +4627,7 @@
       ]
     },
     {
-      "name": "VRMHumanoidRig/Normalized_hips/Normalized_spine/Normalized_chest/Normalized_upperChest/Normalized_rightShoulder/Normalized_rightUpperArm/Normalized_rightLoweArm/Normalized_rightHand/Normalized_rightThumbMetacarpal.quaternion",
+      "name": "VRMHumanoidRig/Normalized_AvatarsR2_0052Hips/Normalized_AvatarsR2_0052Spine/Normalized_AvatarsR2_0052Spine1/Normalized_AvatarsR2_0052Spine2/Normalized_AvatarsR2_0052RightShoulder/Normalized_AvatarsR2_0052RightArm/Normalized_AvatarsR2_0052RightForeArm/Normalized_AvatarsR2_0052RightHand/Normalized_AvatarsR2_0052RightHandThumb1.quaternion",
       "type": "quaternion",
       "times": [
         0,
@@ -5055,7 +5055,7 @@
       ]
     },
     {
-      "name": "VRMHumanoidRig/Normalized_hips/Normalized_spine/Normalized_chest/Normalized_upperChest/Normalized_rightShoulder/Normalized_rightUpperArm/Normalized_rightLoweArm/Normalized_rightHand/Normalized_rightThumbMetacarpal/Normalized_rightThumbProximal.quaternion",
+      "name": "VRMHumanoidRig/Normalized_AvatarsR2_0052Hips/Normalized_AvatarsR2_0052Spine/Normalized_AvatarsR2_0052Spine1/Normalized_AvatarsR2_0052Spine2/Normalized_AvatarsR2_0052RightShoulder/Normalized_AvatarsR2_0052RightArm/Normalized_AvatarsR2_0052RightForeArm/Normalized_AvatarsR2_0052RightHand/Normalized_AvatarsR2_0052RightHandThumb1/Normalized_AvatarsR2_0052RightHandThumb2.quaternion",
       "type": "quaternion",
       "times": [
         0
@@ -5068,7 +5068,7 @@
       ]
     },
     {
-      "name": "VRMHumanoidRig/Normalized_hips/Normalized_spine/Normalized_chest/Normalized_upperChest/Normalized_rightShoulder/Normalized_rightUpperArm/Normalized_rightLoweArm/Normalized_rightHand/Normalized_rightThumbMetacarpal/Normalized_rightThumbProximal/Normalized_rightThumbDistal.quaternion",
+      "name": "VRMHumanoidRig/Normalized_AvatarsR2_0052Hips/Normalized_AvatarsR2_0052Spine/Normalized_AvatarsR2_0052Spine1/Normalized_AvatarsR2_0052Spine2/Normalized_AvatarsR2_0052RightShoulder/Normalized_AvatarsR2_0052RightArm/Normalized_AvatarsR2_0052RightForeArm/Normalized_AvatarsR2_0052RightHand/Normalized_AvatarsR2_0052RightHandThumb1/Normalized_AvatarsR2_0052RightHandThumb2/Normalized_AvatarsR2_0052RightHandThumb3.quaternion",
       "type": "quaternion",
       "times": [
         0
@@ -5081,7 +5081,7 @@
       ]
     },
     {
-      "name": "VRMHumanoidRig/Normalized_hips/Normalized_spine/Normalized_chest/Normalized_upperChest/Normalized_rightShoulder/Normalized_rightUpperArm/Normalized_rightLoweArm/Normalized_rightHand/Normalized_rightIndexProximal.quaternion",
+      "name": "VRMHumanoidRig/Normalized_AvatarsR2_0052Hips/Normalized_AvatarsR2_0052Spine/Normalized_AvatarsR2_0052Spine1/Normalized_AvatarsR2_0052Spine2/Normalized_AvatarsR2_0052RightShoulder/Normalized_AvatarsR2_0052RightArm/Normalized_AvatarsR2_0052RightForeArm/Normalized_AvatarsR2_0052RightHand/Normalized_AvatarsR2_0052RightHandIndex1.quaternion",
       "type": "quaternion",
       "times": [
         0,
@@ -5509,7 +5509,7 @@
       ]
     },
     {
-      "name": "VRMHumanoidRig/Normalized_hips/Normalized_spine/Normalized_chest/Normalized_upperChest/Normalized_rightShoulder/Normalized_rightUpperArm/Normalized_rightLoweArm/Normalized_rightHand/Normalized_rightIndexProximal/Normalized_rightIndexIntermediate.quaternion",
+      "name": "VRMHumanoidRig/Normalized_AvatarsR2_0052Hips/Normalized_AvatarsR2_0052Spine/Normalized_AvatarsR2_0052Spine1/Normalized_AvatarsR2_0052Spine2/Normalized_AvatarsR2_0052RightShoulder/Normalized_AvatarsR2_0052RightArm/Normalized_AvatarsR2_0052RightForeArm/Normalized_AvatarsR2_0052RightHand/Normalized_AvatarsR2_0052RightHandIndex1/Normalized_AvatarsR2_0052RightHandIndex2.quaternion",
       "type": "quaternion",
       "times": [
         0,
@@ -5937,7 +5937,7 @@
       ]
     },
     {
-      "name": "VRMHumanoidRig/Normalized_hips/Normalized_spine/Normalized_chest/Normalized_upperChest/Normalized_rightShoulder/Normalized_rightUpperArm/Normalized_rightLoweArm/Normalized_rightHand/Normalized_rightIndexProximal/Normalized_rightIndexIntermediate/Normalized_rightIndexDistal.quaternion",
+      "name": "VRMHumanoidRig/Normalized_AvatarsR2_0052Hips/Normalized_AvatarsR2_0052Spine/Normalized_AvatarsR2_0052Spine1/Normalized_AvatarsR2_0052Spine2/Normalized_AvatarsR2_0052RightShoulder/Normalized_AvatarsR2_0052RightArm/Normalized_AvatarsR2_0052RightForeArm/Normalized_AvatarsR2_0052RightHand/Normalized_AvatarsR2_0052RightHandIndex1/Normalized_AvatarsR2_0052RightHandIndex2/Normalized_AvatarsR2_0052RightHandIndex3.quaternion",
       "type": "quaternion",
       "times": [
         0,
@@ -6365,7 +6365,7 @@
       ]
     },
     {
-      "name": "VRMHumanoidRig/Normalized_hips/Normalized_spine/Normalized_chest/Normalized_upperChest/Normalized_rightShoulder/Normalized_rightUpperArm/Normalized_rightLoweArm/Normalized_rightHand/Normalized_rightMiddleProximal.quaternion",
+      "name": "VRMHumanoidRig/Normalized_AvatarsR2_0052Hips/Normalized_AvatarsR2_0052Spine/Normalized_AvatarsR2_0052Spine1/Normalized_AvatarsR2_0052Spine2/Normalized_AvatarsR2_0052RightShoulder/Normalized_AvatarsR2_0052RightArm/Normalized_AvatarsR2_0052RightForeArm/Normalized_AvatarsR2_0052RightHand/Normalized_AvatarsR2_0052RightHandMiddle1.quaternion",
       "type": "quaternion",
       "times": [
         0,
@@ -6793,7 +6793,7 @@
       ]
     },
     {
-      "name": "VRMHumanoidRig/Normalized_hips/Normalized_spine/Normalized_chest/Normalized_upperChest/Normalized_rightShoulder/Normalized_rightUpperArm/Normalized_rightLoweArm/Normalized_rightHand/Normalized_rightMiddleProximal/Normalized_rightMiddleIntermediate.quaternion",
+      "name": "VRMHumanoidRig/Normalized_AvatarsR2_0052Hips/Normalized_AvatarsR2_0052Spine/Normalized_AvatarsR2_0052Spine1/Normalized_AvatarsR2_0052Spine2/Normalized_AvatarsR2_0052RightShoulder/Normalized_AvatarsR2_0052RightArm/Normalized_AvatarsR2_0052RightForeArm/Normalized_AvatarsR2_0052RightHand/Normalized_AvatarsR2_0052RightHandMiddle1/Normalized_AvatarsR2_0052RightHandMiddle2.quaternion",
       "type": "quaternion",
       "times": [
         0,
@@ -7221,7 +7221,7 @@
       ]
     },
     {
-      "name": "VRMHumanoidRig/Normalized_hips/Normalized_spine/Normalized_chest/Normalized_upperChest/Normalized_rightShoulder/Normalized_rightUpperArm/Normalized_rightLoweArm/Normalized_rightHand/Normalized_rightMiddleProximal/Normalized_rightMiddleIntermediate/Normalized_rightMiddleDistal.quaternion",
+      "name": "VRMHumanoidRig/Normalized_AvatarsR2_0052Hips/Normalized_AvatarsR2_0052Spine/Normalized_AvatarsR2_0052Spine1/Normalized_AvatarsR2_0052Spine2/Normalized_AvatarsR2_0052RightShoulder/Normalized_AvatarsR2_0052RightArm/Normalized_AvatarsR2_0052RightForeArm/Normalized_AvatarsR2_0052RightHand/Normalized_AvatarsR2_0052RightHandMiddle1/Normalized_AvatarsR2_0052RightHandMiddle2/Normalized_AvatarsR2_0052RightHandMiddle3.quaternion",
       "type": "quaternion",
       "times": [
         0,
@@ -7649,7 +7649,7 @@
       ]
     },
     {
-      "name": "VRMHumanoidRig/Normalized_hips/Normalized_spine/Normalized_chest/Normalized_upperChest/Normalized_rightShoulder/Normalized_rightUpperArm/Normalized_rightLoweArm/Normalized_rightHand/Normalized_rightRingProximal.quaternion",
+      "name": "VRMHumanoidRig/Normalized_AvatarsR2_0052Hips/Normalized_AvatarsR2_0052Spine/Normalized_AvatarsR2_0052Spine1/Normalized_AvatarsR2_0052Spine2/Normalized_AvatarsR2_0052RightShoulder/Normalized_AvatarsR2_0052RightArm/Normalized_AvatarsR2_0052RightForeArm/Normalized_AvatarsR2_0052RightHand/Normalized_AvatarsR2_0052RightHandRing1.quaternion",
       "type": "quaternion",
       "times": [
         0,
@@ -8077,7 +8077,7 @@
       ]
     },
     {
-      "name": "VRMHumanoidRig/Normalized_hips/Normalized_spine/Normalized_chest/Normalized_upperChest/Normalized_rightShoulder/Normalized_rightUpperArm/Normalized_rightLoweArm/Normalized_rightHand/Normalized_rightRingProximal/Normalized_rightRingIntermediate.quaternion",
+      "name": "VRMHumanoidRig/Normalized_AvatarsR2_0052Hips/Normalized_AvatarsR2_0052Spine/Normalized_AvatarsR2_0052Spine1/Normalized_AvatarsR2_0052Spine2/Normalized_AvatarsR2_0052RightShoulder/Normalized_AvatarsR2_0052RightArm/Normalized_AvatarsR2_0052RightForeArm/Normalized_AvatarsR2_0052RightHand/Normalized_AvatarsR2_0052RightHandRing1/Normalized_AvatarsR2_0052RightHandRing2.quaternion",
       "type": "quaternion",
       "times": [
         0,
@@ -8505,7 +8505,7 @@
       ]
     },
     {
-      "name": "VRMHumanoidRig/Normalized_hips/Normalized_spine/Normalized_chest/Normalized_upperChest/Normalized_rightShoulder/Normalized_rightUpperArm/Normalized_rightLoweArm/Normalized_rightHand/Normalized_rightRingProximal/Normalized_rightRingIntermediate/Normalized_rightRingDistal.quaternion",
+      "name": "VRMHumanoidRig/Normalized_AvatarsR2_0052Hips/Normalized_AvatarsR2_0052Spine/Normalized_AvatarsR2_0052Spine1/Normalized_AvatarsR2_0052Spine2/Normalized_AvatarsR2_0052RightShoulder/Normalized_AvatarsR2_0052RightArm/Normalized_AvatarsR2_0052RightForeArm/Normalized_AvatarsR2_0052RightHand/Normalized_AvatarsR2_0052RightHandRing1/Normalized_AvatarsR2_0052RightHandRing2/Normalized_AvatarsR2_0052RightHandRing3.quaternion",
       "type": "quaternion",
       "times": [
         0,
@@ -8933,7 +8933,7 @@
       ]
     },
     {
-      "name": "VRMHumanoidRig/Normalized_hips/Normalized_spine/Normalized_chest/Normalized_upperChest/Normalized_rightShoulder/Normalized_rightUpperArm/Normalized_rightLoweArm/Normalized_rightHand/Normalized_rightLittleProximal.quaternion",
+      "name": "VRMHumanoidRig/Normalized_AvatarsR2_0052Hips/Normalized_AvatarsR2_0052Spine/Normalized_AvatarsR2_0052Spine1/Normalized_AvatarsR2_0052Spine2/Normalized_AvatarsR2_0052RightShoulder/Normalized_AvatarsR2_0052RightArm/Normalized_AvatarsR2_0052RightForeArm/Normalized_AvatarsR2_0052RightHand/Normalized_AvatarsR2_0052RightHandPinky1.quaternion",
       "type": "quaternion",
       "times": [
         0,
@@ -9361,7 +9361,7 @@
       ]
     },
     {
-      "name": "VRMHumanoidRig/Normalized_hips/Normalized_spine/Normalized_chest/Normalized_upperChest/Normalized_rightShoulder/Normalized_rightUpperArm/Normalized_rightLoweArm/Normalized_rightHand/Normalized_rightLittleProximal/Normalized_rightLittleIntermediate.quaternion",
+      "name": "VRMHumanoidRig/Normalized_AvatarsR2_0052Hips/Normalized_AvatarsR2_0052Spine/Normalized_AvatarsR2_0052Spine1/Normalized_AvatarsR2_0052Spine2/Normalized_AvatarsR2_0052RightShoulder/Normalized_AvatarsR2_0052RightArm/Normalized_AvatarsR2_0052RightForeArm/Normalized_AvatarsR2_0052RightHand/Normalized_AvatarsR2_0052RightHandPinky1/Normalized_AvatarsR2_0052RightHandPinky2.quaternion",
       "type": "quaternion",
       "times": [
         0,
@@ -9789,7 +9789,7 @@
       ]
     },
     {
-      "name": "VRMHumanoidRig/Normalized_hips/Normalized_spine/Normalized_chest/Normalized_upperChest/Normalized_rightShoulder/Normalized_rightUpperArm/Normalized_rightLoweArm/Normalized_rightHand/Normalized_rightLittleProximal/Normalized_rightLittleIntermediate/Normalized_rightLittleDistal.quaternion",
+      "name": "VRMHumanoidRig/Normalized_AvatarsR2_0052Hips/Normalized_AvatarsR2_0052Spine/Normalized_AvatarsR2_0052Spine1/Normalized_AvatarsR2_0052Spine2/Normalized_AvatarsR2_0052RightShoulder/Normalized_AvatarsR2_0052RightArm/Normalized_AvatarsR2_0052RightForeArm/Normalized_AvatarsR2_0052RightHand/Normalized_AvatarsR2_0052RightHandPinky1/Normalized_AvatarsR2_0052RightHandPinky2/Normalized_AvatarsR2_0052RightHandPinky3.quaternion",
       "type": "quaternion",
       "times": [
         0,
@@ -10217,7 +10217,7 @@
       ]
     },
     {
-      "name": "VRMHumanoidRig/Normalized_hips/Normalized_spine/Normalized_chest/Normalized_upperChest/Normalized_leftShoulder.quaternion",
+      "name": "VRMHumanoidRig/Normalized_AvatarsR2_0052Hips/Normalized_AvatarsR2_0052Spine/Normalized_AvatarsR2_0052Spine1/Normalized_AvatarsR2_0052Spine2/Normalized_AvatarsR2_0052LeftShoulder.quaternion",
       "type": "quaternion",
       "times": [
         0,
@@ -10645,7 +10645,7 @@
       ]
     },
     {
-      "name": "VRMHumanoidRig/Normalized_hips/Normalized_spine/Normalized_chest/Normalized_upperChest/Normalized_leftShoulder/Normalized_leftUpperArm.quaternion",
+      "name": "VRMHumanoidRig/Normalized_AvatarsR2_0052Hips/Normalized_AvatarsR2_0052Spine/Normalized_AvatarsR2_0052Spine1/Normalized_AvatarsR2_0052Spine2/Normalized_AvatarsR2_0052LeftShoulder/Normalized_AvatarsR2_0052LeftArm.quaternion",
       "type": "quaternion",
       "times": [
         0,
@@ -11073,7 +11073,7 @@
       ]
     },
     {
-      "name": "VRMHumanoidRig/Normalized_hips/Normalized_spine/Normalized_chest/Normalized_upperChest/Normalized_leftShoulder/Normalized_leftUpperArm/Normalized_leftLowerArm.quaternion",
+      "name": "VRMHumanoidRig/Normalized_AvatarsR2_0052Hips/Normalized_AvatarsR2_0052Spine/Normalized_AvatarsR2_0052Spine1/Normalized_AvatarsR2_0052Spine2/Normalized_AvatarsR2_0052LeftShoulder/Normalized_AvatarsR2_0052LeftArm/Normalized_AvatarsR2_0052LeftForeArm.quaternion",
       "type": "quaternion",
       "times": [
         0,
@@ -11501,7 +11501,7 @@
       ]
     },
     {
-      "name": "VRMHumanoidRig/Normalized_hips/Normalized_spine/Normalized_chest/Normalized_upperChest/Normalized_leftShoulder/Normalized_leftUpperArm/Normalized_leftLowerArm/Normalized_leftHand.quaternion",
+      "name": "VRMHumanoidRig/Normalized_AvatarsR2_0052Hips/Normalized_AvatarsR2_0052Spine/Normalized_AvatarsR2_0052Spine1/Normalized_AvatarsR2_0052Spine2/Normalized_AvatarsR2_0052LeftShoulder/Normalized_AvatarsR2_0052LeftArm/Normalized_AvatarsR2_0052LeftForeArm/Normalized_AvatarsR2_0052LeftHand.quaternion",
       "type": "quaternion",
       "times": [
         0,
@@ -11929,7 +11929,7 @@
       ]
     },
     {
-      "name": "VRMHumanoidRig/Normalized_hips/Normalized_spine/Normalized_chest/Normalized_upperChest/Normalized_leftShoulder/Normalized_leftUpperArm/Normalized_leftLowerArm/Normalized_leftHand/Normalized_leftThumbMetacarpal.quaternion",
+      "name": "VRMHumanoidRig/Normalized_AvatarsR2_0052Hips/Normalized_AvatarsR2_0052Spine/Normalized_AvatarsR2_0052Spine1/Normalized_AvatarsR2_0052Spine2/Normalized_AvatarsR2_0052LeftShoulder/Normalized_AvatarsR2_0052LeftArm/Normalized_AvatarsR2_0052LeftForeArm/Normalized_AvatarsR2_0052LeftHand/Normalized_AvatarsR2_0052LeftHandThumb1.quaternion",
       "type": "quaternion",
       "times": [
         0
@@ -11942,7 +11942,7 @@
       ]
     },
     {
-      "name": "VRMHumanoidRig/Normalized_hips/Normalized_spine/Normalized_chest/Normalized_upperChest/Normalized_leftShoulder/Normalized_leftUpperArm/Normalized_leftLowerArm/Normalized_leftHand/Normalized_leftThumbMetacarpal/Normalized_leftThumbProximal.quaternion",
+      "name": "VRMHumanoidRig/Normalized_AvatarsR2_0052Hips/Normalized_AvatarsR2_0052Spine/Normalized_AvatarsR2_0052Spine1/Normalized_AvatarsR2_0052Spine2/Normalized_AvatarsR2_0052LeftShoulder/Normalized_AvatarsR2_0052LeftArm/Normalized_AvatarsR2_0052LeftForeArm/Normalized_AvatarsR2_0052LeftHand/Normalized_AvatarsR2_0052LeftHandThumb1/Normalized_AvatarsR2_0052LeftHandThumb2.quaternion",
       "type": "quaternion",
       "times": [
         0
@@ -11955,7 +11955,7 @@
       ]
     },
     {
-      "name": "VRMHumanoidRig/Normalized_hips/Normalized_spine/Normalized_chest/Normalized_upperChest/Normalized_leftShoulder/Normalized_leftUpperArm/Normalized_leftLowerArm/Normalized_leftHand/Normalized_leftThumbMetacarpal/Normalized_leftThumbProximal/Normalized_leftThumbDistal.quaternion",
+      "name": "VRMHumanoidRig/Normalized_AvatarsR2_0052Hips/Normalized_AvatarsR2_0052Spine/Normalized_AvatarsR2_0052Spine1/Normalized_AvatarsR2_0052Spine2/Normalized_AvatarsR2_0052LeftShoulder/Normalized_AvatarsR2_0052LeftArm/Normalized_AvatarsR2_0052LeftForeArm/Normalized_AvatarsR2_0052LeftHand/Normalized_AvatarsR2_0052LeftHandThumb1/Normalized_AvatarsR2_0052LeftHandThumb2/Normalized_AvatarsR2_0052LeftHandThumb3.quaternion",
       "type": "quaternion",
       "times": [
         0
@@ -11968,7 +11968,7 @@
       ]
     },
     {
-      "name": "VRMHumanoidRig/Normalized_hips/Normalized_spine/Normalized_chest/Normalized_upperChest/Normalized_leftShoulder/Normalized_leftUpperArm/Normalized_leftLowerArm/Normalized_leftHand/Normalized_leftIndexProximal.quaternion",
+      "name": "VRMHumanoidRig/Normalized_AvatarsR2_0052Hips/Normalized_AvatarsR2_0052Spine/Normalized_AvatarsR2_0052Spine1/Normalized_AvatarsR2_0052Spine2/Normalized_AvatarsR2_0052LeftShoulder/Normalized_AvatarsR2_0052LeftArm/Normalized_AvatarsR2_0052LeftForeArm/Normalized_AvatarsR2_0052LeftHand/Normalized_AvatarsR2_0052LeftHandIndex1.quaternion",
       "type": "quaternion",
       "times": [
         0
@@ -11981,7 +11981,7 @@
       ]
     },
     {
-      "name": "VRMHumanoidRig/Normalized_hips/Normalized_spine/Normalized_chest/Normalized_upperChest/Normalized_leftShoulder/Normalized_leftUpperArm/Normalized_leftLowerArm/Normalized_leftHand/Normalized_leftIndexProximal/Normalized_leftIndexIntermediate.quaternion",
+      "name": "VRMHumanoidRig/Normalized_AvatarsR2_0052Hips/Normalized_AvatarsR2_0052Spine/Normalized_AvatarsR2_0052Spine1/Normalized_AvatarsR2_0052Spine2/Normalized_AvatarsR2_0052LeftShoulder/Normalized_AvatarsR2_0052LeftArm/Normalized_AvatarsR2_0052LeftForeArm/Normalized_AvatarsR2_0052LeftHand/Normalized_AvatarsR2_0052LeftHandIndex1/Normalized_AvatarsR2_0052LeftHandIndex2.quaternion",
       "type": "quaternion",
       "times": [
         0
@@ -11994,7 +11994,7 @@
       ]
     },
     {
-      "name": "VRMHumanoidRig/Normalized_hips/Normalized_spine/Normalized_chest/Normalized_upperChest/Normalized_leftShoulder/Normalized_leftUpperArm/Normalized_leftLowerArm/Normalized_leftHand/Normalized_leftIndexProximal/Normalized_leftIndexIntermediate/Normalized_leftIndexDistal.quaternion",
+      "name": "VRMHumanoidRig/Normalized_AvatarsR2_0052Hips/Normalized_AvatarsR2_0052Spine/Normalized_AvatarsR2_0052Spine1/Normalized_AvatarsR2_0052Spine2/Normalized_AvatarsR2_0052LeftShoulder/Normalized_AvatarsR2_0052LeftArm/Normalized_AvatarsR2_0052LeftForeArm/Normalized_AvatarsR2_0052LeftHand/Normalized_AvatarsR2_0052LeftHandIndex1/Normalized_AvatarsR2_0052LeftHandIndex2/Normalized_AvatarsR2_0052LeftHandIndex3.quaternion",
       "type": "quaternion",
       "times": [
         0
@@ -12007,7 +12007,7 @@
       ]
     },
     {
-      "name": "VRMHumanoidRig/Normalized_hips/Normalized_spine/Normalized_chest/Normalized_upperChest/Normalized_leftShoulder/Normalized_leftUpperArm/Normalized_leftLowerArm/Normalized_leftHand/Normalized_leftMiddleProximal.quaternion",
+      "name": "VRMHumanoidRig/Normalized_AvatarsR2_0052Hips/Normalized_AvatarsR2_0052Spine/Normalized_AvatarsR2_0052Spine1/Normalized_AvatarsR2_0052Spine2/Normalized_AvatarsR2_0052LeftShoulder/Normalized_AvatarsR2_0052LeftArm/Normalized_AvatarsR2_0052LeftForeArm/Normalized_AvatarsR2_0052LeftHand/Normalized_AvatarsR2_0052LeftHandMiddle1.quaternion",
       "type": "quaternion",
       "times": [
         0
@@ -12020,7 +12020,7 @@
       ]
     },
     {
-      "name": "VRMHumanoidRig/Normalized_hips/Normalized_spine/Normalized_chest/Normalized_upperChest/Normalized_leftShoulder/Normalized_leftUpperArm/Normalized_leftLowerArm/Normalized_leftHand/Normalized_leftMiddleProximal/Normalized_leftMiddleIntermediate.quaternion",
+      "name": "VRMHumanoidRig/Normalized_AvatarsR2_0052Hips/Normalized_AvatarsR2_0052Spine/Normalized_AvatarsR2_0052Spine1/Normalized_AvatarsR2_0052Spine2/Normalized_AvatarsR2_0052LeftShoulder/Normalized_AvatarsR2_0052LeftArm/Normalized_AvatarsR2_0052LeftForeArm/Normalized_AvatarsR2_0052LeftHand/Normalized_AvatarsR2_0052LeftHandMiddle1/Normalized_AvatarsR2_0052LeftHandMiddle2.quaternion",
       "type": "quaternion",
       "times": [
         0
@@ -12033,7 +12033,7 @@
       ]
     },
     {
-      "name": "VRMHumanoidRig/Normalized_hips/Normalized_spine/Normalized_chest/Normalized_upperChest/Normalized_leftShoulder/Normalized_leftUpperArm/Normalized_leftLowerArm/Normalized_leftHand/Normalized_leftMiddleProximal/Normalized_leftMiddleIntermediate/Normalized_leftMiddleDistal.quaternion",
+      "name": "VRMHumanoidRig/Normalized_AvatarsR2_0052Hips/Normalized_AvatarsR2_0052Spine/Normalized_AvatarsR2_0052Spine1/Normalized_AvatarsR2_0052Spine2/Normalized_AvatarsR2_0052LeftShoulder/Normalized_AvatarsR2_0052LeftArm/Normalized_AvatarsR2_0052LeftForeArm/Normalized_AvatarsR2_0052LeftHand/Normalized_AvatarsR2_0052LeftHandMiddle1/Normalized_AvatarsR2_0052LeftHandMiddle2/Normalized_AvatarsR2_0052LeftHandMiddle3.quaternion",
       "type": "quaternion",
       "times": [
         0
@@ -12046,7 +12046,7 @@
       ]
     },
     {
-      "name": "VRMHumanoidRig/Normalized_hips/Normalized_spine/Normalized_chest/Normalized_upperChest/Normalized_leftShoulder/Normalized_leftUpperArm/Normalized_leftLowerArm/Normalized_leftHand/Normalized_leftRingProximal.quaternion",
+      "name": "VRMHumanoidRig/Normalized_AvatarsR2_0052Hips/Normalized_AvatarsR2_0052Spine/Normalized_AvatarsR2_0052Spine1/Normalized_AvatarsR2_0052Spine2/Normalized_AvatarsR2_0052LeftShoulder/Normalized_AvatarsR2_0052LeftArm/Normalized_AvatarsR2_0052LeftForeArm/Normalized_AvatarsR2_0052LeftHand/Normalized_AvatarsR2_0052LeftHandRing1.quaternion",
       "type": "quaternion",
       "times": [
         0
@@ -12059,7 +12059,7 @@
       ]
     },
     {
-      "name": "VRMHumanoidRig/Normalized_hips/Normalized_spine/Normalized_chest/Normalized_upperChest/Normalized_leftShoulder/Normalized_leftUpperArm/Normalized_leftLowerArm/Normalized_leftHand/Normalized_leftRingProximal/Normalized_leftRingIntermediate.quaternion",
+      "name": "VRMHumanoidRig/Normalized_AvatarsR2_0052Hips/Normalized_AvatarsR2_0052Spine/Normalized_AvatarsR2_0052Spine1/Normalized_AvatarsR2_0052Spine2/Normalized_AvatarsR2_0052LeftShoulder/Normalized_AvatarsR2_0052LeftArm/Normalized_AvatarsR2_0052LeftForeArm/Normalized_AvatarsR2_0052LeftHand/Normalized_AvatarsR2_0052LeftHandRing1/Normalized_AvatarsR2_0052LeftHandRing2.quaternion",
       "type": "quaternion",
       "times": [
         0
@@ -12072,7 +12072,7 @@
       ]
     },
     {
-      "name": "VRMHumanoidRig/Normalized_hips/Normalized_spine/Normalized_chest/Normalized_upperChest/Normalized_leftShoulder/Normalized_leftUpperArm/Normalized_leftLowerArm/Normalized_leftHand/Normalized_leftRingProximal/Normalized_leftRingIntermediate/Normalized_leftRingDistal.quaternion",
+      "name": "VRMHumanoidRig/Normalized_AvatarsR2_0052Hips/Normalized_AvatarsR2_0052Spine/Normalized_AvatarsR2_0052Spine1/Normalized_AvatarsR2_0052Spine2/Normalized_AvatarsR2_0052LeftShoulder/Normalized_AvatarsR2_0052LeftArm/Normalized_AvatarsR2_0052LeftForeArm/Normalized_AvatarsR2_0052LeftHand/Normalized_AvatarsR2_0052LeftHandRing1/Normalized_AvatarsR2_0052LeftHandRing2/Normalized_AvatarsR2_0052LeftHandRing3.quaternion",
       "type": "quaternion",
       "times": [
         0
@@ -12085,7 +12085,7 @@
       ]
     },
     {
-      "name": "VRMHumanoidRig/Normalized_hips/Normalized_spine/Normalized_chest/Normalized_upperChest/Normalized_leftShoulder/Normalized_leftUpperArm/Normalized_leftLowerArm/Normalized_leftHand/Normalized_leftLittleProximal.quaternion",
+      "name": "VRMHumanoidRig/Normalized_AvatarsR2_0052Hips/Normalized_AvatarsR2_0052Spine/Normalized_AvatarsR2_0052Spine1/Normalized_AvatarsR2_0052Spine2/Normalized_AvatarsR2_0052LeftShoulder/Normalized_AvatarsR2_0052LeftArm/Normalized_AvatarsR2_0052LeftForeArm/Normalized_AvatarsR2_0052LeftHand/Normalized_AvatarsR2_0052LeftHandPinky1.quaternion",
       "type": "quaternion",
       "times": [
         0
@@ -12098,7 +12098,7 @@
       ]
     },
     {
-      "name": "VRMHumanoidRig/Normalized_hips/Normalized_spine/Normalized_chest/Normalized_upperChest/Normalized_leftShoulder/Normalized_leftUpperArm/Normalized_leftLowerArm/Normalized_leftHand/Normalized_leftLittleProximal/Normalized_leftLittleIntermediate.quaternion",
+      "name": "VRMHumanoidRig/Normalized_AvatarsR2_0052Hips/Normalized_AvatarsR2_0052Spine/Normalized_AvatarsR2_0052Spine1/Normalized_AvatarsR2_0052Spine2/Normalized_AvatarsR2_0052LeftShoulder/Normalized_AvatarsR2_0052LeftArm/Normalized_AvatarsR2_0052LeftForeArm/Normalized_AvatarsR2_0052LeftHand/Normalized_AvatarsR2_0052LeftHandPinky1/Normalized_AvatarsR2_0052LeftHandPinky2.quaternion",
       "type": "quaternion",
       "times": [
         0
@@ -12111,7 +12111,7 @@
       ]
     },
     {
-      "name": "VRMHumanoidRig/Normalized_hips/Normalized_spine/Normalized_chest/Normalized_upperChest/Normalized_leftShoulder/Normalized_leftUpperArm/Normalized_leftLowerArm/Normalized_leftHand/Normalized_leftLittleProximal/Normalized_leftLittleIntermediate/Normalized_leftLittleDistal.quaternion",
+      "name": "VRMHumanoidRig/Normalized_AvatarsR2_0052Hips/Normalized_AvatarsR2_0052Spine/Normalized_AvatarsR2_0052Spine1/Normalized_AvatarsR2_0052Spine2/Normalized_AvatarsR2_0052LeftShoulder/Normalized_AvatarsR2_0052LeftArm/Normalized_AvatarsR2_0052LeftForeArm/Normalized_AvatarsR2_0052LeftHand/Normalized_AvatarsR2_0052LeftHandPinky1/Normalized_AvatarsR2_0052LeftHandPinky2/Normalized_AvatarsR2_0052LeftHandPinky3.quaternion",
       "type": "quaternion",
       "times": [
         0
@@ -12124,7 +12124,7 @@
       ]
     },
     {
-      "name": "VRMHumanoidRig/Normalized_hips/Normalized_rightUpperLeg.quaternion",
+      "name": "VRMHumanoidRig/Normalized_AvatarsR2_0052Hips/Normalized_AvatarsR2_0052RightUpLeg.quaternion",
       "type": "quaternion",
       "times": [
         0,
@@ -12552,7 +12552,7 @@
       ]
     },
     {
-      "name": "VRMHumanoidRig/Normalized_hips/Normalized_rightUpperLeg/Normalized_rightLowerLeg.quaternion",
+      "name": "VRMHumanoidRig/Normalized_AvatarsR2_0052Hips/Normalized_AvatarsR2_0052RightUpLeg/Normalized_AvatarsR2_0052RightLeg.quaternion",
       "type": "quaternion",
       "times": [
         0,
@@ -12980,7 +12980,7 @@
       ]
     },
     {
-      "name": "VRMHumanoidRig/Normalized_hips/Normalized_rightUpperLeg/Normalized_rightLowerLeg/Normalized_rightFoot.quaternion",
+      "name": "VRMHumanoidRig/Normalized_AvatarsR2_0052Hips/Normalized_AvatarsR2_0052RightUpLeg/Normalized_AvatarsR2_0052RightLeg/Normalized_AvatarsR2_0052RightFoot.quaternion",
       "type": "quaternion",
       "times": [
         0,
@@ -13408,20 +13408,7 @@
       ]
     },
     {
-      "name": "VRMHumanoidRig/Normalized_hips/Normalized_rightUpperLeg/Normalized_rightLowerLeg/Normalized_rightFoot/Normalized_rightToes.quaternion",
-      "type": "quaternion",
-      "times": [
-        0
-      ],
-      "values": [
-        -4.16646672718457e-9,
-        -2.3685798211658948e-8,
-        2.980230107141324e-8,
-        1
-      ]
-    },
-    {
-      "name": "VRMHumanoidRig/Normalized_hips/Normalized_leftUpperLeg.quaternion",
+      "name": "VRMHumanoidRig/Normalized_AvatarsR2_0052Hips/Normalized_AvatarsR2_0052LeftUpLeg.quaternion",
       "type": "quaternion",
       "times": [
         0,
@@ -13849,7 +13836,7 @@
       ]
     },
     {
-      "name": "VRMHumanoidRig/Normalized_hips/Normalized_leftUpperLeg/Normalized_leftLowerLeg.quaternion",
+      "name": "VRMHumanoidRig/Normalized_AvatarsR2_0052Hips/Normalized_AvatarsR2_0052LeftUpLeg/Normalized_AvatarsR2_0052LeftLeg.quaternion",
       "type": "quaternion",
       "times": [
         0,
@@ -14277,7 +14264,7 @@
       ]
     },
     {
-      "name": "VRMHumanoidRig/Normalized_hips/Normalized_leftUpperLeg/Normalized_leftLowerLeg/Normalized_leftFoot.quaternion",
+      "name": "VRMHumanoidRig/Normalized_AvatarsR2_0052Hips/Normalized_AvatarsR2_0052LeftUpLeg/Normalized_AvatarsR2_0052LeftLeg/Normalized_AvatarsR2_0052LeftFoot.quaternion",
       "type": "quaternion",
       "times": [
         0,
@@ -14702,19 +14689,6 @@
         0.01737566478550434,
         0.10193982720375061,
         0.9941036701202393
-      ]
-    },
-    {
-      "name": "VRMHumanoidRig/Normalized_hips/Normalized_leftUpperLeg/Normalized_leftLowerLeg/Normalized_leftFoot/Normalized_leftToes.quaternion",
-      "type": "quaternion",
-      "times": [
-        0
-      ],
-      "values": [
-        1.0489722868101126e-8,
-        -3.8370036037349564e-8,
-        -7.640884995031849e-14,
-        1
       ]
     }
   ]

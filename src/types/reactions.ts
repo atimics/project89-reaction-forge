@@ -18,7 +18,46 @@ export type PoseId =
   | 'offensive-idle'
   | 'waking'
   | 'treading-water'
-  | 'cheering';
+  | 'cheering'
+  // New Locomotion Pool
+  | 'locomotion-walk'
+  | 'locomotion-run'
+  | 'locomotion-jog'
+  | 'locomotion-crouch-walk'
+  | 'locomotion-turn-left'
+  | 'locomotion-turn-right'
+  | 'locomotion-stop'
+  // New Idle Pool
+  | 'idle-neutral'
+  | 'idle-happy'
+  | 'idle-breathing'
+  | 'idle-nervous'
+  | 'idle-offensive'
+  // New Sitting Pool
+  | 'sit-chair'
+  | 'sit-floor'
+  | 'sit-sad'
+  | 'sit-typing'
+  | 'transition-stand-to-sit'
+  | 'transition-sit-to-stand'
+  | 'transition-floor-to-stand'
+  // New Social Pool
+  | 'emote-wave'
+  | 'emote-point'
+  | 'emote-clap'
+  | 'emote-cheer'
+  | 'emote-thumbsup'
+  | 'emote-bow'
+  | 'emote-dance-silly'
+  | 'emote-taunt'
+  | 'emote-bored'
+  // New Action Pool
+  | 'action-defeat'
+  | 'action-focus'
+  | 'action-rope-climb'
+  | 'action-climb-top'
+  | 'action-swim'
+  | 'action-waking';
 
 export type ExpressionId = 'calm' | 'joy' | 'surprise';
 

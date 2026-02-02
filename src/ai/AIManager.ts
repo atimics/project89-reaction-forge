@@ -16,22 +16,34 @@ const USE_PROXY = !import.meta.env.VITE_GEMINI_API_KEY;
 const VALID_POSE_IDS: PoseId[] = [
   'dawn-runner', 'sunset-call', 'cipher-whisper', 'nebula-drift',
   'signal-reverie', 'agent-taunt', 'agent-dance',
-  'agent-clapping', 'silly-agent', 'simple-wave', 'point'
+  'agent-clapping', 'silly-agent', 'simple-wave', 'point',
+  'locomotion-walk', 'locomotion-run', 'locomotion-jog', 'locomotion-crouch-walk',
+  'idle-neutral', 'idle-happy', 'idle-breathing', 'idle-nervous',
+  'sit-chair', 'sit-sad', 'emote-wave', 'emote-thumbsup', 'action-swim'
 ];
 
 // Map AI commands to actual pose IDs
 const POSE_COMMAND_MAP: Record<string, PoseId> = {
-  'wave': 'simple-wave',
+  'wave': 'emote-wave',
   'dance': 'agent-dance',
-  'point': 'point',
-  'victory': 'agent-clapping',
-  'celebrate': 'agent-clapping',
+  'point': 'emote-point',
+  'victory': 'emote-cheer',
+  'celebrate': 'emote-cheer',
   'think': 'cipher-whisper',
   'ponder': 'cipher-whisper',
-  'angry': 'agent-taunt',
-  'taunt': 'agent-taunt',
-  'clap': 'agent-clapping',
-  'silly': 'silly-agent',
+  'angry': 'idle-offensive',
+  'taunt': 'emote-taunt',
+  'clap': 'emote-clap',
+  'silly': 'emote-dance-silly',
+  'walk': 'locomotion-walk',
+  'run': 'locomotion-run',
+  'jog': 'locomotion-jog',
+  'sit': 'sit-chair',
+  'sad_sit': 'sit-sad',
+  'bow': 'emote-bow',
+  'thumbsup': 'emote-thumbsup',
+  'swim': 'action-swim',
+  'focus': 'action-focus'
 };
 
 // Map AI commands to gestures (new system)

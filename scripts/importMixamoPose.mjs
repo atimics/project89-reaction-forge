@@ -11,15 +11,16 @@ if (args.length < 3) {
 }
 
 const [vrmPath, mixamoPath, poseName] = args;
-const outputPath = path.resolve(__dirname, `../project89-reactor/src/poses/${poseName}.json`);
+const outputPath = path.resolve(__dirname, `../src/poses/${poseName}.json`);
 
-const projectRoot = path.resolve(__dirname, '../project89-reactor');
+const projectRoot = path.resolve(__dirname, '..');
 const modulePath = (rel) => pathToFileURL(path.resolve(projectRoot, 'node_modules', rel)).href;
 
 const THREE = await import(modulePath('three/build/three.module.js'));
 
 // Minimal DOM shims required by loaders
 globalThis.window = globalThis.window || { devicePixelRatio: 1 };
+globalThis.URL = globalThis.URL || { createObjectURL: () => '' };
 globalThis.document = globalThis.document || {
   createElement: () => ({
     getContext: () => ({ }),

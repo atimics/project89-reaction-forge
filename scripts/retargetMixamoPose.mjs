@@ -3,7 +3,7 @@ import fs from 'fs';
 import { fileURLToPath, pathToFileURL } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const projectRoot = path.resolve(__dirname, '../project89-reactor');
+const projectRoot = path.resolve(__dirname, '..');
 const modulePath = (rel) => pathToFileURL(path.resolve(projectRoot, 'node_modules', rel)).href;
 
 const THREE = await import(modulePath('three/build/three.module.js'));
@@ -29,7 +29,7 @@ if (args.length < 3) {
 }
 
 const [vrmPath, mixamoPath, poseName] = args;
-const outputPath = path.resolve(__dirname, `../project89-reactor/src/poses/${poseName}.json`);
+const outputPath = path.resolve(__dirname, `../src/poses/${poseName}.json`);
 
 const loadVRM = async () => {
   const loader = new GLTFLoader();

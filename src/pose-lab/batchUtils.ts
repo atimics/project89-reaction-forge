@@ -24,6 +24,34 @@ export const mixamoSources = {
   treadingWater: '/poses/fbx/Treading Water.fbx',
   defeat: '/poses/fbx/Defeat.fbx',
   climbingToTop: '/poses/fbx/Climbing To Top.fbx',
+  
+  // New Locomotion
+  walking: '/poses/fbx/Walking.fbx',
+  running: '/poses/fbx/Running.fbx',
+  slowRun: '/poses/fbx/Slow Run.fbx',
+  crouchedWalking: '/poses/fbx/Crouched Walking.fbx',
+  leftTurn: '/poses/fbx/Left Turn.fbx',
+  rightTurn: '/poses/fbx/Right Turn.fbx',
+  stopWalking: '/poses/fbx/Stop Walking.fbx',
+
+  // New Idles
+  neutralIdle: '/poses/fbx/Neutral Idle.fbx',
+  breathingIdle: '/poses/fbx/Breathing Idle.fbx',
+  nervouslyLookAround: '/poses/fbx/Nervously Look Around.fbx',
+
+  // New Sitting
+  sitting: '/poses/fbx/Sitting.fbx',
+  sittingFloor: '/poses/fbx/Sitting Floor.fbx',
+  sittingSad: '/poses/fbx/Sitting Sad.fbx',
+  typing: '/poses/fbx/Typing.fbx',
+  standToSit: '/poses/fbx/Stand To Sit.fbx',
+  sitToStand: '/poses/fbx/Sit To Stand.fbx',
+  standingUpFromFloor: '/poses/fbx/Standing Up From Floor.fbx',
+
+  // New Social
+  waving: '/poses/fbx/Waving.fbx',
+  quickFormalBow: '/poses/fbx/Quick Formal Bow.fbx',
+  bored: '/poses/fbx/Bored.fbx',
 };
 
 export type BatchPoseConfig = {
@@ -35,23 +63,49 @@ export type BatchPoseConfig = {
 };
 
 export const batchConfigs: BatchPoseConfig[] = [
-  // Replacements
-  { id: 'point', label: 'Point', source: mixamoSources.pointing, fileName: 'Pointing.fbx', sceneRotation: DEFAULT_SCENE_ROTATION },
-  { id: 'simple-wave', label: 'Wave (Happy Idle)', source: mixamoSources.happyIdle, fileName: 'Happy Idle.fbx', sceneRotation: DEFAULT_SCENE_ROTATION },
-  { id: 'agent-clapping', label: 'Agent Clapping', source: mixamoSources.clapping, fileName: 'Clapping.fbx', sceneRotation: DEFAULT_SCENE_ROTATION },
-  { id: 'agent-taunt', label: 'Agent Taunt', source: mixamoSources.taunt, fileName: 'Taunt.fbx', sceneRotation: DEFAULT_SCENE_ROTATION },
-  { id: 'silly-agent', label: 'Silly Agent', source: mixamoSources.sillyDancing, fileName: 'Silly Dancing.fbx', sceneRotation: DEFAULT_SCENE_ROTATION },
-  
-  // New
-  { id: 'defeat', label: 'Defeat', source: mixamoSources.defeat, fileName: 'Defeat.fbx', sceneRotation: DEFAULT_SCENE_ROTATION },
-  { id: 'focus', label: 'Focus', source: mixamoSources.focus, fileName: 'Focus.fbx', sceneRotation: DEFAULT_SCENE_ROTATION },
-  { id: 'rope-climb', label: 'Rope Climb', source: mixamoSources.ropeClimb, fileName: 'Rope Climb.fbx', sceneRotation: DEFAULT_SCENE_ROTATION },
-  { id: 'climb-top', label: 'Climb Top', source: mixamoSources.climbingToTop, fileName: 'Climbing To Top.fbx', sceneRotation: DEFAULT_SCENE_ROTATION },
-  { id: 'thumbs-up', label: 'Thumbs Up', source: mixamoSources.thumbsUp, fileName: 'Standing Thumbs Up.fbx', sceneRotation: DEFAULT_SCENE_ROTATION },
-  { id: 'offensive-idle', label: 'Offensive Idle', source: mixamoSources.offensiveIdle, fileName: 'Offensive Idle.fbx', sceneRotation: DEFAULT_SCENE_ROTATION },
-  { id: 'waking', label: 'Waking', source: mixamoSources.waking, fileName: 'Waking.fbx', sceneRotation: DEFAULT_SCENE_ROTATION },
-  { id: 'treading-water', label: 'Treading Water', source: mixamoSources.treadingWater, fileName: 'Treading Water.fbx', sceneRotation: DEFAULT_SCENE_ROTATION },
-  { id: 'cheering', label: 'Cheering', source: mixamoSources.cheering, fileName: 'Cheering.fbx', sceneRotation: DEFAULT_SCENE_ROTATION },
+  // Locomotion
+  { id: 'locomotion-walk', label: 'Walk', source: mixamoSources.walking, fileName: 'Walking.fbx', sceneRotation: DEFAULT_SCENE_ROTATION },
+  { id: 'locomotion-run', label: 'Run', source: mixamoSources.running, fileName: 'Running.fbx', sceneRotation: DEFAULT_SCENE_ROTATION },
+  { id: 'locomotion-jog', label: 'Jog', source: mixamoSources.slowRun, fileName: 'Slow Run.fbx', sceneRotation: DEFAULT_SCENE_ROTATION },
+  { id: 'locomotion-crouch-walk', label: 'Crouch Walk', source: mixamoSources.crouchedWalking, fileName: 'Crouched Walking.fbx', sceneRotation: DEFAULT_SCENE_ROTATION },
+  { id: 'locomotion-turn-left', label: 'Turn Left', source: mixamoSources.leftTurn, fileName: 'Left Turn.fbx', sceneRotation: DEFAULT_SCENE_ROTATION },
+  { id: 'locomotion-turn-right', label: 'Turn Right', source: mixamoSources.rightTurn, fileName: 'Right Turn.fbx', sceneRotation: DEFAULT_SCENE_ROTATION },
+  { id: 'locomotion-stop', label: 'Stop Walking', source: mixamoSources.stopWalking, fileName: 'Stop Walking.fbx', sceneRotation: DEFAULT_SCENE_ROTATION },
+
+  // Idles
+  { id: 'idle-neutral', label: 'Neutral Idle', source: mixamoSources.neutralIdle, fileName: 'Neutral Idle.fbx', sceneRotation: DEFAULT_SCENE_ROTATION },
+  { id: 'idle-happy', label: 'Happy Idle', source: mixamoSources.happyIdle, fileName: 'Happy Idle.fbx', sceneRotation: DEFAULT_SCENE_ROTATION },
+  { id: 'idle-breathing', label: 'Breathing Idle', source: mixamoSources.breathingIdle, fileName: 'Breathing Idle.fbx', sceneRotation: DEFAULT_SCENE_ROTATION },
+  { id: 'idle-nervous', label: 'Nervous Look', source: mixamoSources.nervouslyLookAround, fileName: 'Nervously Look Around.fbx', sceneRotation: DEFAULT_SCENE_ROTATION },
+  { id: 'idle-offensive', label: 'Offensive Idle', source: mixamoSources.offensiveIdle, fileName: 'Offensive Idle.fbx', sceneRotation: DEFAULT_SCENE_ROTATION },
+
+  // Sitting
+  { id: 'sit-chair', label: 'Sit (Chair)', source: mixamoSources.sitting, fileName: 'Sitting.fbx', sceneRotation: DEFAULT_SCENE_ROTATION },
+  { id: 'sit-floor', label: 'Sit (Floor)', source: mixamoSources.sittingFloor, fileName: 'Sitting Floor.fbx', sceneRotation: DEFAULT_SCENE_ROTATION },
+  { id: 'sit-sad', label: 'Sit (Sad)', source: mixamoSources.sittingSad, fileName: 'Sitting Sad.fbx', sceneRotation: DEFAULT_SCENE_ROTATION },
+  { id: 'sit-typing', label: 'Typing', source: mixamoSources.typing, fileName: 'Typing.fbx', sceneRotation: DEFAULT_SCENE_ROTATION },
+  { id: 'transition-stand-to-sit', label: 'Stand to Sit', source: mixamoSources.standToSit, fileName: 'Stand To Sit.fbx', sceneRotation: DEFAULT_SCENE_ROTATION },
+  { id: 'transition-sit-to-stand', label: 'Sit to Stand', source: mixamoSources.sitToStand, fileName: 'Sit To Stand.fbx', sceneRotation: DEFAULT_SCENE_ROTATION },
+  { id: 'transition-floor-to-stand', label: 'Floor to Stand', source: mixamoSources.standingUpFromFloor, fileName: 'Standing Up From Floor.fbx', sceneRotation: DEFAULT_SCENE_ROTATION },
+
+  // Social / Emotes
+  { id: 'emote-wave', label: 'Wave', source: mixamoSources.waving, fileName: 'Waving.fbx', sceneRotation: DEFAULT_SCENE_ROTATION },
+  { id: 'emote-point', label: 'Point', source: mixamoSources.pointing, fileName: 'Pointing.fbx', sceneRotation: DEFAULT_SCENE_ROTATION },
+  { id: 'emote-clap', label: 'Clap', source: mixamoSources.clapping, fileName: 'Clapping.fbx', sceneRotation: DEFAULT_SCENE_ROTATION },
+  { id: 'emote-cheer', label: 'Cheer', source: mixamoSources.cheering, fileName: 'Cheering.fbx', sceneRotation: DEFAULT_SCENE_ROTATION },
+  { id: 'emote-thumbsup', label: 'Thumbs Up', source: mixamoSources.thumbsUp, fileName: 'Standing Thumbs Up.fbx', sceneRotation: DEFAULT_SCENE_ROTATION },
+  { id: 'emote-bow', label: 'Bow', source: mixamoSources.quickFormalBow, fileName: 'Quick Formal Bow.fbx', sceneRotation: DEFAULT_SCENE_ROTATION },
+  { id: 'emote-dance-silly', label: 'Silly Dance', source: mixamoSources.sillyDancing, fileName: 'Silly Dancing.fbx', sceneRotation: DEFAULT_SCENE_ROTATION },
+  { id: 'emote-taunt', label: 'Taunt', source: mixamoSources.taunt, fileName: 'Taunt.fbx', sceneRotation: DEFAULT_SCENE_ROTATION },
+  { id: 'emote-bored', label: 'Bored', source: mixamoSources.bored, fileName: 'Bored.fbx', sceneRotation: DEFAULT_SCENE_ROTATION },
+
+  // Action / Misc
+  { id: 'action-defeat', label: 'Defeat', source: mixamoSources.defeat, fileName: 'Defeat.fbx', sceneRotation: DEFAULT_SCENE_ROTATION },
+  { id: 'action-focus', label: 'Focus', source: mixamoSources.focus, fileName: 'Focus.fbx', sceneRotation: DEFAULT_SCENE_ROTATION },
+  { id: 'action-rope-climb', label: 'Rope Climb', source: mixamoSources.ropeClimb, fileName: 'Rope Climb.fbx', sceneRotation: DEFAULT_SCENE_ROTATION },
+  { id: 'action-climb-top', label: 'Climb Top', source: mixamoSources.climbingToTop, fileName: 'Climbing To Top.fbx', sceneRotation: DEFAULT_SCENE_ROTATION },
+  { id: 'action-swim', label: 'Treading Water', source: mixamoSources.treadingWater, fileName: 'Treading Water.fbx', sceneRotation: DEFAULT_SCENE_ROTATION },
+  { id: 'action-waking', label: 'Waking', source: mixamoSources.waking, fileName: 'Waking.fbx', sceneRotation: DEFAULT_SCENE_ROTATION },
 ];
 
 export const loadMixamoFromBuffer = async (arrayBuffer: ArrayBuffer, fileName: string) => {

@@ -81,7 +81,9 @@ export default defineConfig(({ mode }) => {
           console.warn('[pose-export] Skipping setup outside development mode.')
           return
         }
+        console.log('[pose-export] Endpoint active at /__pose-export');
         server.middlewares.use('/__pose-export', (req: IncomingMessage, res: ServerResponse) => {
+          console.log(`[pose-export] Received ${req.method} request`);
           const remoteAddress = req.socket?.remoteAddress
           if (remoteAddress && remoteAddress !== '127.0.0.1' && remoteAddress !== '::1') {
             res.writeHead(403)
