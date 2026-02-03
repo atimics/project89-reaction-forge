@@ -913,7 +913,7 @@ class SceneManager {
   private getAvatarTargets(): { head: THREE.Vector3, hips: THREE.Vector3, forward: THREE.Vector3 } {
     let hipsPos: THREE.Vector3 | null = null;
     let headPos: THREE.Vector3 | null = null;
-    let rootPos: THREE.Vector3 | null = null;
+    let foundRootPos: THREE.Vector3 | null = null;
     let avatarRotation = new THREE.Quaternion();
     
     this.scene?.traverse((obj) => {
@@ -935,26 +935,35 @@ class SceneManager {
         obj.getWorldPosition(headPos);
       }
       if (obj.userData?.vrm || name === 'vrmroot') {
-        if (!rootPos) {
-            rootPos = new THREE.Vector3();
-            obj.getWorldPosition(rootPos);
+        if (!foundRootPos) { // Capture the first found root
+            foundRootPos = new THREE.Vector3();
+            obj.getWorldPosition(foundRootPos);
             obj.getWorldQuaternion(avatarRotation);
         }
       }
     });
 
     // Fallbacks
-    if (!hipsPos) {
-        hipsPos = rootPos ? rootPos.clone().add(new THREE.Vector3(0, 1.0, 0)) : new THREE.Vector3(0, 1.0, 0);
+    let finalHipsPos: THREE.Vector3;
+    let finalHeadPos: THREE.Vector3;
+    const defaultPos = new THREE.Vector3(0, 1.0, 0); // Define a consistent default
+
+    if (hipsPos) {
+        finalHipsPos = hipsPos;
+    } else {
+        finalHipsPos = (foundRootPos ? (foundRootPos as THREE.Vector3).clone() : defaultPos).add(new THREE.Vector3(0, 1.0, 0));
     }
-    if (!headPos) {
-        headPos = hipsPos.clone().add(new THREE.Vector3(0, 0.6, 0));
+
+    if (headPos) {
+        finalHeadPos = headPos;
+    } else {
+        finalHeadPos = finalHipsPos.clone().add(new THREE.Vector3(0, 0.6, 0));
     }
     
     // Default forward vector (Z+)
     const forward = new THREE.Vector3(0, 0, 1);
 
-    return { head: headPos, hips: hipsPos, forward };
+    return { head: finalHeadPos, hips: finalHipsPos, forward };
   }
 
   /**
