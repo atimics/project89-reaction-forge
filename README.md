@@ -28,6 +28,12 @@
 - **3D Environments**: Upload GLB files to create immersive 3D scenes around your avatar.
 - **Auto-Looping**: Seamless animation loops for overlays and shorts.
 
+### 🎥 **Director Mode**
+*Create cinematic camera paths with AI assistance.*
+- **AI Script Generation**: Describe desired camera movements, and AI generates scripts.
+- **Manual Control**: Fine-tune camera shots, duration, and transitions.
+- **Video Export**: Render your animated camera sequences to video.
+
 ### 🛠️ **Pose Lab**
 *Deep dive into character posing and animation.*
 - **Batch Export**: One-click regeneration of all pose JSONs using your custom avatar.
@@ -35,7 +41,7 @@
 - **Webcam Mocap**: Real-time body + face tracking with calibration and smoothing.
 - **Manual Posing**: Fine-tune joints with **Gizmos** (Rotate/Translate).
 - **Full Expression Control**: Blendshape editing for facial expressions.
-- **Project Persistence**: Save and load your entire workspace (`.pose` files).
+- **Project Persistence**: Enhanced save/load with autosave and full state restoration (`.pose` files).
 - **Live2D Support**: Load Live2D models and adjust expressions.
 
 ### 🚀 **Production Ready**

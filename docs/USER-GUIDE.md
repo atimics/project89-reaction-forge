@@ -1,6 +1,6 @@
 # 📖 PoseLab User Guide
 
-> **Version 1.5** | Browser-based VRM avatar posing, animation, motion capture, and **multiplayer collaboration** tool
+> **Version 1.7** | Browser-based VRM avatar posing, animation, motion capture, and **multiplayer collaboration** tool
 
 ---
 
@@ -236,6 +236,28 @@ Control facial expressions:
 
 ---
 
+## 🎥 Director Mode
+Create dynamic camera movements and cinematic sequences:
+
+### AI Script Generation
+1. Go to **AI** tab
+2. Select **"Director Script"** option
+3. Enter a prompt describing the desired camera movement or scene (e.g., "A dramatic pan from left to right, then a close-up on the avatar's face")
+4. Click **"Generate Script"**
+5. Review and edit the generated script in the Director tab
+
+### Manual Script Creation
+1. Go to **Director** tab
+2. Click **"Add Shot"** to create a new camera keyframe
+3. Adjust camera position, rotation, and other settings for each shot
+4. Use the timeline to arrange shots and set their duration
+
+### Playback and Export
+1. Click **"Play"** in the Director tab to preview your script
+2. Go to **Export** tab and select video export options to render your cinematic sequence
+
+---
+
 ## 🎬 Animations Tab
 
 ### Importing Animations
@@ -370,19 +392,22 @@ Press `Cmd/Ctrl + K` for quick access to:
 ## 💾 Project Files
 
 ### Saving Projects
-1. Press `Cmd/Ctrl + K`
-2. Type "Save Project"
-3. Downloads `.pose` file containing:
-   - Avatar reference
-   - Current pose
-   - All settings
-   - Saved poses
+PoseLab now features enhanced project saving and autosave functionality. Your work is automatically saved at regular intervals, and you can also manually save your projects.
 
-### Loading Projects
-1. Press `Cmd/Ctrl + K`
-2. Type "Load Project"
-3. Select `.pose` file
-4. Everything restores
+1. **Autosave**: Your project state, including director scripts, poses, and settings, is automatically saved locally in your browser. In case of an accidental refresh or browser crash, your work can often be recovered.
+2. **Manual Save**: To explicitly save your project as a file:
+   - Press `Cmd/Ctrl + K`
+   - Type "Save Project"
+   - This downloads a `.pose` file containing:
+     - Avatar reference
+     - Current pose
+     - All settings (including Director Mode script)
+     - Saved poses
+3. **Loading Projects**:
+   - Press `Cmd/Ctrl + K`
+   - Type "Load Project"
+   - Select a `.pose` file
+   - Everything, including your Director Mode script, restores to its previous state
 
 ---
 
@@ -650,7 +675,11 @@ PoseLab works on mobile devices with some considerations:
 
 ## 📝 Version History
 
-### v1.6 (Current)
+### v1.7 (Current)
+- ✅ **Director Mode** - Create cinematic camera scripts with AI assistance
+- ✅ **Save State Upgrades** - Enhanced project saving with autosave and improved loading
+|
+### v1.6
 - ✅ **3D GLB Environments** - Load immersive 3D scenes
 - ✅ Environment controls (position, rotation, scale)
 - ✅ Multiple environment support
@@ -688,4 +717,4 @@ PoseLab works on mobile devices with some considerations:
 
 *Built with ❤️ by Project89*
 
-*Version 1.6 | January 2026*
+*Version 1.7 | February 2026*

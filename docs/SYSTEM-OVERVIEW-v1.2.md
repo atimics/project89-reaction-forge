@@ -1,6 +1,6 @@
-# 🏗️ PoseLab System Overview (v1.2)
+# 🏗️ PoseLab System Overview (v1.3)
 
-**Date:** December 9, 2025
+**Date:** February 3, 2026
 **Status:** Production Ready (Green Loom Phase 1)
 
 This document provides a comprehensive technical overview of the current state of PoseLab (formerly Reaction Forge). It supersedes previous implementation summaries.
@@ -63,8 +63,10 @@ PoseLab is built on a modern web stack designed for "Local-First" processing and
 
 ---
 
-## 5. Recent Upgrades (v1.2)
+## 5. Recent Upgrades (v1.3)
 
+*   **Director Mode**: Cinematic camera scripting and AI-driven script generation.
+*   **Autosave & Project Persistence**: Enhanced project saving with automatic autosave and comprehensive state restoration.
 *   **Holistic Mocap**: Simultaneous Body + Face tracking.
 *   **GLB Baking**: Export your animations to standard 3D tools.
 *   **Toast Notifications**: Replaced intrusive alerts with a non-blocking UI system.

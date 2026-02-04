@@ -1,4 +1,4 @@
-# Technical Breakdown: Reaction Forge
+# Technical Breakdown: PoseLab
 
 > **Audit Report:** For a detailed analysis of system limitations, architectural risks, and performance bottlenecks, please see [TECHNICAL-AUDIT.md](./docs/TECHNICAL-AUDIT.md).
 
@@ -6,7 +6,7 @@ This document provides a technical overview of the Reaction Forge application, i
 
 ## Project Overview
 
-Reaction Forge is a web-based tool for creating and exporting VRM avatar reactions. It is built with React, Three.js, and Vite, and uses Zustand for state management. The application has two main modes:
+PoseLab (formerly Reaction Forge) is a web-based tool for creating and exporting VRM avatar reactions, including cinematic sequences with Director Mode. It is built with React, Three.js, and Vite, and uses Zustand for state management. The application has two main modes:
 
 *   **Reaction Forge**: The main interface for loading VRM avatars, applying poses and animations, and exporting the results as PNG images or WebM videos.
 *   **Pose Lab**: A tool for converting Mixamo FBX animations to a format compatible with Reaction Forge.
@@ -65,12 +65,22 @@ The Pose Lab is a dedicated environment for advanced animation management. It al
 *   **Preview**: Play back animations on the loaded avatar.
 *   **Export**: Save pose definitions and animation clips as JSON.
 
+### Director Mode
+
+Director Mode enables the creation of cinematic camera sequences and animated camera paths. Key aspects include:
+
+*   **AI Script Generation**: Integration with Google Gemini API to generate camera scripts from natural language prompts.
+*   **Timeline Integration**: Scripts are represented as a series of camera shots on a timeline, allowing for precise control over camera movements, duration, and transitions.
+*   **State Persistence**: Director scripts are part of the project state and are saved/loaded with the project.
+
 ## State Management
 
-The application uses Zustand for state management. There are two main stores:
+The application uses Zustand for state management. Key stores include:
 
 *   **`useAvatarSource`**: Manages the currently loaded VRM avatar.
 *   **`useReactionStore`**: Manages the state of the Reaction Forge, including the current pose, animation, expression, and background.
+*   **`useDirectorStore`**: Manages the state and timeline for Director Mode camera scripts.
+*   **Project Persistence**: The `projectManager.ts` and `autosaveManager.ts` handle saving and loading the full application state, including Director Mode scripts, poses, and other settings.
 
 ## 3D Rendering
 

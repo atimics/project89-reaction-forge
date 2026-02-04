@@ -4,7 +4,7 @@ This document outlines the planned upgrades and feature requests for PoseLab, fo
 
 ---
 
-## ✅ Shipped Milestones (v1.2)
+## ✅ Shipped Milestones (v1.7)
 
 ### 🎞️ Animated Backgrounds (GIF & Video Support)
 **Goal:** Allow users to upload animated content for backgrounds to create dynamic scenes.
@@ -38,17 +38,18 @@ This document outlines the planned upgrades and feature requests for PoseLab, fo
 - [x] **Calibration:** T-Pose calibration for accurate retargeting.
 - [x] **Professional Smoothing:** Implemented **OneEuroFilter** (same as SystemAnimatorOnline) for jitter-free, low-latency tracking.
 
-### 💾 Project Persistence
+### 💾 Project Persistence (v1.7)
 **Goal:** Allow users to save their entire workspace state.
 - [x] **Project Files (.pose):** Save a JSON file containing the Avatar (ref), Scene Settings, Background, Timeline, and Presets.
 - [x] **Load/Save:** UI integration via Command Palette and Header.
+- [x] **Autosave & State Recovery:** Automatic saving of project state and recovery after unexpected closures.
 
 ### ⌨️ Productivity Tools
 **Goal:** Speed up power user workflows.
 - [x] **Command Palette:** `Cmd+K` interface for instant tool access.
 - [x] **Toast Notifications:** Accessible status updates.
 
-### 🖼️ Live2D Support (v1.3)
+### 🖼️ Live2D Support (v1.5)
 **Goal:** Expand avatar support beyond 3D VRM to include 2D Cubism models.
 - [x] **PixiJS Integration:** Integrated PixiJS v7 and `pixi-live2d-display`.
 - [x] **Cubism Core:** Runtime loading of Cubism 4 SDK.
@@ -57,9 +58,15 @@ This document outlines the planned upgrades and feature requests for PoseLab, fo
 
 ---
 
-## 🔥 Now (v1.3 - Highest Priority)
+## 🔥 Now (v1.7 - Highest Priority)
 
-### 1. 📺 Live Streaming & Capture
+### 1. 🎥 Director Mode
+**Goal:** Enable powerful cinematic camera control and AI-driven scene direction.
+- [x] **AI Script Generation**: Generate complex camera movements and scene compositions from text prompts.
+- [x] **Timeline-based Control**: Fine-tune camera paths, shot duration, and transitions within a dedicated timeline.
+- [x] **Integrated Export**: Render director-guided sequences directly to video.
+
+### 2. 📺 Live Streaming & Capture
 **Goal:** Ship a creator-ready streaming pipeline.
 - [ ] **Virtual Camera Output:** Pipe the canvas into OBS as a virtual camera.
 - [ ] **Streaming Overlay Mode:** Full-screen overlay with transparent background options.
@@ -73,7 +80,7 @@ This document outlines the planned upgrades and feature requests for PoseLab, fo
 
 ### 3. 🧩 Workflow Reliability
 **Goal:** Reduce friction in production workflows.
-- [ ] **State Recovery:** Autosave projects and recover after crashes.
+- [x] **State Recovery:** Autosave projects and recover after crashes.
 - [ ] **Asset Validation:** Detect missing textures, Mixamo mismatches, and invalid files.
 - [ ] **Performance Budgeting:** Clear warnings when scenes exceed real-time constraints.
 
@@ -94,7 +101,7 @@ This document outlines the planned upgrades and feature requests for PoseLab, fo
 
 ---
 
-## ✅ Shipped - Rendering & Visual Quality (v1.4)
+## ✅ Shipped - Rendering & Visual Quality (v1.6)
 **Goal:** Professional rendering quality and style options.
 - [x] **Advanced Lighting:** 3-point lighting controls (Key, Fill, Rim) with presets.
 - [x] **HDRI Support:** Upload `.hdr`/`.exr` environment maps with curated presets.
