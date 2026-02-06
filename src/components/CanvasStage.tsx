@@ -107,6 +107,7 @@ export function CanvasStage() {
     return () => {
         sceneManager.dispose();
         live2dManager.dispose();
+        avatarManager.clear();
         // interactionManager.dispose(); // Don't fully dispose, just detach? 
         // Ideally SceneManager handles renderer disposal, InteractionManager handles its own listeners
     };

@@ -93,6 +93,7 @@ class AvatarManager {
   private hipsLocalPosStart = new THREE.Vector3();
   private hipsWorldPos = new THREE.Vector3();
   private lastHipsWorldPos = new THREE.Vector3();
+  private lastRaycastTime = 0;
   
   // Pending state for project restore
   private pendingProjectPose: VRMPose | null = null;
@@ -321,6 +322,10 @@ class AvatarManager {
     const hips = this.vrm.humanoid?.getNormalizedBoneNode(VRMHumanBoneName.Hips);
     if (!hips) return;
 
+    const now = performance.now();
+    if (now - this.lastRaycastTime < 100) return;
+    this.lastRaycastTime = now;
+
     hips.getWorldPosition(this.hipsWorldPos);
     const groundY = collisionManager.getGroundHeight(this.hipsWorldPos);
     if (groundY !== null) {
@@ -350,8 +355,14 @@ class AvatarManager {
     const moveDist = worldDelta.length();
     if (moveDist > 0.0001) {
       const moveDir = worldDelta.clone().normalize();
-      // Raycast from the hips world position in the movement direction
-      const wallDist = collisionManager.checkWallCollision(this.hipsWorldPos, moveDir, moveDist + 0.1);
+      
+      const now = performance.now();
+      let wallDist: number | null = null;
+      if (now - this.lastRaycastTime > 100) {
+        this.lastRaycastTime = now;
+        // Raycast from the hips world position in the movement direction
+        wallDist = collisionManager.checkWallCollision(this.hipsWorldPos, moveDir, moveDist + 0.1);
+      }
       
       if (wallDist === null || wallDist > moveDist) {
         this.vrm.scene.position.add(worldDelta);
