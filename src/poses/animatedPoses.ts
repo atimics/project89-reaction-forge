@@ -168,6 +168,8 @@ export function getAnimatedPose(poseId: string, basePose: VRMPose, vrm: VRM): TH
       return createStandTallAnimation(basePose, vrm);
     case 'agent-taunt':
       return createTauntAnimation(basePose, vrm);
+    case 'sit-typing':
+      return createTypingAnimation(basePose, vrm);
     default:
       // For other poses, add idle breathing
       return createIdleBreathing(basePose, vrm);

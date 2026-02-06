@@ -42,8 +42,8 @@ const CAMERA_CONFIG = {
   MIN_DISTANCE: 0.3,
   /** Maximum orbit distance */
   MAX_DISTANCE: 5,
-  /** Selfie mode camera follow smoothing (lower = more dampening, 0.02-0.1 range) */
-  SELFIE_FOLLOW_SMOOTHING: 0.04,
+  /** Selfie mode camera follow smoothing speed (higher = faster tracking, ~2.5 is good default) */
+  SELFIE_FOLLOW_SMOOTHING: 2.5,
 };
 
 /** Timing constants in milliseconds */
@@ -267,7 +267,10 @@ class SceneManager {
             }
             
             // Lerp towards target positions for subtle, dampened follow
-            const smoothing = CAMERA_CONFIG.SELFIE_FOLLOW_SMOOTHING;
+            // Time-independent smoothing: 1 - exp(-lambda * dt)
+            const lambda = CAMERA_CONFIG.SELFIE_FOLLOW_SMOOTHING;
+            const smoothing = 1 - Math.exp(-lambda * delta);
+
             this.smoothedCameraPosition.lerp(targetCameraPos, smoothing);
             this.smoothedLookAt.lerp(this.followTargetLookAt, smoothing);
             
@@ -587,6 +590,10 @@ class SceneManager {
     this.controls.minDistance = Math.max(0.2, distance * 0.05);
     
     this.controls.update();
+  }
+
+  isFollowing(): boolean {
+    return this.followMode !== null;
   }
 
   async setBackground(id: BackgroundId | string, force = false) {
@@ -916,54 +923,70 @@ class SceneManager {
    * Defaults to full body view of the avatar's current position
    */
   resetCamera() {
-    this.setCameraPreset('fullbody');
+    this.setCameraPreset('fullbody', true);
   }
 
   /**
    * Helper to find avatar head and hips positions
    */
-  private getAvatarTargets(): { head: THREE.Vector3, hips: THREE.Vector3, forward: THREE.Vector3 } {
+  private getAvatarTargets(): { head: THREE.Vector3, hips: THREE.Vector3, forward: THREE.Vector3, right: THREE.Vector3 } {
     let hipsPos: THREE.Vector3 | null = null;
     let headPos: THREE.Vector3 | null = null;
-    let foundRootPos: THREE.Vector3 | null = null;
-    let avatarRotation = new THREE.Quaternion();
-    
+    let vrmInstance: any = null;
+
+    // 1. Prioritize finding the VRM instance to get exact bones
     this.scene?.traverse((obj) => {
-      const name = obj.name.toLowerCase();
-      // Use standard VRM bone names
-      if (name === 'hips') {
-        hipsPos = new THREE.Vector3();
-        obj.getWorldPosition(hipsPos);
-        // Also capture hips rotation to know which way avatar is facing?
-        // Actually, scene rotation is usually what matters for "Front", 
-        // but bone rotation changes with animation. 
-        // For presets (1,3,5,7) we usually want "World Front" centered on avatar, 
-        // OR "Character Front". 
-        // User request: "set to the avatars position". 
-        // Let's stick to World offsets centered on Avatar Position for stability.
-      }
-      if (name === 'head' && !name.includes('headset')) {
-        headPos = new THREE.Vector3();
-        obj.getWorldPosition(headPos);
-      }
-      if (obj.userData?.vrm || name === 'vrmroot') {
-        if (!foundRootPos) { // Capture the first found root
-            foundRootPos = new THREE.Vector3();
-            obj.getWorldPosition(foundRootPos);
-            obj.getWorldQuaternion(avatarRotation);
-        }
+      if (!vrmInstance && obj.userData?.vrm) {
+        vrmInstance = obj.userData.vrm;
       }
     });
 
-    // Fallbacks
+    // 2. Use VRM instance if available (Safest)
+    if (vrmInstance && vrmInstance.humanoid) {
+        const headNode = vrmInstance.humanoid.getNormalizedBoneNode('head');
+        const hipsNode = vrmInstance.humanoid.getNormalizedBoneNode('hips');
+        
+        if (headNode) {
+            headPos = new THREE.Vector3();
+            headNode.getWorldPosition(headPos);
+        }
+        if (hipsNode) {
+            hipsPos = new THREE.Vector3();
+            hipsNode.getWorldPosition(hipsPos);
+        }
+    } 
+    
+    // 3. Fallback: Name-based search (only if VRM instance failed or missing bones)
+    if (!hipsPos || !headPos) {
+        this.scene?.traverse((obj) => {
+            const name = obj.name.toLowerCase();
+            
+            if (!hipsPos && name === 'hips') {
+                hipsPos = new THREE.Vector3();
+                obj.getWorldPosition(hipsPos);
+            }
+            if (!headPos && name === 'head' && !name.includes('headset')) {
+                headPos = new THREE.Vector3();
+                obj.getWorldPosition(headPos);
+            }
+        });
+    }
+
+    // Fallbacks if still nothing found
     let finalHipsPos: THREE.Vector3;
     let finalHeadPos: THREE.Vector3;
-    const defaultPos = new THREE.Vector3(0, 1.0, 0); // Define a consistent default
+    const defaultPos = new THREE.Vector3(0, 1.0, 0);
 
     if (hipsPos) {
         finalHipsPos = hipsPos;
     } else {
-        finalHipsPos = (foundRootPos ? (foundRootPos as THREE.Vector3).clone() : defaultPos).add(new THREE.Vector3(0, 1.0, 0));
+        // Try to find a root at least
+        let foundRootPos: THREE.Vector3 | null = null;
+        if (vrmInstance && vrmInstance.scene) {
+             foundRootPos = new THREE.Vector3();
+             vrmInstance.scene.getWorldPosition(foundRootPos);
+        }
+        finalHipsPos = (foundRootPos ? foundRootPos.clone() : defaultPos).add(new THREE.Vector3(0, 0.85, 0));
     }
 
     if (headPos) {
@@ -974,20 +997,36 @@ class SceneManager {
     
     // Default forward vector (Z+)
     const forward = new THREE.Vector3(0, 0, 1);
+    if (vrmInstance && vrmInstance.scene) {
+        // Use the character's forward direction
+        // Note: AvatarManager rotates the scene 180 degrees so the avatar faces the camera,
+        // so we negate the direction to get the vector pointing from the face outwards.
+        vrmInstance.scene.getWorldDirection(forward);
+        forward.negate();
+    }
+    
+    // Calculate right vector (90 deg to forward)
+    const right = new THREE.Vector3().crossVectors(new THREE.Vector3(0, 1, 0), forward).normalize();
 
-    return { head: finalHeadPos, hips: finalHipsPos, forward };
+    return { head: finalHeadPos, hips: finalHipsPos, forward, right };
   }
 
   /**
    * Set camera to a preset view
    * Hotkeys: 1=headshot, 3=quarter, 5=side, 7=full body
    */
-  setCameraPreset(preset: 'headshot' | 'quarter' | 'side' | 'fullbody') {
+  setCameraPreset(preset: 'headshot' | 'quarter' | 'side' | 'fullbody', force = false) {
     if (!this.controls || !this.camera) return;
+    
+    // Disable any active follow/selfie mode to prevent fighting
+    // Exception: if we are in selfie mode and NOT forced, we keep it active (for sprint mode compatibility)
+    if (force || this.followMode !== 'selfie') {
+      this.setFollowTarget(null, null);
+    }
     
     // Find avatar targets
     const targets = this.getAvatarTargets();
-    const { head, hips } = targets;
+    const { head, hips, forward, right } = targets;
     
     // Adjust Z distance based on aspect ratio to prevent cropping
     const aspect = this.camera.aspect;
@@ -999,7 +1038,8 @@ class SceneManager {
     switch (preset) {
       case 'headshot':
         // Headshot: Target Head, Camera in front of head
-        this.camera.position.set(head.x, head.y, head.z + 0.7 * distanceModifier);
+        const headshotPos = head.clone().add(forward.clone().multiplyScalar(0.7 * distanceModifier));
+        this.camera.position.copy(headshotPos);
         this.controls.target.copy(head);
         break;
         
@@ -1008,32 +1048,24 @@ class SceneManager {
         // Target slightly above hips for better center of mass view
         const quarterTarget = hips.clone().add(new THREE.Vector3(0, 0.3, 0));
         this.controls.target.copy(quarterTarget);
-        this.camera.position.set(
-            quarterTarget.x + 1.2 * distanceModifier, 
-            quarterTarget.y + 0.2, 
-            quarterTarget.z + 1.2 * distanceModifier
-        );
+        // Position at 45 degrees: forward + right
+        const quarterOffset = forward.clone().add(right).normalize().multiplyScalar(1.5 * distanceModifier);
+        this.camera.position.copy(quarterTarget).add(quarterOffset).add(new THREE.Vector3(0, 0.2, 0));
         break;
         
       case 'side':
-        // Side View: Target Hips/Chest, Camera at 90 degrees (X axis)
+        // Side View: Target Hips/Chest, Camera at 90 degrees (right vector)
         const sideTarget = hips.clone().add(new THREE.Vector3(0, 0.3, 0));
         this.controls.target.copy(sideTarget);
-        this.camera.position.set(
-            sideTarget.x + 2.0 * distanceModifier, 
-            sideTarget.y, 
-            sideTarget.z
-        );
+        const sidePos = sideTarget.clone().add(right.clone().multiplyScalar(1.8 * distanceModifier));
+        this.camera.position.copy(sidePos);
         break;
         
       case 'fullbody':
         // Full Body: Target Hips, Camera Front
         this.controls.target.copy(hips);
-        this.camera.position.set(
-            hips.x, 
-            hips.y, 
-            hips.z + 2.5 * distanceModifier
-        );
+        const fullBodyPos = hips.clone().add(forward.clone().multiplyScalar(2.5 * distanceModifier));
+        this.camera.position.copy(fullBodyPos);
         break;
     }
     

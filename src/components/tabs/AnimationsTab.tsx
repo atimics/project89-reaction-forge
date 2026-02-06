@@ -129,9 +129,9 @@ export function AnimationsTab() {
   };
 
   const handleStopAnimation = () => {
-    avatarManager.freezeCurrentPose();
+    avatarManager.stopAnimation();
     setCurrentAnimation(null);
-    setStatusMessage('⏹️ Animation stopped (Pose Frozen)');
+    setStatusMessage('⏹️ Animation stopped');
   };
 
   const handleLibraryPlay = async (poseId: string) => {

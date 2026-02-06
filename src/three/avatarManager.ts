@@ -258,6 +258,9 @@ class AvatarManager {
     // Start at 180° rotation so avatar faces camera, poses will maintain this.
     vrm.scene.rotation.set(0, Math.PI, 0);
     
+    // Tag the scene object so SceneManager can find it reliably
+    vrm.scene.userData.vrm = vrm;
+    
     console.log('[AvatarManager] VRM loaded at 180° Y rotation');
     
     scene.add(vrm.scene);
@@ -394,9 +397,7 @@ class AvatarManager {
       
       // Use smooth transition for preset-style changes, immediate for mocap/real-time
       if (smoothTransition) {
-        this.transitionToPose(poseToApply, rotationLocked, 0.4, () => {
-          console.log('[AvatarManager] ✅ Raw pose transition complete');
-        });
+        this.transitionToPose(poseToApply, rotationLocked, 0.4);
       } else {
         // Immediate application (for mocap, real-time updates)
         this.stopAnimation(true);
@@ -428,8 +429,8 @@ class AvatarManager {
     
     this.isRootMotionEnabled = rootMotion;
 
-    // Set camera to follow for root motion
-    if (rootMotion && this.vrm) {
+    // Set camera to follow for root motion, but NOT if a follow mode (like selfie) is already active
+    if (rootMotion && this.vrm && !sceneManager.isFollowing()) {
       sceneManager.setFollowTarget(this.vrm.scene, 'third-person');
     }
 
@@ -489,13 +490,7 @@ class AvatarManager {
       const vrmPose = buildVRMPose(def);
       
       // Use smooth transition instead of immediate snap
-      this.transitionToPose(vrmPose, rotationLocked, 0.4, () => {
-        console.log(`[AvatarManager] ✅ Static pose transition complete: ${pose}`);
-        // Re-frame the object after the transition to center it
-        if (this.vrm) {
-            sceneManager.frameObject(this.vrm.scene);
-        }
-      });
+      this.transitionToPose(vrmPose, rotationLocked, 0.4);
     }
   }
 
@@ -626,39 +621,19 @@ class AvatarManager {
    * Preserves hips position to keep avatar in viewport
    * Preserves hips rotation when rotation is locked
    */
-  transitionToPose(targetPose: VRMPose, rotationLocked: boolean, duration = 0.4, onComplete?: () => void) {
+  transitionToPose(targetPose: VRMPose, rotationLocked: boolean, duration = 0.4) {
     if (!this.vrm) return;
     
-    // BLOCK pose transitions when manual posing is active
     if (this.isManualPosing) {
       console.log('[AvatarManager] transitionToPose BLOCKED - manual posing is active');
-      onComplete?.(); // Still call onComplete to avoid blocking callers
       return;
     }
 
-    // Preserve Hips rotation when rotation is locked
-    // This keeps the avatar facing the direction the user set it to
     const poseToApply = rotationLocked ? this.preserveHipsRotationInPose(targetPose) : targetPose;
-
     const transitionClip = this.createTransitionClip(poseToApply, duration);
     
-    // Play the transition once
     this.isAnimated = true;
-    animationManager.playTransition(transitionClip, () => {
-      // When transition completes, apply the final pose statically
-      this.isAnimated = false;
-      this.vrm?.humanoid?.setNormalizedPose(poseToApply);
-      
-      // Explicitly set hips to target (or default) to prevent any float error
-      const hipsNode = this.vrm?.humanoid?.getNormalizedBoneNode(VRMHumanBoneName.Hips);
-      if (hipsNode && !poseToApply[VRMHumanBoneName.Hips]?.position) {
-        hipsNode.position.copy(this.defaultHipsPosition);
-      }
-      
-      this.vrm?.humanoid?.update();
-      this.vrm?.update(0);
-      onComplete?.();
-    });
+    animationManager.playAnimation(transitionClip, false, 0.2);
   }
 
   freezeCurrentPose() {

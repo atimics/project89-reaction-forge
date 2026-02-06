@@ -11,6 +11,7 @@ import { useToastStore } from '../state/useToastStore';
 import { useSceneSettingsStore } from '../state/useSceneSettingsStore';
 import { reactionPresets } from '../data/reactions';
 import { DEFAULT_LIGHT_SETTINGS, lightingManager, type LightSettings } from '../three/lightingManager';
+import { directorManager } from '../three/DirectorManager';
 import { 
   House, 
   User, 
@@ -208,34 +209,24 @@ export function ViewportOverlay({ mode, isPlaying, onPlayPause, onStop }: Viewpo
     notifySceneChange({ aspectRatio: ratio });
   };
 
-  const handleResetCamera = () => {
-    sceneManager.resetCamera();
-  };
-
-  const handleRandomAvatar = () => {
-    if (isAvatarListLoading) {
-      addToast('Loading avatar matrix...', 'info');
-      return;
-    }
-    const randomAvatar = getRandomAvatar();
-    if (randomAvatar) {
-      setRemoteUrl(randomAvatar.model_file_url, randomAvatar.name);
-      addToast(`${randomAvatar.name} materialized.`, 'success');
-    } else {
-      addToast('Failed to find an avatar signal.', 'error');
-    }
-  };
-
   const handleHeadshotView = () => {
-    sceneManager.setCameraPreset('headshot');
+    directorManager.stop();
+    sceneManager.setCameraPreset('headshot', true);
   };
 
   const handleQuarterView = () => {
-    sceneManager.setCameraPreset('quarter');
+    directorManager.stop();
+    sceneManager.setCameraPreset('quarter', true);
   };
 
   const handleSideView = () => {
-    sceneManager.setCameraPreset('side');
+    directorManager.stop();
+    sceneManager.setCameraPreset('side', true);
+  };
+
+  const handleResetCamera = () => {
+    directorManager.stop();
+    sceneManager.resetCamera();
   };
 
   const stopFocusSprint = (showGallery: boolean) => {
@@ -272,6 +263,7 @@ export function ViewportOverlay({ mode, isPlaying, onPlayPause, onStop }: Viewpo
 
   const startFocusSprint = () => {
     if (isFocusSprintActive) return;
+    directorManager.stop(); // Stop any active director script
     if (!isAvatarReady) {
       addToast('Load an avatar before starting a sprint.', 'warning');
       return;
@@ -368,6 +360,16 @@ export function ViewportOverlay({ mode, isPlaying, onPlayPause, onStop }: Viewpo
   const handleNextCapture = () => {
     if (autoCaptures.length === 0) return;
     setFocusCaptureIndex((prev) => (prev + 1) % autoCaptures.length);
+  };
+
+  const handleRandomAvatar = () => {
+    const avatar = getRandomAvatar();
+    if (avatar) {
+      addToast(`Loading ${avatar.name}`, 'info');
+      setRemoteUrl(avatar.model_file_url, avatar.name);
+    } else {
+      addToast('Avatar random pool is empty. Please wait...', 'warning');
+    }
   };
 
   return (

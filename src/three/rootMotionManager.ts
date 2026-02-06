@@ -31,7 +31,7 @@ export class RootMotionManager {
     hips.getWorldPosition(this.hipsWorldPos);
     const groundY = collisionManager.getGroundHeight(this.hipsWorldPos);
     if (groundY !== null) {
-      this.vrm.scene.position.y = THREE.MathUtils.lerp(this.vrm.scene.position.y, groundY, 0.1);
+      this.vrm.scene.position.y = groundY;
     }
   }
 

@@ -1,31 +1,54 @@
 import * as THREE from 'three';
 import type { VRM } from '@pixiv/three-vrm';
+import { getPoseDefinitionWithAnimation } from '../poses';
+import { retargetAnimationClip } from '../poses/animationClipSerializer';
+import { useToastStore } from '../state/useToastStore';
 
-/**
- * AnimationManager handles playback of animation clips on VRM avatars
- */
 class AnimationManager {
   private mixer?: THREE.AnimationMixer;
   private currentAction?: THREE.AnimationAction;
   private vrm?: VRM;
 
-  /**
-   * Initialize the animation manager with a VRM avatar
-   */
   initialize(vrm: VRM) {
     console.log('[AnimationManager] Initializing with VRM');
     this.cleanup();
     this.vrm = vrm;
     this.mixer = new THREE.AnimationMixer(vrm.scene);
+    this.mixer.addEventListener('finished', this.handleAnimationFinished.bind(this));
   }
 
-  /**
-   * Play an animation clip
-   * @param clip - The THREE.AnimationClip to play
-   * @param loop - Whether to loop the animation (default: true)
-   * @param fadeInDuration - Fade in duration in seconds (default: 0.3)
-   */
-  playAnimation(clip: THREE.AnimationClip, loop = true, _fadeInDuration = 0.3) {
+  private async handleAnimationFinished(event: { action: THREE.AnimationAction }) {
+    // Ignore the idle animation finishing itself
+    if (event.action.getClip().name === 'idle-neutral-animation') {
+      return;
+    }
+
+    // Only handle animations that are meant to play once
+    const isLooping = event.action.loop === THREE.LoopRepeat;
+    if (isLooping) return;
+    
+    console.log(`[AnimationManager] FLAG: Non-looping animation finished: "${event.action.getClip().name}". Attempting to transition to idle.`);
+    
+    try {
+      // Smoothly transition to a default idle animation
+      const idleDef = await getPoseDefinitionWithAnimation('idle-neutral', this.vrm);
+      if (idleDef?.animationClip && this.vrm) {
+        console.log('[AnimationManager] Found "idle-neutral" animation definition. Retargeting and playing.');
+        const idleClip = retargetAnimationClip(idleDef.animationClip, this.vrm, {});
+        // Use a longer fade-in (0.5s) for a smoother transition from a held pose
+        this.playAnimation(idleClip, true, 0.5);
+        console.log('[AnimationManager] FLAG: Successfully started transition to "idle-neutral-animation".');
+      } else {
+        console.error('[AnimationManager] FLAG: FAILED to find "idle-neutral" animation definition. Avatar may T-pose.');
+        useToastStore.getState().addToast('Fallback idle animation not found.', 'error');
+      }
+    } catch (error) {
+      console.error('[AnimationManager] FLAG: CRITICAL error during transition to idle. Avatar may T-pose.', error);
+      useToastStore.getState().addToast('Error transitioning to idle.', 'error');
+    }
+  }
+
+  playAnimation(clip: THREE.AnimationClip, loop = true, fadeInDuration = 0.3) {
     if (!this.mixer || !this.vrm) {
       console.warn('[AnimationManager] Cannot play animation - mixer not initialized');
       return;
@@ -33,32 +56,27 @@ class AnimationManager {
 
     console.log('[AnimationManager] Playing animation:', clip.name, { loop, duration: clip.duration, tracks: clip.tracks.length });
 
-    // Handle existing animation - just stop it cleanly, don't uncache yet
-    // Uncaching while fading can cause bone snapping issues
-    if (this.currentAction) {
-      this.currentAction.stop();
-      this.currentAction = undefined;
+    const previousAction = this.currentAction;
+    const newAction = this.mixer.clipAction(clip);
+
+    newAction.reset();
+    newAction.setLoop(loop ? THREE.LoopRepeat : THREE.LoopOnce, loop ? Infinity : 1);
+    newAction.clampWhenFinished = !loop;
+    newAction.enabled = true;
+
+    if (previousAction && previousAction !== newAction) {
+      previousAction.fadeOut(fadeInDuration);
     }
-    
-    // Stop all other actions to ensure clean slate
-    this.mixer.stopAllAction();
 
-    // Create and configure new action
-    const action = this.mixer.clipAction(clip);
-    action.reset();
-    action.setLoop(loop ? THREE.LoopRepeat : THREE.LoopOnce, loop ? Infinity : 1);
-    action.clampWhenFinished = !loop;
-    action.enabled = true;  // Ensure action is enabled
-    action.setEffectiveWeight(1);  // Ensure full weight
-    action.setEffectiveTimeScale(1);  // Ensure normal speed
-    action.play();  // Start immediately, no fade (cleaner transition)
+    newAction.setEffectiveWeight(1.0);
+    newAction.fadeIn(fadeInDuration);
+    newAction.play();
 
-    this.currentAction = action;
+    this.currentAction = newAction;
     
     console.log('[AnimationManager] ✅ Animation started:', {
-      isRunning: action.isRunning(),
-      weight: action.getEffectiveWeight(),
-      timeScale: action.getEffectiveTimeScale()
+      name: clip.name,
+      isRunning: newAction.isRunning(),
     });
   }
 

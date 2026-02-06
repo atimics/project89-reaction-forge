@@ -12,6 +12,12 @@ const POSE_TO_MOTION_TYPE: Record<string, 'wave' | 'idle' | 'breath' | 'point' |
   'silly-agent': 'idle',
 };
 
+// Map pose IDs to animation file names (handling mismatches)
+const ANIMATION_FILE_ALIASES: Record<string, string> = {
+  'idle-offensive': 'offensive-idle',
+  'action-defeat': 'defeat',
+};
+
 /**
  * Load an animation clip from a JSON file
  * Returns null if the file doesn't exist or is invalid
@@ -22,7 +28,8 @@ const POSE_TO_MOTION_TYPE: Record<string, 'wave' | 'idle' | 'breath' | 'point' |
 export async function loadAnimationClip(poseId: string, vrm?: VRM): Promise<THREE.AnimationClip | null> {
   // First try to load from JSON file
   try {
-    const animationModule = await import(`./${poseId}-animation.json`);
+    const fileId = ANIMATION_FILE_ALIASES[poseId] || poseId;
+    const animationModule = await import(`./${fileId}-animation.json`);
     const data = animationModule.default;
 
     if (!isValidAnimationData(data)) {

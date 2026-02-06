@@ -110,15 +110,15 @@ const poseLibrary: Record<PoseId, PoseDefinition> = {
   // New Idle Pool
   'idle-neutral': idleNeutral as unknown as PoseDefinition,
   'idle-happy': idleHappy as unknown as PoseDefinition,
-  'idle-breathing': { isAnimated: true } as PoseDefinition,
+  'idle-breathing': { ...idleNeutral, isAnimated: true } as unknown as PoseDefinition,
   'idle-nervous': idleNervous as unknown as PoseDefinition,
-  'idle-offensive': { isAnimated: true } as PoseDefinition,
+  'idle-offensive': offensiveIdle as unknown as PoseDefinition,
 
   // New Sitting Pool
   'sit-chair': sitChair as unknown as PoseDefinition,
-  'sit-floor': { isAnimated: true } as PoseDefinition,
+  'sit-floor': { ...sitSad, isAnimated: true } as unknown as PoseDefinition,
   'sit-sad': sitSad as unknown as PoseDefinition,
-  'sit-typing': { isAnimated: true } as PoseDefinition,
+  'sit-typing': { ...sitChair, isAnimated: true } as unknown as PoseDefinition,
   'transition-stand-to-sit': transitionStandToSit as unknown as PoseDefinition,
   'transition-sit-to-stand': transitionSitToStand as unknown as PoseDefinition,
   'transition-floor-to-stand': { isAnimated: true } as PoseDefinition,
@@ -132,10 +132,10 @@ const poseLibrary: Record<PoseId, PoseDefinition> = {
   'emote-bow': emoteBow as unknown as PoseDefinition,
   'emote-dance-silly': emoteDanceSilly as unknown as PoseDefinition,
   'emote-taunt': emoteTaunt as unknown as PoseDefinition,
-  'emote-bored': { isAnimated: true } as PoseDefinition,
+  'emote-bored': { ...idleNeutral, isAnimated: true } as unknown as PoseDefinition,
 
   // New Action Pool
-  'action-defeat': { isAnimated: true } as PoseDefinition,
+  'action-defeat': defeat as unknown as PoseDefinition,
   'action-focus': actionFocus as unknown as PoseDefinition,
   'action-rope-climb': actionRopeClimb as unknown as PoseDefinition,
   'action-climb-top': actionClimbTop as unknown as PoseDefinition,
