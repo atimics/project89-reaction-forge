@@ -1015,7 +1015,7 @@ class SceneManager {
    * Set camera to a preset view
    * Hotkeys: 1=headshot, 3=quarter, 5=side, 7=full body
    */
-  setCameraPreset(preset: 'headshot' | 'quarter' | 'side' | 'fullbody' | 'portrait' | 'medium' | 'wide' | 'low-angle' | 'high-angle' | 'over-shoulder' | 'orbit-slow' | 'orbit-fast' | 'dolly-in' | 'dolly-out', force = false) {
+  setCameraPreset(preset: 'headshot' | 'quarter' | 'side' | 'fullbody' | 'full-body' | 'portrait' | 'medium' | 'wide' | 'low-angle' | 'high-angle' | 'over-shoulder' | 'orbit-slow' | 'orbit-fast' | 'dolly-in' | 'dolly-out', force = false) {
     if (!this.controls || !this.camera) return;
     
     // Disable any active follow/selfie mode to prevent fighting
@@ -1039,7 +1039,7 @@ class SceneManager {
     }
 
     // Common vector helpers
-    const up = new THREE.Vector3(0, 1, 0);
+    // const up = new THREE.Vector3(0, 1, 0);
 
     switch (preset) {
       case 'headshot':
@@ -1124,6 +1124,7 @@ class SceneManager {
         break;
         
       case 'fullbody':
+      case 'full-body':
       default:
         // Full Body: Target Hips, Camera Front
         this.controls.target.copy(hips);
