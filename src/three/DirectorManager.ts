@@ -76,11 +76,8 @@ class DirectorManager {
 
     // 3. Set Camera
     // Use sceneManager's presets for consistent framing
-    if (shot.cameraPreset === 'headshot' || shot.cameraPreset === 'portrait') {
-      sceneManager.setCameraPreset('headshot');
-    } else {
-      sceneManager.setCameraPreset('fullbody');
-    }
+    // sceneManager now handles all presets including animations
+    sceneManager.setCameraPreset(shot.cameraPreset);
     
     // 4. Schedule next shot
     this.shotTimeout = setTimeout(() => {

@@ -1015,7 +1015,7 @@ class SceneManager {
    * Set camera to a preset view
    * Hotkeys: 1=headshot, 3=quarter, 5=side, 7=full body
    */
-  setCameraPreset(preset: 'headshot' | 'quarter' | 'side' | 'fullbody', force = false) {
+  setCameraPreset(preset: 'headshot' | 'quarter' | 'side' | 'fullbody' | 'portrait' | 'medium' | 'wide' | 'low-angle' | 'high-angle' | 'over-shoulder' | 'orbit-slow' | 'orbit-fast' | 'dolly-in' | 'dolly-out', force = false) {
     if (!this.controls || !this.camera) return;
     
     // Disable any active follow/selfie mode to prevent fighting
@@ -1023,6 +1023,9 @@ class SceneManager {
     if (force || this.followMode !== 'selfie') {
       this.setFollowTarget(null, null);
     }
+
+    // Stop any active camera animations
+    this.stopCameraAnimation();
     
     // Find avatar targets
     const targets = this.getAvatarTargets();
@@ -1035,12 +1038,71 @@ class SceneManager {
         distanceModifier = 1 / aspect;
     }
 
+    // Common vector helpers
+    const up = new THREE.Vector3(0, 1, 0);
+
     switch (preset) {
       case 'headshot':
         // Headshot: Target Head, Camera in front of head
         const headshotPos = head.clone().add(forward.clone().multiplyScalar(0.7 * distanceModifier));
         this.camera.position.copy(headshotPos);
         this.controls.target.copy(head);
+        break;
+
+      case 'portrait':
+        // Portrait: Bust shot, slightly wider than headshot
+        const portraitTarget = head.clone().lerp(hips, 0.3); // Upper chest
+        const portraitPos = portraitTarget.clone().add(forward.clone().multiplyScalar(1.2 * distanceModifier));
+        this.camera.position.copy(portraitPos);
+        this.controls.target.copy(portraitTarget);
+        break;
+        
+      case 'medium':
+        // Medium Shot: Waist up
+        const mediumTarget = hips.clone().lerp(head, 0.4); // Chest/Stomach
+        const mediumPos = mediumTarget.clone().add(forward.clone().multiplyScalar(2.0 * distanceModifier));
+        this.camera.position.copy(mediumPos);
+        this.controls.target.copy(mediumTarget);
+        break;
+
+      case 'wide':
+        // Wide Shot: Full body but further back
+        const wideTarget = hips.clone();
+        const widePos = wideTarget.clone().add(forward.clone().multiplyScalar(4.5 * distanceModifier));
+        this.camera.position.copy(widePos);
+        this.controls.target.copy(wideTarget);
+        break;
+
+      case 'low-angle':
+        // Low Angle: Looking up from below
+        const lowTarget = hips.clone().lerp(head, 0.5); // Center of mass
+        const lowPos = lowTarget.clone()
+          .add(forward.clone().multiplyScalar(2.0 * distanceModifier))
+          .add(new THREE.Vector3(0, -1.0, 0)); // Move down
+        this.camera.position.copy(lowPos);
+        this.controls.target.copy(lowTarget);
+        break;
+
+      case 'high-angle':
+        // High Angle: Looking down from above
+        const highTarget = hips.clone().lerp(head, 0.5);
+        const highPos = highTarget.clone()
+          .add(forward.clone().multiplyScalar(2.0 * distanceModifier))
+          .add(new THREE.Vector3(0, 1.5, 0)); // Move up
+        this.camera.position.copy(highPos);
+        this.controls.target.copy(highTarget);
+        break;
+
+      case 'over-shoulder':
+        // Over Shoulder: Behind and to the side
+        const shoulderTarget = head.clone().add(forward.clone().multiplyScalar(2.0)); // Look at something in front
+        const shoulderPos = head.clone()
+          .sub(forward.clone().multiplyScalar(0.5)) // Behind head
+          .add(right.clone().multiplyScalar(0.4))   // Offset right
+          .add(new THREE.Vector3(0, 0.1, 0));       // Slightly up
+        
+        this.camera.position.copy(shoulderPos);
+        this.controls.target.copy(shoulderTarget);
         break;
         
       case 'quarter':
@@ -1062,16 +1124,83 @@ class SceneManager {
         break;
         
       case 'fullbody':
+      default:
         // Full Body: Target Hips, Camera Front
         this.controls.target.copy(hips);
         const fullBodyPos = hips.clone().add(forward.clone().multiplyScalar(2.5 * distanceModifier));
         this.camera.position.copy(fullBodyPos);
         break;
     }
+
+    // Handle Animation Presets
+    if (['orbit-slow', 'orbit-fast', 'dolly-in', 'dolly-out'].includes(preset)) {
+      this.startCameraAnimation(preset as any);
+    }
     
     this.controls.update();
     console.log(`[SceneManager] Camera set to ${preset} centered at`, this.controls.target);
   }
+
+  private cameraAnimationDispose?: () => void;
+
+  private stopCameraAnimation() {
+    this.cameraAnimationDispose?.();
+    this.cameraAnimationDispose = undefined;
+  }
+
+  private startCameraAnimation(type: 'orbit-slow' | 'orbit-fast' | 'dolly-in' | 'dolly-out') {
+    if (!this.camera || !this.controls) return;
+
+    // Set initial position for animations
+    // Most start from a standard medium/full shot
+    if (type.startsWith('orbit')) {
+        this.setCameraPreset('medium', true); // Reset to medium as base
+    } else if (type === 'dolly-in') {
+        this.setCameraPreset('fullbody', true); // Start wide
+    } else if (type === 'dolly-out') {
+        this.setCameraPreset('headshot', true); // Start close
+    }
+
+    const speed = type === 'orbit-fast' ? 0.5 : 0.1;
+    const dollySpeed = 0.01;
+
+    // Register tick handler
+    this.cameraAnimationDispose = this.registerTick((delta) => {
+        if (!this.camera || !this.controls) return;
+
+        if (type === 'orbit-slow' || type === 'orbit-fast') {
+            // Orbit around target
+            // We can just rotate the camera position around the target
+            const target = this.controls.target;
+            const pos = this.camera.position;
+            
+            // Rotate around Y axis relative to target
+            const offset = pos.clone().sub(target);
+            offset.applyAxisAngle(new THREE.Vector3(0, 1, 0), speed * delta);
+            pos.copy(target).add(offset);
+            
+            this.camera.lookAt(target);
+        } else if (type === 'dolly-in') {
+            // Move closer to target
+            const target = this.controls.target;
+            const pos = this.camera.position;
+            const dist = pos.distanceTo(target);
+            
+            if (dist > 0.5) { // Min distance
+                const dir = target.clone().sub(pos).normalize();
+                pos.add(dir.multiplyScalar(dollySpeed));
+            }
+        } else if (type === 'dolly-out') {
+            // Move away from target
+            const target = this.controls.target;
+            const pos = this.camera.position;
+            
+            const dir = pos.clone().sub(target).normalize();
+            pos.add(dir.multiplyScalar(dollySpeed));
+        }
+    });
+  }
+
 
   /**
    * Smart full body framing - frames the entire avatar with proper margins
