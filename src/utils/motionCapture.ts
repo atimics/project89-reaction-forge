@@ -387,7 +387,6 @@ export class MotionCaptureManager {
     }
     
     this.videoElement.pause();
-    this.camera = undefined;
     
     this.isTracking = false;
     this.stopUpdateLoop('camera');

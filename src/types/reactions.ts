@@ -73,6 +73,7 @@ export type BackgroundId =
   | 'void-minimal'
   // Utility
   | 'green-screen'
+  | 'transparent'
   | 'lush-forest'
   | 'volcano'
   | 'deep-sea'

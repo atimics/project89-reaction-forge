@@ -6,7 +6,7 @@ import { useUIStore } from '../state/useUIStore';
 import { useSceneSettingsStore } from '../state/useSceneSettingsStore';
 import { useIntroStore } from '../state/useIntroStore';
 import type { ReactionPreset } from '../types/reactions';
-import { findPresetById, reactionPresets } from '../data/reactions';
+import { findPresetById } from '../data/reactions';
 import { useAvatarSource } from '../state/useAvatarSource';
 import { live2dManager } from '../live2d/live2dManager';
 import { OnboardingOverlay } from './OnboardingOverlay';

@@ -74,7 +74,7 @@ export function MocapTab() {
   const [vmcError, setVmcError] = useState<string | null>(null);
 
   // Camera Selection
-  const { devices, fetchDevices } = useMediaDevices();
+  const { devices } = useMediaDevices();
   const [selectedDeviceId, setSelectedDeviceId] = useState<string>('');
 
   useEffect(() => {
