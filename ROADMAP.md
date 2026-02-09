@@ -154,7 +154,7 @@ This document outlines the planned upgrades and feature requests for PoseLab, fo
 | **3D GLB Environments** | ✅ Done (v1.5) | Medium |
 | **Multiplayer Co-op** | ✅ Done (v1.5) | High |
 | **Voice Chat** | ✅ Done (v1.5) | High |
-| **Live Streaming & Virtual Camera** | 🚧 Planned | **Critical** |
+| **Live Streaming & Virtual Camera** | ✅ Done (v1.7) | **Critical** |
 | **Evergreen Utility (Batch Export/Templates)** | 🚧 Planned | **High** |
 | **State Recovery & Validation** | 🚧 Planned | **High** |
 | **Monetization / Gating** | 🚧 Planned | Medium |
