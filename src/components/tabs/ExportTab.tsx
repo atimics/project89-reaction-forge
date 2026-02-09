@@ -37,6 +37,7 @@ export function ExportTab({ mode = 'reactions' }: ExportTabProps) {
   const [resolution, setResolution] = useState<'720p' | '1080p' | 'square'>('720p');
   const [includeLogo, setIncludeLogo] = useState(true);
   const [transparentBg, setTransparentBg] = useState(false);
+  const [autoFrame, setAutoFrame] = useState(false);
 
   // Set aspect ratio from sceneManager on mount to ensure consistent state
   useEffect(() => {
@@ -99,6 +100,7 @@ export function ExportTab({ mode = 'reactions' }: ExportTabProps) {
       height: dimensions.height,
       includeLogo: includeLogo,
       transparentBackground: transparentBg,
+      fitToFrame: autoFrame,
     });
     
     if (!dataUrl) return;
@@ -515,14 +517,24 @@ export function ExportTab({ mode = 'reactions' }: ExportTabProps) {
               <span>Include logo overlay</span>
             </label>
             {exportFormat === 'png' && (
-              <label className="checkbox-option">
-                <input 
-                  type="checkbox"
-                  checked={transparentBg}
-                  onChange={(e) => setTransparentBg(e.target.checked)}
-                />
-                <span>Transparent background</span>
-              </label>
+              <>
+                <label className="checkbox-option">
+                  <input 
+                    type="checkbox"
+                    checked={transparentBg}
+                    onChange={(e) => setTransparentBg(e.target.checked)}
+                  />
+                  <span>Transparent background</span>
+                </label>
+                <label className="checkbox-option">
+                  <input 
+                    type="checkbox"
+                    checked={autoFrame}
+                    onChange={(e) => setAutoFrame(e.target.checked)}
+                  />
+                  <span>Auto-frame Full Body (Training)</span>
+                </label>
+              </>
             )}
           </>
         )}

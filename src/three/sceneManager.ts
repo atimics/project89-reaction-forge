@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three-stdlib';
+import { VRMHumanBoneName } from '@pixiv/three-vrm';
 import { applyBackground, type AnimatedBackground } from './backgrounds';
 import type { BackgroundId } from '../types/reactions';
 import { useSettingsStore } from '../state/useSettingsStore';
@@ -661,11 +662,13 @@ class SceneManager {
     height?: number;
     includeLogo?: boolean;
     transparentBackground?: boolean;
+    fitToFrame?: boolean; // NEW: Auto-frame full body
   }): Promise<string | null> {
     if (!this.renderer || !this.canvas || !this.scene || !this.camera) return null;
     
     const includeLogo = options?.includeLogo ?? true;
     const transparentBackground = options?.transparentBackground ?? false;
+    const fitToFrame = options?.fitToFrame ?? false;
     const targetWidth = options?.width || this.canvas.width;
     const targetHeight = options?.height || this.canvas.height;
     
@@ -677,7 +680,8 @@ class SceneManager {
       targetHeight, 
       includeLogo, 
       transparentBackground,
-      activeCssOverlay
+      activeCssOverlay,
+      fitToFrame
     });
     
     // Save current background and clear color state
@@ -685,6 +689,14 @@ class SceneManager {
     const originalClearColor = new THREE.Color();
     const originalClearAlpha = this.renderer.getClearAlpha();
     this.renderer.getClearColor(originalClearColor);
+    
+    // Save camera/controls state if we're reframing
+    const originalCameraPos = this.camera.position.clone();
+    const originalTarget = this.controls?.target.clone();
+    const originalNear = this.camera.near;
+    const originalFar = this.camera.far;
+    const originalMinDist = this.controls?.minDistance;
+    const originalMaxDist = this.controls?.maxDistance;
     
     // If transparent background requested, temporarily remove background and set transparent clear
     if (transparentBackground) {
@@ -695,15 +707,23 @@ class SceneManager {
     
     try {
       // If custom resolution requested, render to an off-screen canvas
-      if (options?.width || options?.height) {
+      if (options?.width || options?.height || fitToFrame) {
         // Save current renderer size
         const originalSize = new THREE.Vector2();
         this.renderer.getSize(originalSize);
+        const originalAspect = this.camera.aspect;
         
         // Temporarily resize renderer for high-res capture
         this.renderer.setSize(targetWidth, targetHeight, false);
         this.camera.aspect = targetWidth / targetHeight;
         this.camera.updateProjectionMatrix();
+
+        // Auto-frame if requested (MUST happen after aspect ratio update)
+        if (fitToFrame && this.controls) {
+             // Use the robust fullbody logic which now accounts for aspect ratio & bounding box
+             // Use a slightly larger padding for export safety (1.2)
+             this.setCameraPreset('fullbody', true);
+        }
 
         // Resize post-processing composer if enabled
         if (postProcessingManager.isEnabled()) {
@@ -730,12 +750,23 @@ class SceneManager {
         
         // Restore original size
         this.renderer.setSize(originalSize.x, originalSize.y, false);
-        this.camera.aspect = originalSize.x / originalSize.y;
+        this.camera.aspect = originalAspect;
         this.camera.updateProjectionMatrix();
 
         // Restore post-processing size
         if (postProcessingManager.isEnabled()) {
           postProcessingManager.resize(originalSize.x, originalSize.y);
+        }
+        
+        // Restore camera position if we moved it
+        if (fitToFrame && originalTarget && this.controls) {
+            this.camera.position.copy(originalCameraPos);
+            this.camera.near = originalNear;
+            this.camera.far = originalFar;
+            this.controls.target.copy(originalTarget);
+            if (originalMinDist !== undefined) this.controls.minDistance = originalMinDist;
+            if (originalMaxDist !== undefined) this.controls.maxDistance = originalMaxDist;
+            this.controls.update();
         }
         
         // Restore background and clear color
@@ -745,7 +776,7 @@ class SceneManager {
         return dataUrl;
       }
       
-      // Normal resolution capture
+      // Normal resolution capture (no resize, no reframe)
       const composer = postProcessingManager.getComposer();
       if (postProcessingManager.isEnabled() && composer) {
         composer.render();
@@ -771,6 +802,18 @@ class SceneManager {
       // Ensure background and clear color are restored even on error
       this.scene.background = originalBackground;
       this.renderer.setClearColor(originalClearColor, originalClearAlpha);
+      
+      // Attempt to restore camera too
+      if (fitToFrame && originalTarget && this.controls) {
+         this.camera.position.copy(originalCameraPos);
+         this.camera.near = originalNear;
+         this.camera.far = originalFar;
+         this.controls.target.copy(originalTarget);
+         if (originalMinDist !== undefined) this.controls.minDistance = originalMinDist;
+         if (originalMaxDist !== undefined) this.controls.maxDistance = originalMaxDist;
+         this.controls.update();
+      }
+
       throw error;
     }
   }
@@ -1105,9 +1148,75 @@ class SceneManager {
       case 'fullbody':
       case 'full-body':
       default:
-        // Full Body: Target Hips, Camera Front
-        destTarget.copy(hips);
-        destPos.copy(hips).add(forward.clone().multiplyScalar(2.8 * distanceModifier));
+        // Smart Full Body Framing
+        // Use bounding box to ensure avatar fits regardless of size or aspect ratio
+        let vrm: any = null;
+        this.scene?.traverse((obj) => {
+           if (!vrm && obj.userData?.vrm) {
+               vrm = obj.userData.vrm;
+           }
+        });
+
+        if (vrm && vrm.humanoid) {
+            // Calculate bounding box from actual bone positions to support posed/animated avatars correctly.
+            // Box3.setFromObject uses bind pose (T-pose) which doesn't move with animation/jumping.
+            const box = new THREE.Box3();
+            const tempVec = new THREE.Vector3();
+            const boneNames = Object.values(VRMHumanBoneName);
+            
+            let hasBones = false;
+            boneNames.forEach((name) => {
+                const node = vrm.humanoid.getNormalizedBoneNode(name);
+                if (node) {
+                    node.getWorldPosition(tempVec);
+                    box.expandByPoint(tempVec);
+                    hasBones = true;
+                }
+            });
+
+            if (hasBones) {
+                // Expand box to account for skin, hair, shoes (bones are internal)
+                // Head bone is usually at the neck/base of head. Need to add significant top margin for face + hair.
+                // Feet bones are ankles. Need to add bottom margin for foot + shoe.
+                
+                box.min.y -= 0.35; // Sole/Shoe padding (increased from 0.15 for big shoes)
+                box.max.y += 0.50; // Head/Hair padding (increased from 0.30 for hats/hair)
+                box.min.x -= 0.35; // Arm/Skin padding
+                box.max.x += 0.35;
+                box.min.z -= 0.35;
+                box.max.z += 0.35;
+                
+                this.box.copy(box);
+            } else {
+                // Fallback to mesh bounds if no bones found
+                this.box.setFromObject(vrm.scene);
+            }
+
+            this.box.getCenter(destTarget);
+            this.box.getSize(this.size);
+            
+            // Increased padding for safety (training data needs to be 100% contained)
+            // 1.5 ensures ~66% fill, leaving ample room for any mesh protrusions
+            const padding = 1.5; 
+            const fov = THREE.MathUtils.degToRad(this.camera.fov);
+            const aspect = this.camera.aspect;
+            
+            // Calculate distance needed for vertical fit
+            const distVertical = (this.size.y * padding) / (2 * Math.tan(fov / 2));
+            
+            // Calculate distance needed for horizontal fit
+            const distHorizontal = (this.size.x * padding) / (2 * Math.tan(fov / 2) * aspect);
+            
+            const distance = Math.max(distVertical, distHorizontal);
+            
+            // Position camera in front (using forward vector)
+            destPos.copy(destTarget).add(forward.clone().multiplyScalar(distance));
+            
+        } else {
+            // Fallback if no VRM found
+            destTarget.copy(hips);
+            destPos.copy(hips).add(forward.clone().multiplyScalar(2.8 * distanceModifier));
+        }
         break;
     }
     

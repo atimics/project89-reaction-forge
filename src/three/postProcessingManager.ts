@@ -4,6 +4,9 @@ import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
 import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
+import { HueSaturationShader } from 'three/examples/jsm/shaders/HueSaturationShader.js';
+import { RGBShiftShader } from 'three/examples/jsm/shaders/RGBShiftShader.js';
+import { GlitchPass } from 'three/examples/jsm/postprocessing/GlitchPass.js';
 import { sceneManager } from './sceneManager';
 
 // ======================
@@ -42,6 +45,32 @@ export interface PostProcessingSettings {
     enabled: boolean;
     intensity: number;    // 0-0.5
   };
+
+  // Hue Shift
+  hueSaturation: {
+    enabled: boolean;
+    hue: number;          // -1 to 1
+    saturation: number;   // -1 to 1
+  };
+
+  // Pixelate
+  pixelate: {
+    enabled: boolean;
+    pixelSize: number;    // 1-64 (screen pixels)
+  };
+
+  // Chromatic Aberration (RGB Shift)
+  chromaticAberration: {
+    enabled: boolean;
+    amount: number;       // 0-0.1
+    angle: number;        // 0-PI*2
+  };
+
+  // Glitch Effect
+  glitch: {
+    enabled: boolean;
+    wild: boolean;        // wild mode
+  };
 }
 
 export const DEFAULT_POST_SETTINGS: PostProcessingSettings = {
@@ -67,6 +96,24 @@ export const DEFAULT_POST_SETTINGS: PostProcessingSettings = {
   filmGrain: {
     enabled: false,
     intensity: 0.1,
+  },
+  hueSaturation: {
+    enabled: false,
+    hue: 0,
+    saturation: 0,
+  },
+  pixelate: {
+    enabled: false,
+    pixelSize: 6,
+  },
+  chromaticAberration: {
+    enabled: false,
+    amount: 0.005,
+    angle: 0,
+  },
+  glitch: {
+    enabled: false,
+    wild: false,
   },
 };
 
@@ -94,6 +141,7 @@ export const POST_PRESETS: Record<string, { name: string; settings: Partial<Post
       colorGrading: { enabled: true, brightness: 0.05, contrast: 1.2, saturation: 1.4, exposure: 1.1 },
       vignette: { enabled: false, intensity: 0, smoothness: 0 },
       filmGrain: { enabled: false, intensity: 0 },
+      hueSaturation: { enabled: true, hue: 0.05, saturation: 0.2 },
     },
   },
   noir: {
@@ -101,9 +149,10 @@ export const POST_PRESETS: Record<string, { name: string; settings: Partial<Post
     settings: {
       enabled: true,
       bloom: { enabled: true, intensity: 0.3, threshold: 0.9, radius: 0.3 },
-      colorGrading: { enabled: true, brightness: -0.1, contrast: 1.4, saturation: 0.2, exposure: 0.9 },
+      colorGrading: { enabled: true, brightness: -0.1, contrast: 1.4, saturation: 0, exposure: 0.9 }, // Saturation 0 via colorGrading shader (which handles mix) or pass
       vignette: { enabled: true, intensity: 0.6, smoothness: 0.4 },
       filmGrain: { enabled: true, intensity: 0.15 },
+      hueSaturation: { enabled: true, hue: 0, saturation: -1 }, // Fully desaturated
     },
   },
   dreamy: {
@@ -113,7 +162,7 @@ export const POST_PRESETS: Record<string, { name: string; settings: Partial<Post
       bloom: { enabled: true, intensity: 1.2, threshold: 0.5, radius: 0.8 },
       colorGrading: { enabled: true, brightness: 0.1, contrast: 0.9, saturation: 0.85, exposure: 1.15 },
       vignette: { enabled: true, intensity: 0.25, smoothness: 0.8 },
-      filmGrain: { enabled: false, intensity: 0 },
+      chromaticAberration: { enabled: true, amount: 0.002, angle: Math.PI / 4 },
     },
   },
   retro: {
@@ -124,6 +173,18 @@ export const POST_PRESETS: Record<string, { name: string; settings: Partial<Post
       colorGrading: { enabled: true, brightness: 0.05, contrast: 1.1, saturation: 0.7, exposure: 0.95 },
       vignette: { enabled: true, intensity: 0.5, smoothness: 0.3 },
       filmGrain: { enabled: true, intensity: 0.2 },
+      pixelate: { enabled: true, pixelSize: 4 },
+      chromaticAberration: { enabled: true, amount: 0.003, angle: 0 },
+    },
+  },
+  glitch: {
+    name: '👾 Glitch',
+    settings: {
+      enabled: true,
+      bloom: { enabled: true, intensity: 0.8, threshold: 0.5, radius: 0.5 },
+      colorGrading: { enabled: true, brightness: 0, contrast: 1.2, saturation: 1.1, exposure: 1 },
+      glitch: { enabled: true, wild: false },
+      chromaticAberration: { enabled: true, amount: 0.01, angle: Math.PI / 2 },
     },
   },
 };
@@ -216,8 +277,13 @@ class PostProcessingManager {
   private composer?: EffectComposer;
   private renderPass?: RenderPass;
   private bloomPass?: UnrealBloomPass;
+  private hueSaturationPass?: ShaderPass;
+  private rgbShiftPass?: ShaderPass;
+  private pixelatePass?: ShaderPass;
+  private glitchPass?: GlitchPass;
   private colorGradingPass?: ShaderPass;
   private outputPass?: OutputPass;
+  
   private currentSettings: PostProcessingSettings = DEFAULT_POST_SETTINGS;
   private initialized = false;
   private time = 0;
@@ -239,26 +305,80 @@ class PostProcessingManager {
     this.renderPass = new RenderPass(scene, camera);
     this.composer.addPass(this.renderPass);
 
-    // Bloom pass
     const size = new THREE.Vector2();
     renderer.getSize(size);
+
+    // 1. Pixelate Pass (Custom Shader)
+    const PixelShader = {
+      uniforms: {
+        tDiffuse: { value: null },
+        resolution: { value: size }, // Use actual size
+        pixelSize: { value: 1 },
+      },
+      vertexShader: `
+        varying vec2 vUv;
+        void main() {
+          vUv = uv;
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+      `,
+      fragmentShader: `
+        uniform sampler2D tDiffuse;
+        uniform vec2 resolution;
+        uniform float pixelSize;
+        varying vec2 vUv;
+        void main() {
+          if (pixelSize <= 1.0) {
+            gl_FragColor = texture2D(tDiffuse, vUv);
+            return;
+          }
+          vec2 dxy = pixelSize / resolution;
+          if (dxy.x <= 0.0 || dxy.y <= 0.0) {
+             gl_FragColor = texture2D(tDiffuse, vUv);
+             return;
+          }
+          vec2 coord = dxy * floor(vUv / dxy);
+          gl_FragColor = texture2D(tDiffuse, coord);
+        }
+      `
+    };
+    this.pixelatePass = new ShaderPass(PixelShader);
+    this.pixelatePass.enabled = false;
+    this.composer.addPass(this.pixelatePass);
+
+    // 2. Glitch Pass
+    this.glitchPass = new GlitchPass();
+    this.glitchPass.enabled = false;
+    this.composer.addPass(this.glitchPass);
+
+    // 3. Hue/Saturation
+    this.hueSaturationPass = new ShaderPass(HueSaturationShader);
+    this.hueSaturationPass.enabled = false;
+    this.composer.addPass(this.hueSaturationPass);
+
+    // 4. Bloom pass
     this.bloomPass = new UnrealBloomPass(size, 0.5, 0.4, 0.8);
     this.bloomPass.enabled = this.currentSettings.bloom.enabled;
     this.composer.addPass(this.bloomPass);
 
-    // Color grading pass (includes vignette and grain)
+    // 5. Chromatic Aberration (RGB Shift)
+    this.rgbShiftPass = new ShaderPass(RGBShiftShader);
+    this.rgbShiftPass.enabled = false;
+    this.composer.addPass(this.rgbShiftPass);
+
+    // 6. Color grading pass (includes vignette and grain)
     this.colorGradingPass = new ShaderPass(ColorGradingShader);
     this.colorGradingPass.enabled = true;
     this.composer.addPass(this.colorGradingPass);
 
-    // Output pass (handles color space conversion)
+    // 7. Output pass (handles color space conversion)
     this.outputPass = new OutputPass();
     this.composer.addPass(this.outputPass);
 
     this.initialized = true;
     this.applySettings(this.currentSettings);
 
-    console.log('[PostProcessingManager] Initialized');
+    console.log('[PostProcessingManager] Initialized with enhanced pipeline');
   }
 
   /**
@@ -271,19 +391,53 @@ class PostProcessingManager {
       return; // Will be applied on init
     }
 
+    const enabled = settings.enabled;
+
+    // Pixelate
+    if (this.pixelatePass) {
+      this.pixelatePass.enabled = enabled && settings.pixelate.enabled;
+      if (this.pixelatePass.uniforms) {
+        this.pixelatePass.uniforms.pixelSize.value = settings.pixelate.pixelSize;
+        const renderer = sceneManager.getRenderer();
+        if (renderer) {
+          renderer.getSize(this.pixelatePass.uniforms.resolution.value);
+        }
+      }
+    }
+
+    // Glitch
+    if (this.glitchPass) {
+      this.glitchPass.enabled = enabled && settings.glitch.enabled;
+      this.glitchPass.goWild = settings.glitch.wild;
+    }
+
+    // Hue/Saturation
+    if (this.hueSaturationPass) {
+      this.hueSaturationPass.enabled = enabled && settings.hueSaturation.enabled;
+      this.hueSaturationPass.uniforms.hue.value = settings.hueSaturation.hue;
+      this.hueSaturationPass.uniforms.saturation.value = settings.hueSaturation.saturation;
+    }
+
     // Bloom
     if (this.bloomPass) {
-      this.bloomPass.enabled = settings.enabled && settings.bloom.enabled;
+      this.bloomPass.enabled = enabled && settings.bloom.enabled;
       this.bloomPass.strength = settings.bloom.intensity;
       this.bloomPass.threshold = settings.bloom.threshold;
       this.bloomPass.radius = settings.bloom.radius;
+    }
+
+    // Chromatic Aberration
+    if (this.rgbShiftPass) {
+      this.rgbShiftPass.enabled = enabled && settings.chromaticAberration.enabled;
+      this.rgbShiftPass.uniforms.amount.value = settings.chromaticAberration.amount;
+      this.rgbShiftPass.uniforms.angle.value = settings.chromaticAberration.angle;
     }
 
     // Color Grading + Vignette + Grain
     if (this.colorGradingPass) {
       const uniforms = this.colorGradingPass.uniforms;
       
-      if (settings.enabled && settings.colorGrading.enabled) {
+      if (enabled && settings.colorGrading.enabled) {
         uniforms.brightness.value = settings.colorGrading.brightness;
         uniforms.contrast.value = settings.colorGrading.contrast;
         uniforms.saturation.value = settings.colorGrading.saturation;
@@ -295,14 +449,14 @@ class PostProcessingManager {
         uniforms.exposure.value = 1;
       }
 
-      if (settings.enabled && settings.vignette.enabled) {
+      if (enabled && settings.vignette.enabled) {
         uniforms.vignetteIntensity.value = settings.vignette.intensity;
         uniforms.vignetteSmoothness.value = settings.vignette.smoothness;
       } else {
         uniforms.vignetteIntensity.value = 0;
       }
 
-      if (settings.enabled && settings.filmGrain.enabled) {
+      if (enabled && settings.filmGrain.enabled) {
         uniforms.grainIntensity.value = settings.filmGrain.intensity;
       } else {
         uniforms.grainIntensity.value = 0;
@@ -329,6 +483,10 @@ class PostProcessingManager {
       colorGrading: { ...DEFAULT_POST_SETTINGS.colorGrading, ...preset.settings.colorGrading },
       vignette: { ...DEFAULT_POST_SETTINGS.vignette, ...preset.settings.vignette },
       filmGrain: { ...DEFAULT_POST_SETTINGS.filmGrain, ...preset.settings.filmGrain },
+      hueSaturation: { ...DEFAULT_POST_SETTINGS.hueSaturation, ...preset.settings.hueSaturation },
+      pixelate: { ...DEFAULT_POST_SETTINGS.pixelate, ...preset.settings.pixelate },
+      chromaticAberration: { ...DEFAULT_POST_SETTINGS.chromaticAberration, ...preset.settings.chromaticAberration },
+      glitch: { ...DEFAULT_POST_SETTINGS.glitch, ...preset.settings.glitch },
     };
 
     this.applySettings(merged);
@@ -364,6 +522,10 @@ class PostProcessingManager {
     if (this.colorGradingPass && this.currentSettings.filmGrain.enabled) {
       this.colorGradingPass.uniforms.time.value = this.time;
     }
+    if (this.glitchPass && this.currentSettings.glitch.enabled) {
+      // Glitch pass updates automatically via internal update, but we might need to trigger something?
+      // GlitchPass doesn't have an update method usually, it uses random internally on render.
+    }
   }
 
   /**
@@ -375,6 +537,9 @@ class PostProcessingManager {
     }
     if (this.bloomPass) {
       this.bloomPass.resolution.set(width, height);
+    }
+    if (this.pixelatePass && this.pixelatePass.uniforms) {
+      this.pixelatePass.uniforms.resolution.value.set(width, height);
     }
   }
 
@@ -388,6 +553,10 @@ class PostProcessingManager {
     }
     this.renderPass = undefined;
     this.bloomPass = undefined;
+    this.hueSaturationPass = undefined;
+    this.rgbShiftPass = undefined;
+    this.pixelatePass = undefined;
+    this.glitchPass = undefined;
     this.colorGradingPass = undefined;
     this.outputPass = undefined;
     this.initialized = false;
@@ -395,4 +564,3 @@ class PostProcessingManager {
 }
 
 export const postProcessingManager = new PostProcessingManager();
-

@@ -325,6 +325,9 @@ export const useSceneSettingsStore = create<SceneSettingsState>()(
         // Note: rotationLocked is NOT persisted - it resets on app reload
         // to ensure avatars load facing the correct direction
       }),
+      merge: (persistedState, currentState) => {
+        return deepMerge(currentState, persistedState as any);
+      },
     }
   )
 );

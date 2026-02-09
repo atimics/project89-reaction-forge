@@ -7,6 +7,7 @@ import { PosesTab } from './tabs/PosesTab';
 import { MocapTab } from './tabs/MocapTab';
 import { DirectorTab } from './tabs/DirectorTab';
 import { AnimationsTab } from './tabs/AnimationsTab';
+import { TrainingTab } from './tabs/TrainingTab';
 import { 
   Sliders, 
   PersonArmsSpread, 
@@ -16,7 +17,8 @@ import {
   UserFocus,
   VideoCamera,
   FloppyDisk,
-  FilmStrip
+  FilmStrip,
+  GraduationCap
 } from '@phosphor-icons/react';
 
 interface ControlPanelProps {
@@ -52,6 +54,13 @@ export function ControlPanel({ mode }: ControlPanelProps) {
             <span>Scene</span>
           </button>
           <button
+            className={reactionTab === 'training' ? 'active' : ''}
+            onClick={() => setReactionTab('training')}
+          >
+            <GraduationCap size={16} weight="duotone" />
+            <span>Training</span>
+          </button>
+          <button
             className={reactionTab === 'export' ? 'active' : ''}
             onClick={() => setReactionTab('export')}
           >
@@ -64,6 +73,7 @@ export function ControlPanel({ mode }: ControlPanelProps) {
           {reactionTab === 'presets' && <PresetsTab />}
           {reactionTab === 'pose' && <PoseExpressionTab />}
           {reactionTab === 'scene' && <SceneTab />}
+          {reactionTab === 'training' && <TrainingTab />}
           {reactionTab === 'export' && <ExportTab />}
         </div>
       </aside>

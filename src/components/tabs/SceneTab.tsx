@@ -958,6 +958,77 @@ export function SceneTab() {
               checked={sceneSettings.postProcessing.filmGrain.enabled}
               onChange={(enabled) => sceneSettings.setPostProcessing({ filmGrain: { ...sceneSettings.postProcessing.filmGrain, enabled } })}
             />
+
+            <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '0.5rem', marginTop: '0.5rem' }}>
+              <Toggle
+                label="Hue Shift"
+                checked={sceneSettings.postProcessing.hueSaturation?.enabled ?? false}
+                onChange={(enabled) => sceneSettings.setPostProcessing({ hueSaturation: { ...sceneSettings.postProcessing.hueSaturation, enabled } })}
+              />
+              {sceneSettings.postProcessing.hueSaturation?.enabled && (
+                <>
+                  <Slider
+                    label="Hue"
+                    value={sceneSettings.postProcessing.hueSaturation?.hue ?? 0}
+                    min={-1}
+                    max={1}
+                    onChange={(hue) => sceneSettings.setPostProcessing({ hueSaturation: { ...sceneSettings.postProcessing.hueSaturation, hue } })}
+                  />
+                  <Slider
+                    label="Saturation"
+                    value={sceneSettings.postProcessing.hueSaturation?.saturation ?? 0}
+                    min={-1}
+                    max={1}
+                    onChange={(saturation) => sceneSettings.setPostProcessing({ hueSaturation: { ...sceneSettings.postProcessing.hueSaturation, saturation } })}
+                  />
+                </>
+              )}
+
+              <Toggle
+                label="Chromatic Aberration"
+                checked={sceneSettings.postProcessing.chromaticAberration?.enabled ?? false}
+                onChange={(enabled) => sceneSettings.setPostProcessing({ chromaticAberration: { ...sceneSettings.postProcessing.chromaticAberration, enabled } })}
+              />
+              {sceneSettings.postProcessing.chromaticAberration?.enabled && (
+                <Slider
+                  label="Amount"
+                  value={sceneSettings.postProcessing.chromaticAberration?.amount ?? 0}
+                  min={0}
+                  max={0.05}
+                  step={0.001}
+                  onChange={(amount) => sceneSettings.setPostProcessing({ chromaticAberration: { ...sceneSettings.postProcessing.chromaticAberration, amount } })}
+                />
+              )}
+
+              <Toggle
+                label="Pixelate"
+                checked={sceneSettings.postProcessing.pixelate?.enabled ?? false}
+                onChange={(enabled) => sceneSettings.setPostProcessing({ pixelate: { ...sceneSettings.postProcessing.pixelate, enabled } })}
+              />
+              {sceneSettings.postProcessing.pixelate?.enabled && (
+                <Slider
+                  label="Pixel Size"
+                  value={sceneSettings.postProcessing.pixelate?.pixelSize ?? 6}
+                  min={1}
+                  max={32}
+                  step={1}
+                  onChange={(pixelSize) => sceneSettings.setPostProcessing({ pixelate: { ...sceneSettings.postProcessing.pixelate, pixelSize } })}
+                />
+              )}
+
+              <Toggle
+                label="Glitch"
+                checked={sceneSettings.postProcessing.glitch?.enabled ?? false}
+                onChange={(enabled) => sceneSettings.setPostProcessing({ glitch: { ...sceneSettings.postProcessing.glitch, enabled } })}
+              />
+              {sceneSettings.postProcessing.glitch?.enabled && (
+                <Toggle
+                  label="Wild Mode"
+                  checked={sceneSettings.postProcessing.glitch?.wild ?? false}
+                  onChange={(wild) => sceneSettings.setPostProcessing({ glitch: { ...sceneSettings.postProcessing.glitch, wild } })}
+                />
+              )}
+            </div>
           </div>
         )}
       </Section>
