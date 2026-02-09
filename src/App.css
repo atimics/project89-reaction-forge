@@ -1824,6 +1824,15 @@
 .app-shell.stream-mode {
   /* Ensure background is transparent so OBS Browser Source can pick up alpha */
   background: transparent !important;
+  /* Reset grid layout to prevent sidebar from taking space even if hidden */
+  display: block;
+}
+
+.app-shell.stream-mode .layout {
+  display: block;
+  grid-template-columns: 1fr;
+  width: 100vw;
+  height: 100vh;
 }
 
 .app-shell.stream-mode .app-header,
@@ -1844,12 +1853,19 @@
 }
 
 .app-shell.stream-mode .canvas-container {
+  width: 100vw !important;
+  height: 100vh !important;
+  max-width: none !important;
+  max-height: none !important;
   border-radius: 0;
   box-shadow: none;
   background: transparent !important;
 }
 
 .app-shell.stream-mode .canvas-stage {
+  /* Allow canvas to be sized by JS to maintain aspect ratio without distortion */
+  /* width: 100vw !important; */
+  /* height: 100vh !important; */
   background: transparent !important;
 }
 

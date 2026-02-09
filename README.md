@@ -82,6 +82,13 @@
 3.  **Camera**: Set camera to **¾ View**.
 4.  **Export**: Go to **Export** → Select **WebM** → Click **Vertical (9:16)**.
 
+### 📡 **For Live Streamers (OBS)**
+**Goal: Use PoseLab as a live avatar source.**
+1.  **Launch**: Run `npm run dev` locally.
+2.  **OBS**: Add a **Browser Source** pointing to `http://localhost:5173`.
+3.  **Mode**: Toggle **Streamer Mode** in the Scene tab to hide UI.
+4.  **Keying**: Use a transparent background or green screen for compositing.
+
 ### 🎥 **For Mocap Performers**
 **Goal: Record a custom motion.**
 1.  **Mocap Tab**: Click "Start Camera".

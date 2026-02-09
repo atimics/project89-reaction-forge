@@ -372,6 +372,20 @@ Settings:
 
 ---
 
+## 📡 Streaming & Broadcasting
+
+PoseLab can be used as a high-quality avatar source for live streaming (OBS, Streamlabs, etc.) using its **built-in motion capture** or **external VMC tracking**.
+
+### Quick Setup for OBS Studio
+1. **Launch PoseLab** locally (`npm run dev`)
+2. Add a **Browser Source** in OBS
+3. Set URL to your localhost (e.g., `http://localhost:5173`)
+4. Enable **Streamer Mode** in the Scene tab to hide UI
+
+👉 **[Read the full Streaming Guide](STREAMING-GUIDE.md)** for detailed instructions on transparency, chroma keying, and performance tips.
+
+---
+
 ## ⌨️ Keyboard Shortcuts
 
 | Shortcut | Action |
