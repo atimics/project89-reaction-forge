@@ -100,6 +100,15 @@ function App() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  // Trigger resize when layout modes change to ensure 3D canvas fills the space
+  useEffect(() => {
+    // Small timeout to allow CSS transition/reflow to complete
+    const timeout = setTimeout(() => {
+      window.dispatchEvent(new Event('resize'));
+    }, 50);
+    return () => clearTimeout(timeout);
+  }, [streamMode, focusModeActive, mobileDrawerOpen]);
+
   // Handle URL parameters for auto-stream mode
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
