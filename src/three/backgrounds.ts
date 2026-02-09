@@ -125,6 +125,11 @@ const backgroundDefinitions: BackgroundDefinition[] = [
     label: 'Green Screen',
     color: '#00ff00',
   },
+  {
+    id: 'transparent',
+    label: 'Transparent',
+    color: 'transparent', // Logic handled in applyBackground
+  },
 ];
 
 // Cache loaded textures
@@ -150,6 +155,13 @@ export function getBackgroundDefinition(id: BackgroundId | string): BackgroundDe
 }
 
 export async function applyBackground(scene: THREE.Scene, id: BackgroundId | string): Promise<AnimatedBackground | null> {
+  // Special case for Transparent
+  if (id === 'transparent') {
+    scene.background = null;
+    console.log('[Background] Applied transparent');
+    return null;
+  }
+
   const definition = getBackgroundDefinition(id);
   
   // Note: We don't clear scene.environment here anymore, to allow mixing Backgrounds with HDRI lighting.

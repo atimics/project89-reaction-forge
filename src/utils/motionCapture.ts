@@ -1,4 +1,3 @@
-import { Camera } from '@mediapipe/camera_utils';
 import { Holistic, type Results } from '@mediapipe/holistic';
 import * as Kalidokit from 'kalidokit';
 import { VRM, VRMHumanBoneName } from '@pixiv/three-vrm';
@@ -142,7 +141,6 @@ type HandLandmarks2D = any;
 
 export class MotionCaptureManager {
   private holistic: Holistic | null = null; // Main thread holistic instance
-  private camera?: Camera;
   private vrm?: VRM;
   private videoElement: HTMLVideoElement;
   private isTracking = false;
@@ -168,6 +166,9 @@ export class MotionCaptureManager {
   private currentRootPosition: THREE.Vector3 = new THREE.Vector3();
   private tickDispose?: () => void; // Replaces updateLoopId
   private baseHipsPosition: THREE.Vector3 = new THREE.Vector3(0, 1.0, 0);
+
+  // Custom Loop State for Camera
+  private cameraLoopId?: number;
 
   // Hand Tracking State
   private lastLeftHandLandmarks2D: HandLandmarks2D = null;
@@ -311,7 +312,7 @@ export class MotionCaptureManager {
     console.log('[MotionCaptureManager] Available blendshapes:', Array.from(this.availableBlendshapes));
   }
 
-  async start() {
+  async start(deviceId?: string) {
     if (this.isTracking) return;
     
     try {
@@ -319,18 +320,29 @@ export class MotionCaptureManager {
             this.vrm.lookAt.target = undefined; 
         }
 
-        this.camera = new Camera(this.videoElement, {
-            onFrame: async () => {
-                if (this.holistic) {
-                    await this.holistic.send({ image: this.videoElement });
-                }
-            },
-            width: CAMERA_CONFIG.WIDTH,
-            height: CAMERA_CONFIG.HEIGHT,
-            facingMode: CAMERA_CONFIG.FACING_MODE, 
+        // Custom MediaStream management to support device selection
+        // Use provided deviceId or fall back to FACING_MODE
+        const constraints: MediaStreamConstraints = {
+            video: deviceId 
+                ? { deviceId: { exact: deviceId }, width: CAMERA_CONFIG.WIDTH, height: CAMERA_CONFIG.HEIGHT }
+                : { facingMode: CAMERA_CONFIG.FACING_MODE, width: CAMERA_CONFIG.WIDTH, height: CAMERA_CONFIG.HEIGHT }
+        };
+
+        console.log('[MotionCaptureManager] Requesting camera with constraints:', constraints);
+        const stream = await navigator.mediaDevices.getUserMedia(constraints);
+        this.videoElement.srcObject = stream;
+        
+        // Wait for video to be ready
+        await new Promise<void>((resolve) => {
+            this.videoElement.onloadedmetadata = () => {
+                this.videoElement.play();
+                resolve();
+            };
         });
 
-        await this.camera.start();
+        // Start processing loop
+        this.startCameraProcessingLoop();
+
         this.isTracking = true;
         this.startUpdateLoop('camera');
         this.recordingStartTime = performance.now();
@@ -340,29 +352,42 @@ export class MotionCaptureManager {
     }
   }
 
-  stop() {
-    if (this.camera) {
-        try {
-            if (typeof (this.camera as any).stop === 'function') {
-                (this.camera as any).stop();
-            }
-        } catch (e) {
-            console.warn('[MotionCaptureManager] Failed to stop MediaPipe camera:', e);
-        }
+  private startCameraProcessingLoop() {
+      const loop = async () => {
+          if (!this.videoElement.paused && !this.videoElement.ended && this.holistic) {
+              await this.holistic.send({ image: this.videoElement });
+          }
+          if (this.videoElement.srcObject) {
+               // Use requestVideoFrameCallback if available for better performance/sync
+               if ('requestVideoFrameCallback' in this.videoElement) {
+                   // @ts-ignore
+                   this.videoElement.requestVideoFrameCallback(loop);
+               } else {
+                   this.cameraLoopId = requestAnimationFrame(loop);
+               }
+          }
+      };
+      loop();
+  }
 
-        // Force stop all tracks to ensure camera light goes off
-        const stream = this.videoElement.srcObject as MediaStream | null;
-        if (stream && stream.getTracks) {
-            stream.getTracks().forEach(track => {
-                track.stop();
-                console.log('[MotionCaptureManager] Stopped camera track:', track.label);
-            });
-        }
-        
-        this.videoElement.srcObject = null;
-        this.videoElement.pause();
-        this.camera = undefined;
+  stop() {
+    // Stop the custom loop
+    if (this.cameraLoopId) {
+        cancelAnimationFrame(this.cameraLoopId);
+        this.cameraLoopId = undefined;
     }
+
+    if (this.videoElement.srcObject) {
+        const stream = this.videoElement.srcObject as MediaStream;
+        stream.getTracks().forEach(track => {
+            track.stop();
+            console.log('[MotionCaptureManager] Stopped camera track:', track.label);
+        });
+        this.videoElement.srcObject = null;
+    }
+    
+    this.videoElement.pause();
+    this.camera = undefined;
     
     this.isTracking = false;
     this.stopUpdateLoop('camera');

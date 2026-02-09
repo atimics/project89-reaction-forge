@@ -777,17 +777,29 @@
   transition: var(--transition-all);
 }
 
+/* Ensure select elements have a clean appearance but respect OS dropdown */
+.field select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%239ca3af' viewBox='0 0 256 256'%3E%3Cpath d='M213.66,101.66l-80,80a8,8,0,0,1-11.32,0l-80-80A8,8,0,0,1,53.66,90.34L128,164.69l74.34-74.35a8,8,0,0,1,11.32,11.32Z'%3E%3C/path%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  padding-right: 2.5rem;
+  color-scheme: dark; /* Force dark scrollbars and dropdowns on supported browsers */
+}
+
+/* Override option styling where possible (mainly Chrome/Firefox on desktop) */
+.field select option {
+  background-color: var(--color-surface); /* Opaque dark background */
+  color: var(--text-primary);
+  padding: 8px;
+}
+
 .field input:focus,
 .field select:focus,
 .text-input:focus {
   outline: none;
   border-color: var(--accent);
   box-shadow: 0 0 0 3px rgba(0, 255, 214, 0.1);
-}
-
-.field select,
-.text-input {
-  appearance: none;
 }
 
 .text-input {
@@ -1803,6 +1815,81 @@
 
 .control-drawer {
   display: none;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   STREAM MODE / VIRTUAL CAM OUTPUT
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.app-shell.stream-mode {
+  /* Ensure background is transparent so OBS Browser Source can pick up alpha */
+  background: transparent !important;
+}
+
+.app-shell.stream-mode .app-header,
+.app-shell.stream-mode .control-panel,
+.app-shell.stream-mode .viewport-overlay,
+.app-shell.stream-mode .control-toggle {
+  display: none !important;
+}
+
+.app-shell.stream-mode .viewport {
+  padding: 0 !important;
+  width: 100vw;
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 9999;
+}
+
+.app-shell.stream-mode .canvas-container {
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent !important;
+}
+
+.app-shell.stream-mode .canvas-stage {
+  background: transparent !important;
+}
+
+/* Hide decorative elements in stream mode */
+.app-shell.stream-mode .canvas-container::before,
+.app-shell.stream-mode .canvas-container::after,
+.app-shell.stream-mode .viewport-halo {
+  display: none;
+}
+
+.exit-stream-mode-btn {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 10000;
+  padding: var(--space-3) var(--space-5);
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: var(--text-primary);
+  border-radius: var(--radius-full);
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  opacity: 0; /* Hidden by default */
+}
+
+.exit-stream-mode-btn:hover,
+.app-shell.stream-mode:hover .exit-stream-mode-btn {
+  opacity: 1; /* Show on hover */
+}
+
+.exit-stream-mode-btn:hover {
+  background: var(--accent);
+  color: var(--color-abyss);
+  border-color: var(--accent);
+  transform: translateY(2px);
+  box-shadow: 0 4px 12px rgba(0, 255, 214, 0.3);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════

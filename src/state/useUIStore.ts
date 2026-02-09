@@ -21,6 +21,7 @@ interface UIState {
   // Global UI State
   activeCssOverlay: string | null;
   focusModeActive: boolean;
+  streamMode: boolean; // Virtual Camera / Clean Output Mode
   
   setMode: (mode: AppMode) => void;
   setReactionTab: (tab: ReactionTab) => void;
@@ -39,6 +40,7 @@ interface UIState {
   
   setActiveCssOverlay: (overlay: string | null) => void;
   setFocusModeActive: (active: boolean) => void;
+  setStreamMode: (active: boolean) => void;
 }
 
 export const useUIStore = create<UIState>((set) => ({
@@ -55,6 +57,7 @@ export const useUIStore = create<UIState>((set) => ({
   
   activeCssOverlay: null,
   focusModeActive: false,
+  streamMode: false,
 
   setMode: (mode) => set({ mode }),
   setReactionTab: (tab) => set({ reactionTab: tab }),
@@ -73,4 +76,5 @@ export const useUIStore = create<UIState>((set) => ({
   
   setActiveCssOverlay: (overlay) => set({ activeCssOverlay: overlay }),
   setFocusModeActive: (focusModeActive) => set({ focusModeActive }),
+  setStreamMode: (streamMode) => set({ streamMode }),
 }));

@@ -14,8 +14,10 @@ import {
   FolderOpen, 
   Question,
   Atom,
-  Flask
+  Flask,
+  Broadcast
 } from '@phosphor-icons/react';
+import { useUIStore } from '../state/useUIStore';
 
 interface AppHeaderProps {
   mode: 'reactions' | 'poselab';
@@ -32,6 +34,7 @@ export function AppHeader({ mode, onModeChange }: AppHeaderProps) {
   const isAvatarReady = useReactionStore((state) => state.isAvatarReady);
   const { addToast } = useToastStore();
   const resetSceneSettings = useSceneSettingsStore((state) => state.resetAll);
+  const setStreamMode = useUIStore((state) => state.setStreamMode);
 
   const handleResetScene = () => {
     if (confirm('Reset scene settings to default? This will clear lighting, effects, and background settings.')) {
@@ -214,6 +217,20 @@ export function AppHeader({ mode, onModeChange }: AppHeaderProps) {
             onChange={handleProjectLoad}
             style={{ display: 'none' }}
           />
+
+          <div style={{ width: '1px', height: '20px', background: 'var(--border-color)', margin: '0 0.5rem' }}></div>
+
+          <button 
+            className="icon-button"
+            style={{ width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+            onClick={() => {
+                setStreamMode(true);
+                addToast("Stream Mode Active (Press Esc to exit)", "info");
+            }}
+            title="Virtual Camera / Stream Mode (Clean Output)"
+          >
+            <Broadcast size={20} weight="duotone" style={{ color: 'var(--accent)' }} />
+          </button>
 
           <button 
             className="icon-button"

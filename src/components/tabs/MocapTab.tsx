@@ -12,6 +12,7 @@ import { sceneManager } from '../../three/sceneManager';
 import { webXRManager } from '../../utils/webXRManager';
 import { vmcInputManager } from '../../utils/vmcInput';
 import { setMocapManager } from '../../utils/mocapInstance';
+import { useMediaDevices } from '../../hooks/useMediaDevices';
 import { 
   VideoCamera, 
   Person, 
@@ -24,7 +25,8 @@ import {
   StopCircle,
   Lightbulb,
   ArrowRight,
-  Lock
+  Lock,
+  Camera
 } from '@phosphor-icons/react';
 
 export function MocapTab() {
@@ -71,8 +73,13 @@ export function MocapTab() {
   const [vmcStatus, setVmcStatus] = useState(vmcInputManager.getStatus());
   const [vmcError, setVmcError] = useState<string | null>(null);
 
+  // Camera Selection
+  const { devices, fetchDevices } = useMediaDevices();
+  const [selectedDeviceId, setSelectedDeviceId] = useState<string>('');
+
   useEffect(() => {
     webXRManager.isSupported().then(setArSupported);
+
 
     if (videoRef.current && !managerRef.current) {
         managerRef.current = new MotionCaptureManager(videoRef.current);
@@ -308,7 +315,10 @@ export function MocapTab() {
       }
 
       managerRef.current.setVRM(vrm);
-      await managerRef.current.start();
+      
+      // Pass the selected device ID if available
+      await managerRef.current.start(selectedDeviceId || undefined);
+      
       // For both Full Body and Upper Body (Face) tracking, we pause animation so
       // mocap has full control over tracked bones without animation sway.
       avatarManager.freezeCurrentPose();
@@ -456,8 +466,30 @@ export function MocapTab() {
             Control your avatar with your webcam. Full Body mode uses pose + hands + face, so keep your full body in frame and ensure good lighting.
         </p>
         
+        {/* Camera Selector */}
+        {!isActive && devices.length > 0 && (
+          <div className="field" style={{ marginBottom: '10px' }}>
+             <label htmlFor="camera-select" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <Camera size={14} /> Camera Input
+             </label>
+             <select 
+               id="camera-select"
+               value={selectedDeviceId}
+               onChange={(e) => setSelectedDeviceId(e.target.value)}
+               className="full-width"
+             >
+               <option value="">Default Camera</option>
+               {devices.map(device => (
+                 <option key={device.deviceId} value={device.deviceId}>
+                   {device.label || `Camera ${device.deviceId.slice(0, 5)}...`}
+                 </option>
+               ))}
+             </select>
+          </div>
+        )}
+
         <div style={{ 
-            position: 'relative', 
+            position: 'relative',  
             width: '100%', 
             aspectRatio: '4/3', 
             background: '#000', 

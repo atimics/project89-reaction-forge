@@ -6,7 +6,7 @@ import { useUIStore } from '../state/useUIStore';
 import { useSceneSettingsStore } from '../state/useSceneSettingsStore';
 import { useIntroStore } from '../state/useIntroStore';
 import type { ReactionPreset } from '../types/reactions';
-import { findPresetById } from '../data/reactions';
+import { findPresetById, reactionPresets } from '../data/reactions';
 import { useAvatarSource } from '../state/useAvatarSource';
 import { live2dManager } from '../live2d/live2dManager';
 import { OnboardingOverlay } from './OnboardingOverlay';
@@ -235,9 +235,12 @@ export function CanvasStage() {
   }, [presetId, avatarReady, animationMode]);
 
   useEffect(() => {
-    if (!avatarReady || !liveControlsEnabled) return;
-
-    const hotkeyMap: Record<string, string> = {
+    // Hotkeys logic
+    // 1-4: Camera Presets (Head, Quarter, Side, Full)
+    // 0: Reset Camera
+    // Arrow Keys: Reaction Presets (when Live Mode is enabled)
+    
+    const arrowMap: Record<string, string> = {
       ArrowUp: 'sunset-call',
       ArrowDown: 'signal-reverie',
       ArrowLeft: 'simple-wave',
@@ -249,10 +252,32 @@ export function CanvasStage() {
       if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
       if (isEditableTarget(event.target)) return;
 
-      const presetId = hotkeyMap[event.key];
-      if (!presetId) return;
-      event.preventDefault();
-      setPresetById(presetId);
+      // 1. Camera Hotkeys (Priority)
+      // Standard number keys or Numpad keys (event.key handles both usually)
+      switch (event.key) {
+        case '1':
+          sceneManager.setCameraPreset('headshot', true);
+          return;
+        case '2':
+          sceneManager.setCameraPreset('quarter', true);
+          return;
+        case '3':
+          sceneManager.setCameraPreset('side', true);
+          return;
+        case '4':
+          sceneManager.setCameraPreset('fullbody', true);
+          return;
+        case '0':
+          sceneManager.resetCamera();
+          return;
+      }
+
+      // 2. Reaction Presets (Live Mode only)
+      if (liveControlsEnabled && arrowMap[event.key]) {
+        event.preventDefault();
+        setPresetById(arrowMap[event.key]);
+        return;
+      }
     };
 
     window.addEventListener('keydown', handleKeyDown);
@@ -323,31 +348,6 @@ export function CanvasStage() {
     console.log('[CanvasStage] Preset or animation mode changed, applying:', preset.id, animationMode);
     applyPreset(preset);
   }, [presetId, avatarReady, animationMode, applyPreset]);
-
-  useEffect(() => {
-    if (!avatarReady || !liveControlsEnabled) return;
-
-    const hotkeyMap: Record<string, string> = {
-      ArrowUp: 'sunset-call',
-      ArrowDown: 'signal-reverie',
-      ArrowLeft: 'simple-wave',
-      ArrowRight: 'point',
-    };
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.repeat) return;
-      if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
-      if (isEditableTarget(event.target)) return;
-
-      const presetId = hotkeyMap[event.key];
-      if (!presetId) return;
-      event.preventDefault();
-      setPresetById(presetId);
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [avatarReady, liveControlsEnabled, setPresetById]);
 
   useEffect(() => {
     const handleCaptureKeyDown = async (event: KeyboardEvent) => {

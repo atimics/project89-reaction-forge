@@ -24,8 +24,26 @@ initAvatarBridge();
 
 function App() {
   const { mode, setMode, mobileDrawerOpen, setMobileDrawerOpen, focusModeActive } = useUIStore();
+  const streamMode = useUIStore((state) => state.streamMode);
   const { theme, locale, textScale, autosaveEnabled, autosaveIntervalMinutes, autosaveMaxEntries } = useSettingsStore();
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 960);
+
+  // Handle body transparency for Stream Mode
+  useEffect(() => {
+    if (streamMode) {
+      // Force transparent background on body and html to allow OBS transparency
+      document.body.style.backgroundColor = 'transparent';
+      document.documentElement.style.backgroundColor = 'transparent';
+    } else {
+      document.body.style.backgroundColor = '';
+      document.documentElement.style.backgroundColor = '';
+    }
+    
+    return () => {
+      document.body.style.backgroundColor = '';
+      document.documentElement.style.backgroundColor = '';
+    };
+  }, [streamMode]);
 
   useEffect(() => {
     // Apply theme to HTML element
@@ -82,8 +100,29 @@ function App() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  // Handle URL parameters for auto-stream mode
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('stream') === 'true' || params.get('clean') === 'true') {
+      useUIStore.getState().setStreamMode(true);
+    }
+  }, []);
+
+  // Handle Esc to exit Stream Mode
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && useUIStore.getState().streamMode) {
+        // Prevent if default prevented (e.g. closing a modal)
+        if (e.defaultPrevented) return;
+        useUIStore.getState().setStreamMode(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   return (
-    <div className={`app-shell ${focusModeActive ? 'focus-mode' : ''}`}>
+    <div className={`app-shell ${focusModeActive ? 'focus-mode' : ''} ${streamMode ? 'stream-mode' : ''}`}>
       <AppHeader mode={mode} onModeChange={setMode} />
       
       <main className="layout">
@@ -97,6 +136,17 @@ function App() {
 
         {!isMobile && <ControlPanel mode={mode} />}
       </main>
+
+      {/* Exit Stream Mode Button */}
+      {streamMode && (
+        <button 
+          className="exit-stream-mode-btn"
+          onClick={() => useUIStore.getState().setStreamMode(false)}
+          title="Exit Virtual Cam Mode (Esc)"
+        >
+          Exit Virtual Cam Mode
+        </button>
+      )}
 
       {/* Mobile drawer toggle */}
       {isMobile && (

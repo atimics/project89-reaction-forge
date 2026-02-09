@@ -68,8 +68,8 @@ This document outlines the planned upgrades and feature requests for PoseLab, fo
 
 ### 2. 📺 Live Streaming & Capture
 **Goal:** Ship a creator-ready streaming pipeline.
-- [ ] **Virtual Camera Output:** Pipe the canvas into OBS as a virtual camera.
-- [ ] **Streaming Overlay Mode:** Full-screen overlay with transparent background options.
+- [x] **Virtual Camera Output:** Facilitated via "Stream Mode" (Clean UI + Transparent Background) for OBS Browser Source.
+- [x] **Virtual Camera Input:** Select specific camera device (e.g. OBS Virtual Camera) for mocap input.
 - [ ] **Audio Sync:** Optionally capture mic audio with the render stream.
 
 ### 2. ♾️ Evergreen Utility
