@@ -182,6 +182,7 @@ export function AppHeader({ mode, onModeChange }: AppHeaderProps) {
             <span className={`status-dot ${isAvatarReady ? 'ready' : 'loading'}`} />
             <span className="status-text">{isAvatarReady ? 'Ready' : 'Loading...'}</span>
           </div>
+
           <button 
             className="icon-button"
             style={{ width: '32px', height: '32px', marginLeft: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
