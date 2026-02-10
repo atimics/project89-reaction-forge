@@ -418,6 +418,8 @@
   border: 1px solid var(--glass-border);
   box-shadow: var(--shadow-lg);
   pointer-events: auto;
+  display: flex;
+  align-items: center;
 }
 
 .viewport-overlay.bottom-right {

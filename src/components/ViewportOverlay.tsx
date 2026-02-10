@@ -46,6 +46,8 @@ interface ViewportOverlayProps {
   onStop?: () => void;
 }
 
+import { MusicPlayer } from './MusicPlayer';
+
 export function ViewportOverlay({ mode, isPlaying, onPlayPause, onStop }: ViewportOverlayProps) {
   const { activeCssOverlay, setFocusModeActive } = useUIStore();
   const { randomize, isAvatarReady, setPresetById } = useReactionStore();
@@ -532,6 +534,9 @@ export function ViewportOverlay({ mode, isPlaying, onPlayPause, onStop }: Viewpo
             {showClock ? <EyeSlash size={18} weight="duotone" /> : <Eye size={18} weight="duotone" />}
           </button>
         </div>
+        
+        {/* Ambient Music Player */}
+        <MusicPlayer />
       </div>
 
       {/* Logo overlay - hidden but preserved for potential future use or reference */}
