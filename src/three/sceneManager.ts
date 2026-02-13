@@ -90,10 +90,29 @@ class SceneManager {
   private currentOverlayOpacity: number = 1.0;
   private animatedBackground?: AnimatedBackground;
   private lastBackgroundId?: string;
+  private isMobile = false;
 
   init(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
     this.scene = new THREE.Scene();
+    
+    // Detect mobile device
+    this.isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || window.matchMedia('(pointer: coarse)').matches;
+    
+    // Enforce mobile performance defaults immediately if fresh session
+    if (this.isMobile) {
+        console.log('[SceneManager] Mobile device detected. Optimizing defaults.');
+        // We update the store so the UI reflects this state
+        const store = useSettingsStore.getState();
+        // Only override if we are on 'high' (default) to avoid overriding user preference if they set it lower
+        if (store.quality === 'high' || store.quality === 'ultra') {
+            store.setQuality('medium');
+        }
+        if (store.shadows) {
+            store.setShadows(false);
+        }
+    }
+
     this.currentAspectRatio = this.getInitialAspectRatio();
     this.camera = new THREE.PerspectiveCamera(
       CAMERA_CONFIG.FOV,
@@ -132,8 +151,14 @@ class SceneManager {
     );
     this.controls.enablePan = true;
     this.controls.enableDamping = true;
+    this.controls.dampingFactor = 0.05; // Smoother damping
     this.controls.minDistance = CAMERA_CONFIG.MIN_DISTANCE;
     this.controls.maxDistance = CAMERA_CONFIG.MAX_DISTANCE;
+    
+    // Mobile touch optimizations
+    if (this.isMobile) {
+        this.controls.rotateSpeed = 0.7; // Slower rotation for better control
+    }
 
     this.handleResize = this.handleResize.bind(this);
     window.addEventListener('resize', this.handleResize);
@@ -189,10 +214,17 @@ class SceneManager {
     // Resolution
     let pixelRatio = 1;
     switch(state.quality) {
+       case 'ultra': pixelRatio = window.devicePixelRatio; break; // Uncapped native resolution
        case 'high': pixelRatio = Math.min(window.devicePixelRatio, 2); break;
        case 'medium': pixelRatio = 0.8; break;
        case 'low': pixelRatio = 0.5; break;
     }
+    
+    // Cap pixel ratio on mobile to save battery and performance
+    if (this.isMobile && pixelRatio > 1.5) {
+        pixelRatio = 1.5;
+    }
+    
     this.renderer.setPixelRatio(pixelRatio);
 
     // Shadows
@@ -205,9 +237,17 @@ class SceneManager {
            obj.castShadow = state.shadows;
            // Optimize shadow map
            if (state.shadows) {
-               obj.shadow.mapSize.width = 1024;
-               obj.shadow.mapSize.height = 1024;
-               obj.shadow.bias = -0.001;
+               // Ultra quality gets 4K shadows, High gets 2K, others get 1K
+               const mapSize = state.quality === 'ultra' ? 4096 : (state.quality === 'high' ? 2048 : 1024);
+               obj.shadow.mapSize.width = mapSize;
+               obj.shadow.mapSize.height = mapSize;
+               obj.shadow.bias = -0.0005; // Tighter bias for higher res
+               
+               // Updates shadow map if it changed
+               if (obj.shadow.map) {
+                   obj.shadow.map.dispose();
+                   obj.shadow.map = null as any;
+               }
            }
        }
     });

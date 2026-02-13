@@ -75,6 +75,7 @@ export function ViewportOverlay({ mode, isPlaying, onPlayPause, onStop }: Viewpo
   
   // Recording State
   const [isRecording, setIsRecording] = useState(false);
+  const [mobileCameraOpen, setMobileCameraOpen] = useState(false);
   
   // Sparkle celebration effect
   const { active: sparklesActive, trigger: triggerSparkles } = useSparkles(3000);
@@ -209,26 +210,31 @@ export function ViewportOverlay({ mode, isPlaying, onPlayPause, onStop }: Viewpo
     setAspectRatio(ratio);
     sceneManager.setAspectRatio(ratio);
     notifySceneChange({ aspectRatio: ratio });
+    setMobileCameraOpen(false);
   };
 
   const handleHeadshotView = () => {
     directorManager.stop();
     sceneManager.setCameraPreset('headshot', true);
+    setMobileCameraOpen(false);
   };
 
   const handleQuarterView = () => {
     directorManager.stop();
     sceneManager.setCameraPreset('quarter', true);
+    setMobileCameraOpen(false);
   };
 
   const handleSideView = () => {
     directorManager.stop();
     sceneManager.setCameraPreset('side', true);
+    setMobileCameraOpen(false);
   };
 
   const handleResetCamera = () => {
     directorManager.stop();
     sceneManager.resetCamera();
+    setMobileCameraOpen(false);
   };
 
   const stopFocusSprint = (showGallery: boolean) => {
@@ -377,7 +383,15 @@ export function ViewportOverlay({ mode, isPlaying, onPlayPause, onStop }: Viewpo
   return (
     <>
       {/* Camera controls - top left */}
-      <div className="viewport-overlay top-left">
+      <div className={`viewport-overlay top-left ${mobileCameraOpen ? 'mobile-open' : ''}`}>
+        <button 
+          className="mobile-camera-toggle icon-button"
+          onClick={() => setMobileCameraOpen(!mobileCameraOpen)}
+          title="Camera Tools"
+        >
+          <VideoCamera size={20} weight="fill" />
+        </button>
+
         <div className="camera-controls" style={{ alignItems: 'center' }}>
           <button
             className="icon-button"

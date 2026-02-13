@@ -202,31 +202,32 @@ export function OnboardingOverlay() {
      return (
         <div className="onboarding-overlay">
           <div className="onboarding-card">
-              <div className="onboarding-icon"><Eye size={48} weight="duotone" /></div>
-              <h2>Welcome to PoseLab</h2>
-              <p>Create stunning poses, animations, and captures with your VRM avatar.</p>
+              <div className="onboarding-icon onboarding-item"><Eye size={64} weight="duotone" /></div>
               
-              <div className="onboarding-actions">
+              <h2 className="onboarding-item delay-1">Welcome to PoseLab</h2>
+              <p className="onboarding-item delay-2">
+                Your professional studio for 3D avatars. <br/>
+                Pose, animate, and capture in seconds.
+              </p>
+              
+              <div className="onboarding-actions onboarding-item delay-3">
                 <button 
-                    className="primary large full-width"
+                    className="onboarding-btn primary"
                     onClick={() => vrmInputRef.current?.click()}
                 >
-                    <FolderOpen size={18} weight="duotone" /> Load Your VRM
+                    <FolderOpen size={20} weight="duotone" /> Load Custom VRM
                 </button>
                 
+                <div className="onboarding-divider onboarding-item delay-4">or</div>
+
                 <button 
-                    className="secondary full-width"
+                    className="onboarding-btn secondary onboarding-item delay-4"
                     onClick={loadSampleAvatar}
                     disabled={isAvatarListLoading}
                 >
-                    <DiceFive size={18} weight="duotone" /> {isAvatarListLoading ? 'Connecting...' : 'Try Random Avatar'}
+                    <DiceFive size={20} weight="duotone" /> 
+                    {isAvatarListLoading ? 'Summoning...' : 'Load Random Avatar'}
                 </button>
-
-                <div className="divider" style={{ margin: '1.5rem 0', borderTop: '1px solid var(--border-color)' }}></div>
-                
-                <p className="muted small" style={{ marginBottom: 0 }}>
-                    New here? Try a random avatar to explore all features.
-                </p>
               </div>
 
               <input

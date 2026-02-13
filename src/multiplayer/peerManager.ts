@@ -32,10 +32,11 @@ class PeerManager {
   private backgroundTransferHandlers = new Set<BackgroundTransferHandler>();
   private config: MultiplayerConfig;
   private reconnectTimers = new Map<PeerId, ReturnType<typeof setTimeout>>();
+  private heartbeatInterval: ReturnType<typeof setInterval> | null = null;
   private isDestroyed = false;
 
   // Temporary storage for incoming file chunks
-  private incomingFileBuffers = new Map<PeerId, Map<string, { chunks: string[]; totalChunks: number; fileName: string; fileType: string }>>();
+  private incomingFileBuffers = new Map<PeerId, Map<string, { chunks: (string | ArrayBuffer)[]; totalChunks: number; fileName: string; fileType: string }>>();
   
   // Auto-reconnect state
   private reconnectAttempts = 0;
@@ -94,6 +95,8 @@ class PeerManager {
 
         // Share peer instance with voice chat manager
         voiceChatManager.setPeer(this.peer);
+        
+        this.startHeartbeat();
         
         // Store for auto-reconnect
         this.lastRoomId = id;
@@ -181,7 +184,7 @@ class PeerManager {
         console.log('[PeerManager] Connecting to host:', roomId);
         const conn = this.peer!.connect(roomId, {
           reliable: true,
-          serialization: 'json',
+          serialization: 'binary',
         });
 
         conn.on('open', () => {
@@ -216,6 +219,8 @@ class PeerManager {
             peerId: id,
             timestamp: Date.now(),
           });
+          
+          this.startHeartbeat();
           
           // Store for auto-reconnect
           this.lastRoomId = roomId;
@@ -666,9 +671,18 @@ class PeerManager {
 
     if (receivedAllChunks) {
       console.log(`[PeerManager] All chunks received for ${message.fileName} from ${peerId}.`);
-      // Reconstruct the file
-      const fullData = buffer.chunks.join('');
-      const dataUrl = `data:${buffer.fileType};base64,${fullData}`;
+      
+      let dataUrl: string;
+      
+      // Check if chunks are strings (base64) or ArrayBuffers
+      if (typeof buffer.chunks[0] === 'string') {
+          const fullData = buffer.chunks.join('');
+          dataUrl = `data:${buffer.fileType};base64,${fullData}`;
+      } else {
+          // Assume ArrayBuffer
+          const blob = new Blob(buffer.chunks as ArrayBuffer[], { type: buffer.fileType });
+          dataUrl = URL.createObjectURL(blob);
+      }
 
       this.notifyBackgroundTransfer(peerId, buffer.fileName, buffer.fileType, dataUrl);
 
@@ -796,6 +810,7 @@ class PeerManager {
    */
   destroy() {
     this.isDestroyed = true;
+    this.stopHeartbeat();
 
     // Disable voice chat
     voiceChatManager.disable();
@@ -901,6 +916,39 @@ class PeerManager {
     };
     this.send(peerId, completeMessage);
     console.log(`[PeerManager] Finished sending background ${file.name} to ${peerId}.`);
+  }
+
+  private startHeartbeat() {
+    if (this.heartbeatInterval) return;
+    
+    // Check connection health every 5 seconds
+    this.heartbeatInterval = setInterval(() => {
+      const store = useMultiplayerStore.getState();
+      const localPeerId = store.localPeerId;
+      if (!localPeerId) return;
+
+      this.connections.forEach((conn, peerId) => {
+        if (conn.open) {
+          try {
+            conn.send({
+              type: 'ping',
+              peerId: localPeerId,
+              timestamp: Date.now(),
+              sentAt: Date.now()
+            });
+          } catch (e) {
+            console.warn(`[PeerManager] Failed to send heartbeat to ${peerId}`, e);
+          }
+        }
+      });
+    }, 5000);
+  }
+
+  private stopHeartbeat() {
+    if (this.heartbeatInterval) {
+      clearInterval(this.heartbeatInterval);
+      this.heartbeatInterval = null;
+    }
   }
 
 }

@@ -5,15 +5,12 @@ import {
   SkipForward, 
   SkipBack, 
   SpeakerHigh, 
-  SpeakerLow,
-  MusicNotes,
   Playlist,
   X,
   Disc,
   SpeakerX,
   Trash,
   FolderOpen,
-  FileAudio,
   Shuffle,
   RepeatOnce
 } from '@phosphor-icons/react';
@@ -54,14 +51,46 @@ export function MusicPlayer() {
   const [isShuffle, setIsShuffle] = useState(false);
   const [isRepeatOne, setIsRepeatOne] = useState(false);
   
+  const [duration, setDuration] = useState(0);
+  const [currentTime, setCurrentTime] = useState(0);
+  
+  const [isMobile, setIsMobile] = useState(false);
+  
   const audioRef = useRef<HTMLAudioElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      const mobile = window.innerWidth <= 600 || window.matchMedia('(pointer: coarse)').matches;
+      setIsMobile(mobile);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   useEffect(() => {
     if (audioRef.current) {
       audioRef.current.volume = isMuted ? 0 : volume;
     }
   }, [volume, isMuted]);
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    const updateTime = () => setCurrentTime(audio.currentTime);
+    const updateDuration = () => setDuration(audio.duration);
+    
+    audio.addEventListener('timeupdate', updateTime);
+    audio.addEventListener('loadedmetadata', updateDuration);
+    
+    return () => {
+      audio.removeEventListener('timeupdate', updateTime);
+      audio.removeEventListener('loadedmetadata', updateDuration);
+    };
+  }, []);
 
   useEffect(() => {
     if (audioRef.current) {
@@ -82,6 +111,21 @@ export function MusicPlayer() {
 
   const togglePlay = () => {
     setIsPlaying(!isPlaying);
+  };
+
+  const formatTime = (time: number) => {
+    if (isNaN(time)) return "0:00";
+    const minutes = Math.floor(time / 60);
+    const seconds = Math.floor(time % 60);
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  };
+
+  const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const time = parseFloat(e.target.value);
+    setCurrentTime(time);
+    if (audioRef.current) {
+      audioRef.current.currentTime = time;
+    }
   };
 
   const nextTrack = () => {
@@ -149,7 +193,7 @@ export function MusicPlayer() {
   const trackSrc = currentTrack ? (currentTrack.isLocal ? currentTrack.url : `${PATH_PREFIX}${currentTrack.file}`) : undefined;
 
   return (
-    <div className="music-player-container">
+    <div className={`music-player-container ${isOpen ? 'open' : ''}`}>
       {/* Hidden Audio Element */}
       <audio
         ref={audioRef}
@@ -168,78 +212,143 @@ export function MusicPlayer() {
         style={{ display: 'none' }}
       />
 
-      {/* Floating Panel (Popup) */}
-      {isOpen && (
-        <div className="music-player-panel glass-panel">
-          <div className="music-header">
-            <h4>
-              <Playlist size={16} color="var(--accent)" />
-              PoseLab Studio
-            </h4>
-            <button 
-              className="control-btn"
-              onClick={() => setIsOpen(false)}
-              title="Close"
-            >
-              <X size={16} weight="bold" />
-            </button>
-          </div>
+      {/* Trigger Button (Spinning Record) */}
+      <button 
+        className={`music-trigger ${isOpen ? 'active' : ''}`}
+        onClick={() => setIsOpen(!isOpen)}
+        title="Music Player"
+      >
+        <div className={`record-disc ${isPlaying ? 'spin' : ''}`}>
+           <Disc size={24} weight="duotone" />
+        </div>
+      </button>
 
-          <div className="track-display-row">
-            <button 
-              className={`control-btn small ${isShuffle ? 'active' : ''}`} 
-              onClick={() => setIsShuffle(!isShuffle)}
-              title="Shuffle"
-            >
-              <Shuffle size={16} />
-            </button>
-            
-            <div className="track-info">
-              <div className="track-title" title={currentTrack?.title}>{currentTrack?.title || "No Track Selected"}</div>
-              <div className="track-artist">{currentTrack?.artist || "..."}</div>
+      {/* Mobile Modal Layout */}
+      {isMobile && isOpen && (
+        <div className="music-mobile-modal-overlay" onClick={() => setIsOpen(false)}>
+          <div className="music-mobile-card" onClick={e => e.stopPropagation()}>
+            <div className="music-mobile-header">
+              <h4><Playlist size={20} color="var(--accent)" weight="duotone" /> Studio Player</h4>
+              <button className="control-btn" onClick={() => setIsOpen(false)}>
+                <X size={24} weight="bold" />
+              </button>
             </div>
 
-            <button 
-              className={`control-btn small ${isRepeatOne ? 'active' : ''}`} 
-              onClick={() => setIsRepeatOne(!isRepeatOne)}
-              title="Repeat One"
-            >
-              <RepeatOnce size={16} />
-            </button>
-          </div>
+            <div className="music-mobile-track-info">
+              <div className={`music-mobile-disc ${isPlaying ? 'spin' : ''}`}>
+                <Disc size={80} weight="duotone" />
+              </div>
+              <div className="track-title large">{currentTrack?.title || "No Track Selected"}</div>
+              <div className="track-artist uppercase tiny bold muted-dark">{currentTrack?.artist || "..."}</div>
+            </div>
 
-          <div className="player-controls">
-            <button className="control-btn" onClick={prevTrack} title="Previous" disabled={tracks.length === 0}>
-              <SkipBack size={24} weight="fill" />
+            <div className="progress-container large">
+              <input 
+                type="range" 
+                className="progress-slider"
+                min="0" 
+                max={duration || 0} 
+                value={currentTime}
+                onChange={handleSeek}
+              />
+              <div className="time-row">
+                <span className="time-text">{formatTime(currentTime)}</span>
+                <span className="time-text">{formatTime(duration)}</span>
+              </div>
+            </div>
+
+            <div className="player-controls large">
+              <button className="control-btn" onClick={() => setIsShuffle(!isShuffle)}>
+                <Shuffle size={24} className={isShuffle ? 'active-icon' : ''} />
+              </button>
+              <button className="control-btn" onClick={prevTrack}>
+                <SkipBack size={32} weight="fill" />
+              </button>
+              <button className="play-pause-large" onClick={togglePlay}>
+                {isPlaying ? <Pause size={36} weight="fill" /> : <Play size={36} weight="fill" />}
+              </button>
+              <button className="control-btn" onClick={nextTrack}>
+                <SkipForward size={32} weight="fill" />
+              </button>
+              <button className="control-btn" onClick={() => setIsRepeatOne(!isRepeatOne)}>
+                <RepeatOnce size={24} className={isRepeatOne ? 'active-icon' : ''} />
+              </button>
+            </div>
+
+            <div className="music-mobile-volume">
+               <SpeakerHigh size={18} weight="duotone" color="var(--text-tertiary)" />
+               <input 
+                type="range" 
+                className="mobile-volume-slider"
+                min="0" 
+                max="1" 
+                step="0.01" 
+                value={isMuted ? 0 : volume}
+                onChange={(e) => {
+                  setVolume(parseFloat(e.target.value));
+                  setIsMuted(false);
+                }}
+              />
+            </div>
+
+            <div className="mobile-actions-row">
+              <button className="action-chip" onClick={() => fileInputRef.current?.click()}>
+                <FolderOpen size={18} weight="duotone" /> Load Local
+              </button>
+              <button className="action-chip danger" onClick={handleClearPlaylist}>
+                <Trash size={18} weight="duotone" /> Clear
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Desktop Horizontal Sliding Drawer */}
+      {!isMobile && (
+      <div className={`music-drawer ${isOpen ? 'open' : ''}`}>
+        <div className="music-drawer-content">
+          
+          {/* Controls Group */}
+          <div className="drawer-controls">
+            <button className="control-btn small" onClick={prevTrack} title="Previous">
+              <SkipBack size={16} weight="fill" />
             </button>
             <button 
-              className="control-btn play-pause" 
+              className="control-btn small" 
               onClick={togglePlay}
               title={isPlaying ? "Pause" : "Play"}
-              disabled={tracks.length === 0}
             >
-              {isPlaying ? <Pause size={24} weight="fill" /> : <Play size={24} weight="fill" />}
+              {isPlaying ? <Pause size={16} weight="fill" /> : <Play size={16} weight="fill" />}
             </button>
-            <button className="control-btn" onClick={nextTrack} title="Next" disabled={tracks.length === 0}>
-              <SkipForward size={24} weight="fill" />
+            <button className="control-btn small" onClick={nextTrack} title="Next">
+              <SkipForward size={16} weight="fill" />
             </button>
           </div>
 
-          <div className="volume-control">
+          {/* Track Info */}
+          <div className="drawer-info">
+            <div className="drawer-track-title" title={currentTrack?.title || "No Track"}>
+              {currentTrack?.title || "Select Track"}
+            </div>
+            <div className="drawer-progress-bar">
+               <div className="drawer-progress-fill" style={{ width: `${(currentTime / (duration || 1)) * 100}%` }} />
+            </div>
+          </div>
+
+          {/* Volume Group */}
+          <div className="drawer-volume">
             <button 
-              className="control-btn" 
+              className="control-btn tiny" 
               onClick={() => setIsMuted(!isMuted)}
-              title="Mute/Unmute"
-              style={{ padding: 4 }}
             >
-              {isMuted || volume === 0 ? <SpeakerX size={16} /> : volume < 0.5 ? <SpeakerLow size={16} /> : <SpeakerHigh size={16} />}
+              {isMuted || volume === 0 ? <SpeakerX size={14} /> : <SpeakerHigh size={14} />}
             </button>
             <input 
               type="range" 
-              className="volume-slider"
+              className="drawer-volume-slider"
               min="0" 
               max="1" 
-              step="0.01" 
+              step="0.05" 
               value={isMuted ? 0 : volume}
               onChange={(e) => {
                 setVolume(parseFloat(e.target.value));
@@ -248,55 +357,33 @@ export function MusicPlayer() {
             />
           </div>
 
-          <div className="playlist-controls">
-            <button className="playlist-action-btn" onClick={() => fileInputRef.current?.click()}>
-              <FolderOpen size={16} /> Add Files
+          {/* Extra Actions */}
+          <div className="drawer-actions">
+            <button 
+              className={`control-btn tiny ${isShuffle ? 'active' : ''}`} 
+              onClick={() => setIsShuffle(!isShuffle)}
+              title="Shuffle"
+            >
+              <Shuffle size={14} />
             </button>
-            <button className="playlist-action-btn" onClick={handleClearPlaylist}>
-              <Trash size={16} /> Clear
+            <button 
+              className="control-btn tiny" 
+              onClick={() => fileInputRef.current?.click()}
+              title="Add Files"
+            >
+              <FolderOpen size={14} />
             </button>
-          </div>
-
-          <div className="playlist">
-            {tracks.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '20px', color: 'var(--text-tertiary)', fontSize: '0.8rem' }}>
-                Playlist empty.<br/>Add audio files to play.
-              </div>
-            ) : (
-              tracks.map((track, idx) => (
-                <div 
-                  key={`${track.file}-${idx}`}
-                  className={`playlist-item ${currentTrackIndex === idx ? 'active' : ''}`}
-                  onClick={() => {
-                    setCurrentTrackIndex(idx);
-                    setIsPlaying(true);
-                  }}
-                >
-                  <span style={{ display: 'flex', alignItems: 'center', gap: '8px', overflow: 'hidden' }}>
-                    {track.isLocal && <FileAudio size={12} weight="duotone" />}
-                    <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{track.title}</span>
-                  </span>
-                  {currentTrackIndex === idx && isPlaying && (
-                    <MusicNotes size={14} weight="fill" className="spin-slow" />
-                  )}
-                </div>
-              ))
-            )}
+             <button 
+              className="control-btn tiny danger" 
+              onClick={handleClearPlaylist}
+              title="Clear Playlist"
+            >
+              <Trash size={14} />
+            </button>
           </div>
         </div>
+      </div>
       )}
-
-      {/* Trigger Button (Spinning Record) */}
-      <button 
-        className={`music-trigger ${isOpen ? 'active' : ''}`}
-        onClick={() => setIsOpen(!isOpen)}
-        onMouseEnter={() => setIsOpen(true)}
-        title="Music Player"
-      >
-        <div className={`record-disc ${isPlaying ? 'spin' : ''}`}>
-           <Disc size={32} weight="duotone" />
-        </div>
-      </button>
     </div>
   );
 }

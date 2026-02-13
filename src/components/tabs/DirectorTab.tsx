@@ -85,17 +85,28 @@ export function DirectorTab() {
       // which gets broken by the offline renderer's manual time stepping.
       const { exportAsWebM } = await import('../../export/exportVideo');
       
+      // Check global quality setting to determine export resolution
+      // If Ultra, use 4K. Otherwise default to 1080p High Quality.
+      const { quality } = await import('../../state/useSettingsStore').then(m => m.useSettingsStore.getState());
+      const isUltra = quality === 'ultra';
+      
+      const width = isUltra ? 3840 : 1920;
+      const height = isUltra ? 2160 : 1080;
+      const bitrate = isUltra ? 25000000 : 12000000; // 25 Mbps vs 12 Mbps
+      
+      addToast(isUltra ? 'Exporting in 4K UHD...' : 'Exporting in 1080p HD...', 'info');
+
       await exportAsWebM(
         canvas,
         currentScript.totalDuration + 0.5, // Add slight buffer
         `Director_Sequence_${Date.now()}.webm`,
         (p) => setExportProgress(p * 100),
         { 
-            width: 1920, // 1080p target
-            height: 1080,
+            width, 
+            height,
             includeLogo: true,
             fps: 60,
-            videoBitsPerSecond: 12000000 // 12 Mbps for high quality
+            videoBitsPerSecond: bitrate
         }
       );
 

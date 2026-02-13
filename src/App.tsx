@@ -16,6 +16,7 @@ import { initAvatarBridge } from './multiplayer/avatarBridge';
 import { ConnectionProgressPanel } from './components/ConnectionProgressPanel';
 // import { AIAgentWidget } from './components/AIAgentWidget';
 import { SessionHUD } from './components/SessionHUD';
+import { MobileWelcomeModal } from './components/MobileWelcomeModal';
 
 // import { LobbyPanel } from './components/LobbyPanel';
 
@@ -186,6 +187,7 @@ function App() {
       <ConnectionProgressPanel />
       {/* <AIAgentWidget /> */}
       <SessionHUD />
+      <MobileWelcomeModal />
       {/* <LobbyPanel /> */}
     </div>
   );

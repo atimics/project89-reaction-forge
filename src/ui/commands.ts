@@ -59,10 +59,20 @@ export const commands: Action[] = [
       shortcut: ["p"], 
       keywords: "save image screenshot effects fx",
       perform: async () => {
+          // Smart Resolution: Use the user's full screen resolution for maximum quality
+          // This ensures crisp exports even if the browser window is small
+          const targetWidth = window.screen.width * window.devicePixelRatio;
+          const targetHeight = window.screen.height * window.devicePixelRatio;
+          
+          getToast().addToast(`Capturing High-Res (${targetWidth}x${targetHeight})...`, 'info');
+
           // Use captureSnapshot to include CSS overlays (scanlines, glitch, etc.) and logo
           const dataUrl = await sceneManager.captureSnapshot({
+              width: targetWidth,
+              height: targetHeight,
               includeLogo: true,
               transparentBackground: false,
+              fitToFrame: false // Maintain current framing logic, just upscale
           });
           
           if (!dataUrl) {
@@ -73,9 +83,9 @@ export const commands: Action[] = [
           const link = document.createElement('a');
           link.href = dataUrl;
           const timestamp = getPoseLabTimestamp();
-          link.download = `PoseLab_${timestamp}_capture.png`;
+          link.download = `PoseLab_${timestamp}_highres.png`;
           link.click();
-          getToast().addToast('📸 PNG Saved (with Effects)', 'success');
+          getToast().addToast('📸 High-Res PNG Saved', 'success');
       } 
   },
   { 

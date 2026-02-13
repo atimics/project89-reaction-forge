@@ -119,7 +119,7 @@ export interface VRMChunkMessage extends BaseMessage {
   targetPeerId: PeerId;
   chunkIndex: number;
   totalChunks: number;
-  data: string; // Base64 encoded chunk (JSON serialization compatible)
+  data: string | ArrayBuffer; // Base64 or ArrayBuffer
 }
 
 export interface VRMCompleteMessage extends BaseMessage {
@@ -146,7 +146,7 @@ export interface BackgroundChunkMessage extends BaseMessage {
   targetPeerId: PeerId;
   chunkIndex: number;
   totalChunks: number;
-  data: string; // Base64 encoded chunk (JSON serialization compatible)
+  data: string | ArrayBuffer; // Base64 or ArrayBuffer
   fileName: string; // To identify the file being sent
   fileType: string; // MIME type (e.g., 'video/webm', 'image/gif')
 }

@@ -19,7 +19,8 @@ import {
   DeviceMobileCamera,
   Lightbulb,
   FileJs as FileJson,
-  Package
+  Package,
+  Aperture
 } from '@phosphor-icons/react';
 import { batchConfigs, applyMixamoBuffer, savePoseToDisk } from '../../pose-lab/batchUtils';
 
@@ -34,7 +35,7 @@ export function ExportTab({ mode = 'reactions' }: ExportTabProps) {
   const [isBatchExporting, setIsBatchExporting] = useState(false);
   const [exportProgress, setExportProgress] = useState(0);
   const [exportFormat, setExportFormat] = useState<'png' | 'webm' | 'glb' | 'json'>('png');
-  const [resolution, setResolution] = useState<'720p' | '1080p' | 'square'>('720p');
+  const [resolution, setResolution] = useState<'720p' | '1080p' | 'square' | '4k'>('720p');
   const [includeLogo, setIncludeLogo] = useState(true);
   const [transparentBg, setTransparentBg] = useState(false);
   const [autoFrame, setAutoFrame] = useState(false);
@@ -46,16 +47,18 @@ export function ExportTab({ mode = 'reactions' }: ExportTabProps) {
     sceneManager.getAspectRatio();
   }, []);
 
-  const getExportDimensions = (): { width: number; height: number } => {
+  const getExportDimensions = (): { width: number; height: number; bitrate: number } => {
     switch (resolution) {
+      case '4k':
+        return { width: 3840, height: 2160, bitrate: 25000000 }; // 25 Mbps
       case '720p':
-        return { width: 1280, height: 720 };
+        return { width: 1280, height: 720, bitrate: 5000000 }; // 5 Mbps
       case 'square':
-        return { width: 1080, height: 1080 };
+        return { width: 1080, height: 1080, bitrate: 8000000 }; // 8 Mbps
       case '1080p': // Re-purposed as Vertical/Mobile
-        return { width: 1080, height: 1920 };
+        return { width: 1080, height: 1920, bitrate: 12000000 }; // 12 Mbps
       default:
-        return { width: 1920, height: 1080 };
+        return { width: 1920, height: 1080, bitrate: 12000000 };
     }
   };
 
@@ -233,7 +236,12 @@ export function ExportTab({ mode = 'reactions' }: ExportTabProps) {
           (progress) => {
             setExportProgress(Math.round(progress * 100));
           },
-          { width: dimensions.width, height: dimensions.height, includeLogo }
+          { 
+            width: dimensions.width, 
+            height: dimensions.height, 
+            includeLogo,
+            videoBitsPerSecond: dimensions.bitrate // Use smart bitrate
+          }
         );
         addToast('✅ WebM Exported Successfully!', 'success');
       } finally {
@@ -494,6 +502,15 @@ export function ExportTab({ mode = 'reactions' }: ExportTabProps) {
               >
                 <DeviceMobileCamera size={16} weight="duotone" />
                 9:16
+              </button>
+              <button
+                className={resolution === '4k' ? 'secondary active' : 'secondary'}
+                onClick={() => setResolution('4k')}
+                title="3840x2160 (Ultra HD)"
+                style={{ flex: '1 1 100px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+              >
+                <Aperture size={16} weight="duotone" />
+                4K
               </button>
             </div>
           </>

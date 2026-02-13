@@ -39,12 +39,19 @@ class PerformanceMonitor {
     
     console.log(`[PerfMonitor] Analysis complete: ${fps} FPS`);
     
-    if (fps < 40) {
+    // Lower threshold for mobile (30fps is acceptable)
+    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || window.matchMedia('(pointer: coarse)').matches;
+    const threshold = isMobile ? 30 : 40;
+    
+    if (fps < threshold) {
       console.warn('[PerfMonitor] Low performance detected. Downgrading settings.');
-      const { setQuality, setShadows } = useSettingsStore.getState();
+      const { setQuality, setShadows, quality } = useSettingsStore.getState();
       
       // Auto-downgrade
-      setQuality('medium'); // 0.8x resolution
+      // Only downgrade if we aren't already at low/medium
+      if (quality !== 'low') {
+          setQuality(quality === 'high' || quality === 'ultra' ? 'medium' : 'low');
+      }
       setShadows(false);    // Disable shadows
       
       // Notify user via toast? (Optional, maybe too intrusive)

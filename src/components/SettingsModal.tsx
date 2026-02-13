@@ -158,6 +158,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                 onChange={(e) => setQuality(e.target.value as QualityLevel)}
                 className="text-input"
               >
+                <option value="ultra">Ultra (4K Shadows)</option>
                 <option value="high">High (1.0x Res, MSAA)</option>
                 <option value="medium">Medium (0.8x Res)</option>
                 <option value="low">Low (0.5x Res, No FX)</option>

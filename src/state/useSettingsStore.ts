@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-export type QualityLevel = 'high' | 'medium' | 'low';
+export type QualityLevel = 'ultra' | 'high' | 'medium' | 'low';
 export type Theme = 'dark' | 'light' | 'system';
 export type Locale = 'en' | 'ja' | 'es' | 'fr' | 'ko';
 export type ViewportStyle = 'clean' | 'vhs' | 'hologram' | 'scanlines';

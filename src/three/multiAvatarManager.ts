@@ -32,6 +32,11 @@ interface AvatarInstance {
   isDirty: boolean;
   /** Offset position in the scene */
   positionOffset: THREE.Vector3;
+  
+  // Interpolation state
+  targetPose?: VRMPose;
+  lastPose?: VRMPose;
+  poseAlpha: number;
 }
 
 /**
@@ -144,6 +149,7 @@ class MultiAvatarManager {
       lastUpdate: Date.now(),
       positionOffset,
       isDirty: true,
+      poseAlpha: 1,
     };
 
     // Position the avatar
@@ -250,6 +256,7 @@ class MultiAvatarManager {
       lastUpdate: Date.now(),
       positionOffset: new THREE.Vector3(0, 0, 0), // Keep current position
       isDirty: true,
+      poseAlpha: 1,
     };
 
     // Store instance
@@ -329,8 +336,17 @@ class MultiAvatarManager {
       return;
     }
 
-    instance.vrm.humanoid.setNormalizedPose(pose);
-    instance.vrm.update(0);
+    // Set up interpolation
+    // Save the current state as the starting point (lastPose)
+    // We can capture it from the VRM, or use the previous target if we want to be strict
+    // Capturing from VRM ensures we interpolate from exactly where we are visually
+    instance.lastPose = this.captureCurrentPose(instance);
+    instance.targetPose = pose;
+    instance.poseAlpha = 0;
+    
+    // We don't update immediately anymore, let the tick loop handle it
+    // instance.vrm.humanoid.setNormalizedPose(pose);
+    // instance.vrm.update(0);
     instance.lastUpdate = Date.now();
     instance.isDirty = true;
   }
@@ -783,6 +799,49 @@ class MultiAvatarManager {
   }
 
   /**
+   * Interpolate between two VRMPoses
+   */
+  private interpolatePose(start: VRMPose, end: VRMPose, alpha: number): VRMPose {
+    const result: VRMPose = {};
+    const boneNames = Object.values(VRMHumanBoneName) as VRMHumanBoneName[];
+
+    boneNames.forEach(name => {
+      const startBone = start[name];
+      const endBone = end[name];
+
+      if (startBone && endBone) {
+        const interpolated: any = {};
+        
+        // Rotation
+        if (startBone.rotation && endBone.rotation) {
+          const q1 = new THREE.Quaternion().fromArray(startBone.rotation);
+          const q2 = new THREE.Quaternion().fromArray(endBone.rotation);
+          q1.slerp(q2, alpha);
+          interpolated.rotation = q1.toArray();
+        }
+
+        // Position (optional)
+        if (startBone.position && endBone.position) {
+          const v1 = new THREE.Vector3().fromArray(startBone.position);
+          const v2 = new THREE.Vector3().fromArray(endBone.position);
+          v1.lerp(v2, alpha);
+          interpolated.position = v1.toArray();
+        }
+
+        result[name] = interpolated;
+      } else if (endBone) {
+        // If only end exists, snap to it
+        result[name] = endBone;
+      } else if (startBone) {
+        // If only start exists, keep it
+        result[name] = startBone;
+      }
+    });
+
+    return result;
+  }
+
+  /**
    * Recalculate and apply positions for all avatars
    * Called when avatars are added/removed to maintain proper layout
    * Only sets INITIAL positions - doesn't override user-controlled positions
@@ -907,6 +966,21 @@ class MultiAvatarManager {
         }
 
         // Update VRM
+        // Handle Pose Interpolation
+        if (instance.targetPose && instance.poseAlpha < 1) {
+           // Interpolate 10x per second (assuming 30hz updates, 33ms)
+           // We want to reach target in ~100ms for smoothness
+           instance.poseAlpha += delta * 10; 
+           if (instance.poseAlpha > 1) instance.poseAlpha = 1;
+           
+           if (instance.lastPose) {
+               const interpolated = this.interpolatePose(instance.lastPose, instance.targetPose, instance.poseAlpha);
+               instance.vrm.humanoid?.setNormalizedPose(interpolated);
+           } else {
+               instance.vrm.humanoid?.setNormalizedPose(instance.targetPose);
+           }
+        }
+
         instance.vrm.update(delta);
 
         // Update animation mixer if animated and not interacting

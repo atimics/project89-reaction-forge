@@ -36,8 +36,8 @@ class SyncManager {
   private poseSyncInterval = 1000 / this.poseSyncRate;
   private expressionSyncInterval = 100; // Sync expressions at 10Hz for smoother mocap
   private isActive = false;
-  private vrmTransferBuffers = new Map<PeerId, { chunks: (string | undefined)[]; receivedCount: number; totalChunks: number; fileName: string; retries: number }>();
-  private backgroundTransferBuffers = new Map<PeerId, { chunks: string[]; receivedCount: number; totalChunks: number; fileName: string; fileType: string }>();
+  private vrmTransferBuffers = new Map<PeerId, { chunks: (ArrayBuffer | undefined)[]; receivedCount: number; totalChunks: number; fileName: string; retries: number }>();
+  private backgroundTransferBuffers = new Map<PeerId, { chunks: (ArrayBuffer | undefined)[]; receivedCount: number; totalChunks: number; fileName: string; fileType: string }>();
   private pendingVRMRequests = new Set<PeerId>(); // Track pending requests to avoid duplicates
   private pendingBackgroundRequests = new Set<PeerId>(); // Track pending background requests
   private activeVRMSends = new Set<PeerId>(); // Track VRM sends in progress to avoid duplicates
@@ -216,7 +216,7 @@ class SyncManager {
     const fileSizeKB = Math.round(vrmArrayBuffer.byteLength / 1024);
     console.log(`[SyncManager] Sending VRM to peer ${peerId}: (${fileSizeKB} KB)`);
 
-    // Convert ArrayBuffer to base64 in chunks
+    // Convert ArrayBuffer to chunks
     const uint8Array = new Uint8Array(vrmArrayBuffer);
     const totalChunks = Math.ceil(uint8Array.length / chunkSize);
 
@@ -238,15 +238,9 @@ class SyncManager {
     for (let i = 0; i < totalChunks; i++) {
       const start = i * chunkSize;
       const end = Math.min(start + chunkSize, uint8Array.length);
-      const chunk = uint8Array.slice(start, end);
+      // Create a copy of the chunk to ensure it's a clean ArrayBuffer
+      const chunk = uint8Array.slice(start, end).buffer;
       
-      // Convert chunk to base64 for JSON serialization
-      let binary = '';
-      for (let j = 0; j < chunk.length; j++) {
-        binary += String.fromCharCode(chunk[j]);
-      }
-      const base64Chunk = btoa(binary);
-
       const chunkMessage: VRMChunkMessage = {
         type: 'vrm-chunk',
         peerId: store.localPeerId!,
@@ -254,7 +248,7 @@ class SyncManager {
         timestamp: Date.now(),
         chunkIndex: i,
         totalChunks,
-        data: base64Chunk,
+        data: chunk,
       };
 
       try {
@@ -372,9 +366,18 @@ class SyncManager {
     const peerInfo = store.peers.get(peerId);
     const peerDisplayName = peerInfo?.displayName ?? `Peer-${peerId.slice(-4)}`;
     
-    // Convert base64 to chunks (it's already base64 in store)
-    const chunkSize = 16 * 1024; // 16KB chunks for background
-    const totalChunks = Math.ceil(customBackgroundData.length / chunkSize);
+    // Convert base64 to ArrayBuffer chunks
+    // Note: customBackgroundData is currently stored as Base64 string in the store
+    // We decode it once here to send efficiently
+    const binaryString = atob(customBackgroundData);
+    const bytes = new Uint8Array(binaryString.length);
+    for (let i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+    }
+    const uint8Array = bytes;
+    
+    const chunkSize = 16 * 1024; // 16KB chunks
+    const totalChunks = Math.ceil(uint8Array.length / chunkSize);
     const fileName = 'custom-background';
 
     notifyTransferProgress({
@@ -387,7 +390,9 @@ class SyncManager {
     });
 
     for (let i = 0; i < totalChunks; i++) {
-      const chunk = customBackgroundData.substring(i * chunkSize, (i + 1) * chunkSize);
+      const start = i * chunkSize;
+      const end = Math.min(start + chunkSize, uint8Array.length);
+      const chunk = uint8Array.slice(start, end).buffer;
       
       const message: BackgroundChunkMessage = {
         type: 'background-chunk',
@@ -655,7 +660,7 @@ class SyncManager {
     let buffer = this.backgroundTransferBuffers.get(peerId);
     if (!buffer || buffer.totalChunks !== totalChunks) {
       buffer = {
-        chunks: new Array(totalChunks).fill(''),
+        chunks: new Array(totalChunks).fill(undefined),
         receivedCount: 0,
         totalChunks,
         fileName: message.fileName,
@@ -665,7 +670,21 @@ class SyncManager {
     }
 
     if (!buffer.chunks[chunkIndex]) {
-      buffer.chunks[chunkIndex] = data;
+      // Handle legacy string data or new ArrayBuffer
+      if (typeof data === 'string') {
+          // Convert base64 to ArrayBuffer if needed, or just keep consistency
+          // Since we reassemble to base64 for background (because SceneManager takes base64/URL),
+          // we might actually want to Convert ArrayBuffer BACK to base64 here if we want to keep `chunks` as string.
+          // BUT, for consistency with VRM, let's store ArrayBuffer and convert at the end.
+          const binaryString = atob(data);
+          const bytes = new Uint8Array(binaryString.length);
+          for (let i = 0; i < binaryString.length; i++) {
+              bytes[i] = binaryString.charCodeAt(i);
+          }
+          buffer.chunks[chunkIndex] = bytes.buffer;
+      } else {
+          buffer.chunks[chunkIndex] = data;
+      }
       buffer.receivedCount++;
     }
   }
@@ -676,15 +695,34 @@ class SyncManager {
     if (!buffer) return;
 
     if (buffer.receivedCount === buffer.totalChunks) {
-      const fullData = buffer.chunks.join('');
-      const dataUrl = `data:${fileType};base64,${fullData}`;
+      // Filter valid chunks
+      const validChunks = buffer.chunks.filter((c): c is ArrayBuffer => c !== undefined);
+      
+      // Create Blob
+      const blob = new Blob(validChunks, { type: fileType });
+      
+      // Convert Blob to Base64 (DataURL) for SceneManager
+      // Alternatively, SceneManager could take a blob URL, which is more efficient!
+      // Let's check SceneManager... it takes a string (URL or DataURL).
+      // Blob URL is perfect and faster.
+      const blobUrl = URL.createObjectURL(blob);
       
       // Apply background
-      sceneManager.setBackground(dataUrl);
+      sceneManager.setBackground(blobUrl);
       
-      // Store in scene settings
-      const sceneState = useSceneSettingsStore.getState();
-      sceneState.setCustomBackground(fullData, fileType);
+      // For persistence, we still need the Base64 data if we want to save it to the store/project file
+      // But for immediate display, Blob URL is fine.
+      // Let's generate Base64 for the store to maintain compatibility.
+      const reader = new FileReader();
+      reader.onloadend = () => {
+          const base64data = reader.result as string;
+          // Strip the prefix "data:image/png;base64,"
+          const content = base64data.split(',')[1];
+          
+          const sceneState = useSceneSettingsStore.getState();
+          sceneState.setCustomBackground(content, fileType);
+      };
+      reader.readAsDataURL(blob);
       
       console.log(`[SyncManager] Background transfer complete from ${peerId}`);
     }
@@ -896,15 +934,23 @@ class SyncManager {
 
     const buffer = this.vrmTransferBuffers.get(peerId)!;
     
-    // Validate data is a string (base64)
-    if (typeof data !== 'string') {
-      console.error(`[SyncManager] Unexpected chunk data type:`, typeof data, data);
-      return;
+    // Validate data is an ArrayBuffer (or string if legacy)
+    let chunkData: ArrayBuffer;
+    if (typeof data === 'string') {
+        // Legacy support or fallback: decode base64
+        const binaryString = atob(data);
+        const bytes = new Uint8Array(binaryString.length);
+        for (let i = 0; i < binaryString.length; i++) {
+            bytes[i] = binaryString.charCodeAt(i);
+        }
+        chunkData = bytes.buffer;
+    } else {
+        chunkData = data;
     }
     
     // Only count if this chunk wasn't already received (avoid duplicates)
     const isNewChunk = !buffer.chunks[chunkIndex];
-    buffer.chunks[chunkIndex] = data;
+    buffer.chunks[chunkIndex] = chunkData;
     
     if (isNewChunk) {
       buffer.receivedCount++;
@@ -1029,22 +1075,21 @@ class SyncManager {
     });
 
     try {
-      // Concatenate all base64 chunks
-      const base64Data = buffer.chunks.join('');
-      console.log(`[SyncManager] Reassembling from ${buffer.totalChunks} chunks, base64 length: ${base64Data.length}`);
+      // Reassemble from ArrayBuffer chunks
+      // Filter out undefined chunks (should already be verified, but for type safety)
+      const validChunks = buffer.chunks.filter((c): c is ArrayBuffer => c !== undefined);
       
-      // Convert base64 to ArrayBuffer
-      const binaryString = atob(base64Data);
-      const bytes = new Uint8Array(binaryString.length);
-      for (let i = 0; i < binaryString.length; i++) {
-        bytes[i] = binaryString.charCodeAt(i);
-      }
+      console.log(`[SyncManager] Reassembling from ${validChunks.length} chunks`);
+      
+      // Create Blob directly from ArrayBuffers
+      const blob = new Blob(validChunks, { type: 'model/gltf-binary' });
+      const arrayBuffer = await blob.arrayBuffer();
 
-      console.log(`[SyncManager] Decoded ${bytes.byteLength} bytes`);
+      console.log(`[SyncManager] Decoded ${arrayBuffer.byteLength} bytes`);
 
       // Load the VRM
       console.log(`[SyncManager] Loading VRM for ${displayName}`);
-      await multiAvatarManager.loadRemoteAvatarFromBuffer(peerId, bytes.buffer, displayName);
+      await multiAvatarManager.loadRemoteAvatarFromBuffer(peerId, arrayBuffer, displayName);
 
       console.log(`[SyncManager] Remote avatar loaded for ${peerId}`);
 
